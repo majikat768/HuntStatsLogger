@@ -1,2 +1,3 @@
 json/
+__pycache__/
 huntstats.db
