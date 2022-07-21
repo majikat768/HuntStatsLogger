@@ -1,1 +1,1 @@
-[](/assets/huntapp.png)
+![](/assets/huntapp.png)
