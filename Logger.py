@@ -1,20 +1,21 @@
 from PyQt5.QtCore import QObject,pyqtSignal
+import xmltodict
 import os
 import json
 import time
-import xmltodict
 import sqlite3
 
 killall = False
 database = 'huntstats.db'
 
-def tables_exist():
-    connection = sqlite3.connect(database)
-    cursor = connection.cursor();
-    query = "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
-    cursor.execute(query)
-    return cursor.fetchone()[0]
-
+'''
+def xmltodict(line):
+    s = line.split('"')
+    key = s[1]
+    value = s[3]
+    return { key : value }
+'''
+    
 def tables_empty():
     connection = sqlite3.connect(database)
     cursor = connection.cursor();
@@ -22,54 +23,14 @@ def tables_empty():
     cursor.execute(query)
     return True if cursor.fetchone()[0] == 0 else False
 
-def create_tables(data):
+def create_tables():
     print('creating tables')
     connection = sqlite3.connect('huntstats.db')
     cursor = connection.cursor()
-    hunter_cols = {'timestamp':'integer', 'team_num':'integer', 'hunter_num':'integer'}
-    game_cols = {'timestamp':'integer primary key'}
-    team_cols = {'timestamp':'integer', 'team_num':'integer'}
-    entry_cols = {'timestamp':'integer','entry_num':'integer'}
-
-    game_dict = data['game']
-    for k in game_dict.keys():
-        t = type(game_dict[k])
-        game_cols[k] = 'integer' if t is int else 'text'
-
-    hunter_dict = data['hunter'][0][0]
-    for k in hunter_dict.keys():
-        t = type(hunter_dict[k])
-        hunter_cols[k] = 'integer' if t is int else 'text'
-
-    team_dict = data['team'][0]
-    for k in team_dict.keys():
-        t = type(team_dict[k])
-        team_cols[k] = 'integer' if t is int else 'text'
-    
-    entry_dict = data['entry'][0]
-    for k in entry_dict.keys():
-        t = type(entry_dict[k])
-        entry_cols[k] = 'integer' if t is int else 'text'
-
-    team_cols['primary key'] = '(timestamp, team_num)'
-    hunter_cols['primary key'] = '(timestamp, team_num, hunter_num)'
-    entry_cols['primary key'] = '(timestamp, entry_num)'
-
-    tables = {
-        'game':game_cols,
-        'team':team_cols,
-        'hunter':hunter_cols,
-        'entry':entry_cols
-    }
-
-    for title in tables:
-        query = 'create table if not exists %s (' % title
-        for key in tables[title]:
-            query += '%s %s, ' % (key, tables[title][key])
-        query = query[:-2]
-        query += ')'
-        cursor.execute(query)
-    for title in tables:
+    schemafile = './schema.sql'
+    cursor.executescript(open(schemafile,'r').read())
+    print(cursor.fetchall())
+    for title in ['game','entry','hunter','team']:
         print(title)
         for c in cursor.execute('pragma table_info(%s)' % title):
             print(c)
@@ -109,6 +70,8 @@ class Logger(QObject):
 
     def __init__(self):
         QObject.__init__(self)
+        create_tables()
+        empty = tables_empty()
 
 
     def set_path(self,huntpath):
@@ -138,8 +101,6 @@ class Logger(QObject):
                 json_files = os.listdir(self.json_out_dir)
 
                 sql_rows = self.build_json_from_xml()
-                if not tables_exist():
-                    create_tables(sql_rows)
 
                 if len(os.listdir(self.json_out_dir)) == 0:
                     with open(json_outfile,'w',encoding='utf-8') as outfile:
@@ -167,42 +128,6 @@ class Logger(QObject):
         self.finished.emit()
 
         
-    def write_json_to_sql(self,sql_rows,timestamp):
-        if not tables_exist():
-            create_tables(sql_rows)
-            self.print('tables created')
-        self.print('writing rows to database')
-        num_teams = sql_rows['game']['MissionBagNumTeams']
-        num_entries = sql_rows['game']['MissionBagNumEntries']
-        
-        sql_rows['game']['timestamp'] = timestamp
-        self.insert_row('game',sql_rows['game'])
-        sql_rows['game'].pop('timestamp')
-
-        for i in sql_rows['team']:
-            team = sql_rows['team'][i]
-            if team['team_num'] < num_teams:
-                team['timestamp'] = timestamp
-                self.insert_row('team',team)
-                team.pop('timestamp')
-
-        for i in sql_rows['entry']:
-            entry = sql_rows['entry'][i]
-            if entry['entry_num'] < num_entries:
-                entry['timestamp'] = timestamp
-                self.insert_row('entry',entry)
-                entry.pop('timestamp')
-
-        for i in sql_rows['hunter']:
-            team = sql_rows['hunter'][i]
-            for j in team:
-                hunter = team[j]
-                if hunter['team_num'] < num_teams and hunter['hunter_num'] < get_num_hunters(sql_rows,hunter['team_num']):
-                    hunter['timestamp'] = timestamp
-                    self.insert_row('hunter',hunter)
-                    hunter.pop('timestamp')
-        self.print('data written')
-
     def build_json_from_xml(self):
         self.print('building json object')
         sql_rows = {
@@ -246,6 +171,39 @@ class Logger(QObject):
                         elif 'Entry_' not in key:
                             sql_rows['game'][key] = value
         return sql_rows
+
+    def write_json_to_sql(self,sql_rows,timestamp):
+        self.print('writing rows to database')
+        num_teams = sql_rows['game']['MissionBagNumTeams']
+        num_entries = sql_rows['game']['MissionBagNumEntries']
+        
+        sql_rows['game']['timestamp'] = timestamp
+        self.insert_row('game',sql_rows['game'])
+        sql_rows['game'].pop('timestamp')
+
+        for i in sql_rows['team']:
+            team = sql_rows['team'][i]
+            if team['team_num'] < num_teams:
+                team['timestamp'] = timestamp
+                self.insert_row('team',team)
+                team.pop('timestamp')
+
+        for i in sql_rows['entry']:
+            entry = sql_rows['entry'][i]
+            if entry['entry_num'] < num_entries:
+                entry['timestamp'] = timestamp
+                self.insert_row('entry',entry)
+                entry.pop('timestamp')
+
+        for i in sql_rows['hunter']:
+            team = sql_rows['hunter'][i]
+            for j in team:
+                hunter = team[j]
+                if hunter['team_num'] < num_teams and hunter['hunter_num'] < get_num_hunters(sql_rows,hunter['team_num']):
+                    hunter['timestamp'] = timestamp
+                    self.insert_row('hunter',hunter)
+                    hunter.pop('timestamp')
+        self.print('data written')
 
     def insert_row(self,table, row):
         #print('inserting data into table %s' % table)

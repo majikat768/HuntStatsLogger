@@ -1,9 +1,8 @@
 from datetime import datetime
-from socket import getnameinfo
 import sqlite3
 import sys
 import time
-from PyQt5.QtCore import QThread,QSettings,Qt,QSize
+from PyQt5.QtCore import QThread,QSettings,Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from threading import *
@@ -25,7 +24,7 @@ class App(QMainWindow):
         super().__init__()
         self.title = 'Hunt Stats'
         self.titlebar = QWidget()
-        self.setWindowFlags(Qt.FramelessWindowHint)
+        #self.setWindowFlags(Qt.FramelessWindowHint)
         self.mouseHold = False
         #self.setWindowFlags(Qt.CustomizeWindowHint)
         self.setAttribute(Qt.WA_NoSystemBackground, True)
@@ -40,10 +39,12 @@ class App(QMainWindow):
         self.thread = QThread();
         self.logger = Logger.Logger();
         if self.xml_path != '':
+            print('starting logger')
             self.startLogger()
 
         self.main_frame = QWidget()
         self.layout = QGridLayout()
+        self.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum)
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0,0,0,0)
 
@@ -59,16 +60,17 @@ class App(QMainWindow):
         self.GameInfoScrollArea.setWidget(self.GameInfoStats)
 
         self.usernameInput = QLineEdit(self.settings.value('username',''))
-        self.updateUsernameButton = QPushButton('update username')
+        self.usernameLabel = QLabel('')
+        self.updateUsernameButton = QPushButton('set Hunter name')
 
         self.select_file_button = QPushButton(' Select Hunt installation folder  ',self)
-        time.sleep(1)
         self.initUI()
         self.updateLastMatch()
         self.show()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         super().mousePressEvent(event)
+        print(self.size())
         self.offset = event.pos()
         self.start = event.globalPos()
         self.windowsize = self.size()
@@ -86,9 +88,6 @@ class App(QMainWindow):
                     self.mapToGlobal(event.pos()).x()-self.offset.x(),
                     self.mapToGlobal(event.pos()).y()-self.offset.y()
                 )
-
-
-            pass
 
     '''
     def paintEvent(self,event=None):
@@ -109,7 +108,7 @@ class App(QMainWindow):
         closeButton.setFixedSize(32,32)
         self.titlebar.layout.addWidget(closeButton,Qt.AlignRight)
         self.titlebar.layout.setAlignment(Qt.AlignRight)
-        self.layout.addWidget(self.titlebar)
+        #self.layout.addWidget(self.titlebar)
 
     def initHunterGroup(self):
         groupLayout = QGridLayout()
@@ -122,11 +121,11 @@ class App(QMainWindow):
         self.MMRLabel = QLabel()
         groupLayout.addWidget(self.MMRLabel,2,0)
 
-        groupLayout.addWidget(QLabel('High score:'),0,1)
-        self.HighestMMRLabel = QLabel()
-        groupLayout.addWidget(self.HighestMMRLabel,1,1)
+        groupLayout.addWidget(QLabel('Highest rating:'),0,1)
         self.HighestStarLabel = QLabel()
-        groupLayout.addWidget(self.HighestStarLabel,2,1)
+        groupLayout.addWidget(self.HighestStarLabel,1,1)
+        self.HighestMMRLabel = QLabel()
+        groupLayout.addWidget(self.HighestMMRLabel,2,1)
         self.layout.addWidget(self.HunterGroup)
 
     def initGameGroup(self):
@@ -153,9 +152,12 @@ class App(QMainWindow):
         groupLayout.addWidget(self.MatchSelection,0,0,1,2)
         groupLayout.addWidget(self.GameInfoScrollArea,1,0)
         groupLayout.addWidget(self.tabs,1,1)
-        self.tabs.setMinimumWidth(600)
-        self.tabs.setMinimumHeight(300)
-        self.GameInfoScrollArea.setMinimumWidth(300)
+        self.tabs.setMaximumSize(1000,400)
+        self.tabs.setBaseSize(600,300)
+        self.tabs.setMinimumSize(400,200)
+        self.GameInfoScrollArea.setMaximumSize(400,400)
+        self.GameInfoScrollArea.setBaseSize(400,300)
+        self.GameInfoScrollArea.setMinimumSize(400,200)
         #groupLayout.addWidget(self.tabs,2,0,1,2)
 
         self.layout.addWidget(self.GameInfoGroup)
@@ -165,7 +167,8 @@ class App(QMainWindow):
         self.inputGroup.setLayout(groupLayout)
         groupLayout.addWidget(self.select_file_button,0,0)
         groupLayout.addWidget(self.xml_label,0,1,Qt.AlignRight)
-        groupLayout.addWidget(self.usernameInput,2,1)
+        groupLayout.addWidget(self.usernameInput,2,1, Qt.AlignRight)
+        groupLayout.addWidget(self.usernameLabel,2,1, Qt.AlignRight)
         groupLayout.addWidget(self.updateUsernameButton,2,0)
         self.layout.addWidget(self.inputGroup)
 
@@ -174,15 +177,20 @@ class App(QMainWindow):
         self.setCentralWidget(self.main_frame);
         self.main_frame.setLayout(self.layout)
         self.usernameInput.setPlaceholderText('Enter your Steam username....')
+        self.usernameInput.setFixedWidth(256)
+        self.usernameLabel.setText(self.settings.value('username',''))
         self.usernameInput.setVisible(False)
-        self.usernameInput.setMaximumWidth(256)
         self.usernameInput.returnPressed.connect(self.updateUsername)
         self.updateUsernameButton.clicked.connect(self.updateUsername)
+        if self.settings.value('username','') == '':
+            self.usernameInput.setVisible(True)
+            self.usernameLabel.setVisible(False)
         self.initTitleBar()
         self.initHunterGroup()
         self.initGameGroup()
         self.init_input_group()
-        self.setGeometry(self.x,self.y,self.width,self.height)
+        #self.setGeometry(self.x,self.y,self.width,self.height)
+        self.setMaximumSize(1366, 768)
         #self.setMaximumHeight(400)
         self.select_file_button.clicked.connect(self.SelectXmlFile)
 
@@ -217,19 +225,22 @@ class App(QMainWindow):
         query = "select mmr from 'hunter' where timestamp is (select max(timestamp) from 'hunter') and blood_line_name is '%s'" % (self.settings.value('username',''))
         try:
             cursor.execute(query)
+            return cursor.fetchone()
         except sqlite3.OperationalError as msg:
             print('get own mmr error')
             return [-1]
-        return cursor.fetchone()
 
     def updateUsername(self):
         if self.usernameInput.isVisible():
+            self.usernameLabel.setVisible(True)
             self.usernameInput.setVisible(False)
             self.settings.setValue('username',self.usernameInput.text())
+            self.usernameLabel.setText(self.settings.value('username',''))
             self.setHunterStats()
 
         else:
             self.usernameInput.setVisible(True)
+            self.usernameLabel.setVisible(False)
             self.usernameInput.setFocus()
 
     def get_stars(self, mmr):
@@ -238,6 +249,7 @@ class App(QMainWindow):
     def setHunterStats(self):
         print('settin stats')
         mmr = self.get_own_MMR()
+        print(mmr)
         if mmr == None: mmr = [-1]
         mmr = mmr[0]
         self.settings.setValue('mmr',mmr)
@@ -249,7 +261,7 @@ class App(QMainWindow):
         self.settings.setValue('stars',stars)
         if stars > self.settings.value('max_stars',-1):
             self.settings.setValue('max_stars',stars)
-        self.HighestStarLabel.setPixmap(QPixmap('./assets/icons/_%dstart.png' % stars))
+        self.HighestStarLabel.setPixmap(QPixmap('./assets/icons/_%dstar.png' % stars))
 
         username = self.settings.value('username','')
 
@@ -328,6 +340,13 @@ class App(QMainWindow):
             print(msg)
             return -1
 
+    def getMyKills(self, timestamp):
+        connection = sqlite3.connect(database)
+        cursor = connection.cursor()
+        query = "select sum(downedbyme + killedbyme) from 'hunter' where timestamp is %s and (downedbyme > 0 or killedbyme > 0)" % timestamp
+        cursor.execute(query)
+        return cursor.fetchone()
+
     def setMatchInfo(self,timestamp):
         timestamp = self.MatchSelection.currentData()
         connection = sqlite3.connect(database)
@@ -350,16 +369,16 @@ class App(QMainWindow):
         else:
             #text += 'You extracted.\n'
             pass
-        text += 'Teams: %d\n' % (game_dict['MissionBagNumTeams'])
         text += 'Mission: '
-        text += 'Quickplay\n' if game_dict['MissionBagIsQuickPlay'] else 'Bounty Hunt\n'
+        text += 'Quickplay\n' if isquickplay else 'Bounty Hunt\n'
         if not isquickplay:
             bounties = []
             if game_dict['MissionBagBoss_0']: bounties.append('Butcher')
             if game_dict['MissionBagBoss_1']: bounties.append('Spider')
             if game_dict['MissionBagBoss_2']: bounties.append('Assassin')
             if game_dict['MissionBagBoss_3']: bounties.append('Scrapbeak')
-            text += 'Bounties: ' + ' and '.join(bounties)
+            text += 'Bounties: %s\n' % ' and '.join(bounties)
+        text += 'Teams: %d\n' % (game_dict['MissionBagNumTeams'])
 
         self.LastHunt.setText(text)
         text = '<html>'
@@ -393,6 +412,7 @@ class App(QMainWindow):
         }
         assists = 0
         hunterkills = 0
+        mykills = self.getMyKills(timestamp)[0]
         monsters_killed = {}
         monsterkills = 0
         gold = 0
@@ -462,8 +482,7 @@ class App(QMainWindow):
             kill_line = []
             for mm in hunters_killed:
                 if hunters_killed[mm] > 0:
-                    #kill_line.append('%dx %d star' % (hunters_killed[mm],mm))
-                    kill_line.append('<img src="./assets/icons/_%dstar.png">x%d' % (mm,hunters_killed[mm]))
+                    kill_line.append('%dx <img src="./assets/icons/_%dstar.png">' % (hunters_killed[mm],mm))
             text += '<br>'.join(kill_line)
             text += '<br><br>'
         if assists > 0:
@@ -507,12 +526,13 @@ class App(QMainWindow):
             else:
                 hunter = hunters[0]
                 self.tabs.addTab(teamArea,'%s' % hunter['blood_line_name'])
+            self.tabs.tabBar().setSizePolicy(QSizePolicy.Maximum,QSizePolicy.Maximum)
             teamArea.layout = QGridLayout(teamArea.widget())
             teamArea.setWidgetResizable(True)
             teamArea.setLayout(teamArea.layout)
             #teamTab.layout.addWidget(hunterInfo)
             teamInfo = QLabel();
-            teamTab.layout = QGridLayout()
+            teamTab.layout = QHBoxLayout()
             teamTab.setLayout(teamTab.layout)
             #teamArea.layout.addWidget(teamInfo,0,0)
             teamInfo.setText('Team MMR: %d' % (team['mmr']))
@@ -522,47 +542,43 @@ class App(QMainWindow):
             for i in range(len(hunters)):
                 text = ''
                 p = hunters[i]
-                hunterGroup = QGroupBox()
-                hunterGroup.setObjectName('huntergroup')
-                groupLayout = QVBoxLayout()
-                hunterGroup.setLayout(groupLayout)
-                hunterName = QLabel(p['blood_line_name'])
-                hunterMmr = QLabel(str(p['mmr']))
-                hunterStars = QLabel()
-                hunterStars.setPixmap(QPixmap('./assets/icons/_%dstar.png' % self.get_stars(p['mmr'])))
+                text += '%s %s<br>' % (p['blood_line_name'],'(you)' if p['blood_line_name'] == self.settings.value('username','') else '')
+                text += '<img src="./assets/icons/_%dstar.png"><br>' % (self.get_stars(p['mmr']))
+                text += '%d<br>' % (p['mmr'])
                 hunterInfo = QLabel();
-                groupLayout.addWidget(hunterName)
-                groupLayout.addWidget(hunterStars)
-                groupLayout.addWidget(hunterMmr)
-                groupLayout.addWidget(hunterInfo)
-                teamTab.layout.addWidget(hunterGroup,1,i)
+                teamTab.layout.addWidget(hunterInfo)
                 #teamArea.layout.addWidget(hunterInfo,1,i,Qt.AlignTop)
                 if p['downedme']:
-                    text += 'They downed you %d times.\n' % p['downedme']
+                    text += 'They downed you %d times.<br>' % p['downedme']
                 if p['downedbyme']:
-                    text += 'You downed them %d times.\n' % p['downedbyme']
+                    text += 'You downed them %d times.<br>' % p['downedbyme']
+                if p['downedbyteammate']:
+                    text += 'They were downed by your team.<br>'
+                if p['downedteammate']:
+                    text += 'They downed your teammate.<br>'
                 if p['killedme']:
-                    text += 'They killed you %d times.\n' % p['killedme']
+                    text += 'They killed you %d times.<br>' % p['killedme']
                 if p['killedbyme']:
-                    text += 'You killed them %d times.\n' % p['killedbyme']
-                if p['bountypickedup']:
-                    text += 'They picked up the bounty.\n'
+                    text += 'You killed them %d times.<br>' % p['killedbyme']
                 if p['killedbyteammate']:
-                    text += 'They were killed by your team.\n'
+                    text += 'They were killed by your team.<br>'
                 if p['killedteammate']:
-                    text += 'They killed your teammate.\n'
+                    text += 'They killed your teammate.<br>'
+                if p['bountypickedup']:
+                    text += 'They picked up the bounty.<br>'
                 if p['hadWellspring']:
-                    text += 'They had the wellspring.\n'
+                    text += 'They had the wellspring.<br>'
                 if p['teamextraction']:
                     if p['bountyextracted']:
-                        text += 'They extracted with the bounty.\n'
+                        text += 'They extracted with the bounty.<br>'
                         got_bounty = True
                     else:
-                        text += 'They extracted alive.\n'
+                        text += 'They extracted alive.<br>'
                 hunterInfo.setText(text) 
-            text += '\n\n'
+            text += '<br><br>'
             
     def updateLastMatch(self):
+        if self.xml_path == '': return
         print('update last match')
         self.MatchSelection.clear()
         for match in self.get_all_timestamps():
@@ -589,8 +605,7 @@ class App(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    QFontDatabase.addApplicationFont('./assets/crimsontext/CrimsonText-Regular.ttf')
-    app.setStyleSheet(open('stylesheet.qss','r').read())
+    app.setStyleSheet(open('./stylesheet.qss','r').read())
 
     ex = App()
 

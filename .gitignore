@@ -1,3 +1,5 @@
 json/
 __pycache__/
+build/
+dist/
 huntstats.db

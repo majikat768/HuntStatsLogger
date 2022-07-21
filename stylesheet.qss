@@ -1,8 +1,8 @@
 * {
     background-color: transparent;
     color: #cccccc;
-    /*font-family: 'Courier New';*/
-    font-family: 'Helvetica';
+    font-family: 'Courier';
+    /*font-family: 'Helvetica';*/
     font-size: 16px;
     border:0px;
 }
@@ -26,7 +26,10 @@ QLabel {
     background-color: transparent;
 }
 
-
+QLineEdit {
+    background-color: #555555;
+    border: 0px;
+}
 QGroupBox {
     font-size: 32px;
     background-color: #111111;
@@ -39,7 +42,6 @@ QGroupBox {
     background-color:#444444;
 }
 #HuntSettings {
-    margin-bottom:32px;
     border-bottom: 2px solid #660000;
 }
 
@@ -56,13 +58,12 @@ QTabWidget::pane {
 }
 
 QTabWidget {
-    border: 1px solid white
 }
 
 QComboBox {
     background: #444444;
     border: 1px solid #000000;
-    padding: 8px
+    padding: 8px;
 }
 
 QTabWidget QWidget {
@@ -70,9 +71,8 @@ QTabWidget QWidget {
 
 QTabBar::tab {
     margin: 2px;
-    padding: 4px;
+    padding: 8px;
     border:1px solid black;
-    width:128px;
 }
 
 QTabBar::tab:selected {
@@ -110,4 +110,8 @@ QWidget#teamtab {
 
 #Exit:hover {
     background-color: #aa4444;
+}
+
+#HunterNameLabel {
+    font-size: 24px;
 }
