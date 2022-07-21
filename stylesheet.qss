@@ -1,0 +1,113 @@
+* {
+    background-color: transparent;
+    color: #cccccc;
+    /*font-family: 'Courier New';*/
+    font-family: 'Helvetica';
+    font-size: 16px;
+    border:0px;
+}
+QApplication {
+    border-radius:8px
+}
+
+QWidget {
+}
+
+
+QPushButton {
+    background-color: #111111;
+    border-style:solid;
+    border-width:1px;
+    padding:8px;
+    color: #eeeeee;
+}
+
+QLabel {
+    background-color: transparent;
+}
+
+
+QGroupBox {
+    font-size: 32px;
+    background-color: #111111;
+    border: 2px solid #660000;
+    border-bottom: 0px;
+    padding-top:32px;
+}
+
+#huntergroup {
+    background-color:#444444;
+}
+#HuntSettings {
+    margin-bottom:32px;
+    border-bottom: 2px solid #660000;
+}
+
+QScrollArea {
+    background-color: #111111;
+}
+
+QTabWidget QGroupBox {
+    border: 0px;
+}
+
+QTabWidget::pane {
+    background:transparent
+}
+
+QTabWidget {
+    border: 1px solid white
+}
+
+QComboBox {
+    background: #444444;
+    border: 1px solid #000000;
+    padding: 8px
+}
+
+QTabWidget QWidget {
+}
+
+QTabBar::tab {
+    margin: 2px;
+    padding: 4px;
+    border:1px solid black;
+    width:128px;
+}
+
+QTabBar::tab:selected {
+    background-color: #444444;
+    margin: -4px;
+}
+
+QTabBar::tab:!selected {
+    margin-top: 4px;
+    background-color: #999999;
+    color: #111111;
+}
+
+QTabBar QGroupBox {
+    background-color: #444444;
+}
+QWidget#teamtab {
+    background-color: #444444
+}
+
+
+#TitleBar {
+    background-color:#222222;
+    border: 2px solid #660000;
+    border-bottom:0px;
+    border-top-right-radius:8px;
+    border-top-left-radius:8px;
+}
+
+#Exit {
+    background-color: #dd8888;
+    border: 0px solid #ffffff;
+    padding:0px
+}
+
+#Exit:hover {
+    background-color: #aa4444;
+}
