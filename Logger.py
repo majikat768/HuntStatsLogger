@@ -16,6 +16,7 @@ def xmltodict(line):
     return { key : value }
 '''
     
+
 def tables_empty():
     connection = sqlite3.connect(database)
     cursor = connection.cursor();
@@ -222,4 +223,3 @@ class Logger(QObject):
             self.print('fail! ' + str(msg))
         connection.commit()
         connection.close()
-
