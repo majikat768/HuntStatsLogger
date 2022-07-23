@@ -6,6 +6,7 @@ from GroupBox import GroupBox
 class Settings(GroupBox):
     def __init__(self,parent,layout,title=''):
         super().__init__(layout,title)
+        self.huntDir = ''
         self.parent = parent
         self.settings = QSettings('majikat','HuntStats')
         self.layout = layout
@@ -43,12 +44,14 @@ class Settings(GroupBox):
             print('directory set')
             self.settings.setValue('huntDir',directory)
             self.huntDirLabel.setText(self.settings.value('huntDir',''))
+            self.parent.StartLogger()
+            self.parent.update()
 
     def UpdateHunterName(self):
         if self.nameInput.isVisible():
             self.settings.setValue('hunterName',self.nameInput.text())
             self.nameLabel.setText(self.settings.value('hunterName',''))
-            self.parent.UpdateHunterTab()
+            self.parent.update()
             self.nameInput.setVisible(False)
             self.nameLabel.setVisible(True)
 

@@ -12,14 +12,12 @@ class HuntHistory(GroupBox):
         self.setStyleSheet('QLabel{padding:0px;margin:0px;}')
         self.settings = QSettings('majikat','HuntStats')
         self.layout.setSpacing(4)
-        self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
+        #self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
 
         self.layout.addWidget(self.MatchSelect(),0,0,1,4)
 
         self.huntInfoBox = self.HuntInfoBox()
-        self.updateHuntInfo()
         self.teamInfoBox = self.TeamInfoBox()
-        self.updateTeamInfo()
         self.layout.addWidget(self.huntInfoBox,1,0,1,1)
         self.layout.addWidget(self.teamInfoBox,1,1,1,3)
 
@@ -42,13 +40,29 @@ class HuntHistory(GroupBox):
         self.matchSelection.activated.connect(self.update)
         return self.matchSelection
     
+    def updateMatchSelect(self):
+        self.matchSelection.clear()
+        for timestamp in self.connection.GetAllTimestamps():
+            self.matchSelection.addItem(
+                '%s - %s - %d team kills - %s' % (
+                    unix_to_datetime(timestamp),
+                    'Quick Play' if self.connection.IsQuickPlay(timestamp) else 'Bounty Hunt',
+                    self.connection.GetMatchKills(timestamp),
+                    'lived' if self.connection.Survived(timestamp) else 'died'
+                )
+                ,timestamp
+            )
+
     def update(self):
+        self.updateMatchSelect()
         self.updateHuntInfo()
         self.updateTeamInfo()
 
     def updateHuntInfo(self):
         game = self.connection.GetMatchData(self.matchSelection.currentData())
+        if len(game) == 0:  return
         entries = self.connection.GetMatchEntries(self.matchSelection.currentData())
+        if len(entries) == 0:  return
         quickplay = game['MissionBagIsQuickPlay']
         rifts_closed = 0
         assists = 0
@@ -125,35 +139,35 @@ class HuntHistory(GroupBox):
 
     def HuntInfoBox(self):
         self.huntInfoScrollArea = QScrollArea()
-        self.huntInfoScrollArea.setMinimumSize(10,256)
         self.huntInfoScrollArea.setWidgetResizable(True)
-        self.huntInfoScrollArea.setSizePolicy(QSizePolicy.Maximum,QSizePolicy.Maximum)
         self.huntInfoScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.huntInfo = QWidget()
         self.huntInfo.layout = QVBoxLayout()
         self.huntInfo.setLayout(self.huntInfo.layout)
-        self.mission = QLabel()
+
+        self.mission = QLabel('Mission: bounty hunt')
         self.huntInfo.layout.addWidget(self.mission)
-        self.bounties = QLabel()
+        self.bounties = QLabel('Bounties: Assassin and Scrapbeak')
         self.huntInfo.layout.addWidget(self.bounties)
-        self.teams = QLabel()
+        self.teams = QLabel('Teams: 12')
         self.huntInfo.layout.addWidget(self.teams)
         self.huntInfo.layout.addWidget(QLabel())
 
-        self.cluesFound = QLabel()
+        self.cluesFound = QLabel('Found 3 of the clues for butcher\t')
         self.huntInfo.layout.addWidget(self.cluesFound)
         self.huntInfo.layout.addWidget(QLabel())
-        self.huntersKilled = QLabel()
+        self.huntersKilled = QLabel('Team killed 0 hunters')
         self.huntInfo.layout.addWidget(self.huntersKilled)
         self.huntInfo.layout.addWidget(QLabel())
-        self.monstersKilled = QLabel()
+        self.monstersKilled = QLabel('Team killed 0 monsters')
         self.huntInfo.layout.addWidget(self.monstersKilled)
 
 
-        #self.huntInfo.layout.addStretch()
+        self.huntInfo.layout.addStretch()
 
         self.huntInfoScrollArea.setWidget(self.huntInfo)
 
+        self.huntInfoScrollArea.setSizePolicy(QSizePolicy.Maximum,QSizePolicy.Expanding)
         return self.huntInfoScrollArea
 
     def updateTeamInfo(self):
@@ -175,7 +189,7 @@ class HuntHistory(GroupBox):
             teamSubInfo.setLayout(teamSubInfo.layout)
             teammmr = QLabel('Team MMR: %d' % team['mmr'])
             teamSubInfo.layout.addWidget(teammmr)
-            teamInfo.layout.addWidget(teamSubInfo,0,0)
+            teamInfo.layout.addWidget(teamSubInfo,0,0,1,3)
             hunters = [x for x in allhunters if x['team_num'] == team['team_num']]
             if not isquickplay:
                 self.teamTabs.addTab(teamInfoScrollArea,'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
@@ -227,7 +241,6 @@ class HuntHistory(GroupBox):
                 if hunter['teamextraction']:
                     team_extract = True
                 teamInfo.layout.addWidget(hunterInfo,1,i)
-                print('hunterinfo',hunterInfo)
                 hunterInfo.layout.addStretch()
             if got_bounty:
                 if extracted_bounty:
@@ -239,7 +252,7 @@ class HuntHistory(GroupBox):
             if team_extract and not extracted_bounty:
                 teamSubInfo.layout.addWidget(QLabel('They extracted.'))
 
-            #teamInfo.layout.addStretch()
+            teamInfo.layout.setColumnStretch(teamInfo.layout.columnCount(),1)
             
 
 

@@ -17,14 +17,17 @@ class Connection():
     def SetOwnMMR(self):
         connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
+        print('setting mmr for %s' % settings.value('hunterName',''))
         query = "select mmr from 'hunter' where timestamp is (select max(timestamp) from 'hunter') and blood_line_name is '%s'" % (settings.value('hunterName',''))
         try:
             cursor.execute(query)
-            mmr = cursor.fetchone()[0]
+            mmr = cursor.fetchone()
+            mmr = -1 if mmr is None else mmr[0]
         except sqlite3.OperationalError as msg:
             print('get own mmr error')
             mmr = -1
         connection.close()
+        print('mmr',mmr)
         settings.setValue('mmr',mmr)
     
     def SetTotalHuntCount(self):
@@ -38,6 +41,8 @@ class Connection():
             print(msg)
             huntcount = -1
         connection.close()
+        if huntcount is None:
+            huntcount = 0
         settings.setValue('total_hunts',huntcount)
 
     def SetTotalKills(self):
@@ -50,6 +55,8 @@ class Connection():
         except sqlite3.OperationalError as msg:
             print('SetMyTotalKills %s' % msg)
             kills = -1
+        if kills is None:
+            kills = 0
         settings.setValue('total_kills',kills)
     
     def SetTotalDeaths(self):
@@ -62,6 +69,8 @@ class Connection():
         except sqlite3.OperationalError as msg:
             print('SetMyTotalDeaths %s' % msg)
             deaths = -1
+        if deaths is None:
+            deaths = 0
         settings.setValue('total_deaths',deaths)
     
     def SetTotalAssists(self):
@@ -74,6 +83,8 @@ class Connection():
         except sqlite3.OperationalError as msg:
             print('SetMyTotalAssists %s' % msg)
             assists = -1
+        if assists is None:
+            assists = 0
         settings.setValue('total_assists',assists)
 
     def SetKDA(self):
@@ -90,7 +101,10 @@ class Connection():
             deaths = cursor.fetchone()[0]
             cursor.execute(assistQuery)
             assists = cursor.fetchone()[0]
-            kda = (kills + assists) / deaths
+            if kills is None or deaths is None or assists is None:
+                kda = 0
+            else:
+                kda = (kills + assists) / deaths
         except sqlite3.OperationalError as msg:
             print('SetMyTotalAssists %s' % msg)
         settings.setValue('kda',round(kda,3))
@@ -122,6 +136,7 @@ class Connection():
             return game
         except sqlite3.OperationalError as msg:
             print('GetMatchData %s' % msg)
+            print(query)
             return {}
 
     def GetMatchEntries(self, timestamp):
@@ -139,7 +154,7 @@ class Connection():
                 entries.append({entry_cols[i] : entry[i] for i in range(len(entry_cols))})
 
         except sqlite3.OperationalError as msg:
-            print('GetMatchData %s' % msg)
+            print('GetMatchEntries %s' % msg)
             entries = {}
         connection.close()
         return entries 
@@ -179,7 +194,7 @@ class Connection():
                 teams.append({team_cols[i] : team[i] for i in range(len(team_cols))})
 
         except sqlite3.OperationalError as msg:
-            print('GetMatchData %s' % msg)
+            print('GetMatchTeams %s' % msg)
             teams = {}
         connection.close()
         return teams 

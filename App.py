@@ -49,15 +49,17 @@ class App(QMainWindow):
         self.loggerThread.started.connect(self.logger.run)
         self.logger.finished.connect(self.loggerThread.quit)
         self.logger.finished.connect(self.logger.deleteLater)
-        #self.logger.progress.connect(self.updateLastMatch)
+        self.logger.progress.connect(self.UpdateData)
         self.logger.finished.connect(self.loggerThread.deleteLater)
         self.loggerThread.start()
+
+    def UpdateData(self):
+        self.mainFrame.update()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     QFontDatabase.addApplicationFont('./assets/fonts/ubuntu/Ubuntu-R.ttf')
-    QFontDatabase.addApplicationFont('./assets/fonts/caladea/caladea.ttf')
     #app.setStyleSheet(open('./assets/stylesheet.qss','r').read())
     app.setStyleSheet(open('./assets/MaterialDark.qss','r').read())
     ex2 = App()

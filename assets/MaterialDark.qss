@@ -8,7 +8,7 @@ Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 */
 * {
     font-size: 18px;
-    font-family: Caladea;
+    font-family: Ubuntu;
     background-color: #1e282c;
 }
 
@@ -125,7 +125,7 @@ QPushButton:disabled{
 }
 QGroupBox::title {
 	color:#882222;
-    background-color: #transparent;
+    background-color: transparent;
 }
 QGroupBox {
 	padding-top:24px;

@@ -30,35 +30,41 @@ class Hunter(GroupBox):
         self.kdaBox = GroupBox(QGridLayout())
         self.kdaBox.setAlignment(Qt.AlignCenter)
 
-        self.connection.SetKDA()
-        print(self.settings.value('kda'))
-        print(type(self.settings.value('kda')))
-        self.KDA = QLabel('%s' % self.settings.value('kda',-1))
-        self.KDA.setStyleSheet('QLabel{font-size:32px;}')
-        self.kdaBox.addWidget(self.KDA,0,1)
+        self.KDALabel = QLabel('%s' % self.settings.value('kda',-1))
+        self.KDALabel.setStyleSheet('QLabel{font-size:32px;}')
+        self.kdaBox.addWidget(self.KDALabel,0,1)
         self.kdaBox.addWidget(QLabel('kda'),1,1)
 
         self.kdaBox.layout.setRowStretch(2,1)
         self.kdaBox.layout.addItem(QSpacerItem(16,16,QSizePolicy.Expanding,QSizePolicy.Expanding),2,0,1,1)
-        self.connection.SetTotalKills()
-        self.kills = QLabel('%d' % self.settings.value('total_kills',-1))
-        self.kdaBox.addWidget(self.kills,3,0)
+
+        self.killLabel = QLabel('%d' % self.settings.value('total_kills',-1))
+        self.kdaBox.addWidget(self.killLabel,3,0)
         self.kdaBox.addWidget(QLabel('kills'),4,0)
 
-        self.connection.SetTotalDeaths()
-        self.deaths = QLabel('%d' % self.settings.value('total_deaths',-1))
-        self.kdaBox.addWidget(self.deaths,3,1)
+        self.deathLabel = QLabel('%d' % self.settings.value('total_deaths',-1))
+        self.kdaBox.addWidget(self.deathLabel,3,1)
         self.kdaBox.addWidget(QLabel('deaths'),4,1)
 
-        self.connection.SetTotalAssists()
-        self.assists = QLabel('%d' % self.settings.value('total_assists',-1))
-        self.kdaBox.addWidget(self.assists,3,2)
+        self.assistLabel = QLabel('%d' % self.settings.value('total_assists',-1))
+        self.kdaBox.addWidget(self.assistLabel,3,2)
         self.kdaBox.addWidget(QLabel('assists'),4,2)
         #self.AvgKDA = QLabel('Avg KDA')
         #self.kdaBox.addWidget(self.AvgKDA,5,1)
         self.kdaBox.setBorderVisible(False)
 
         return self.kdaBox
+
+    def UpdateKdaBox(self):
+        self.connection.SetKDA()
+        print(self.settings.value('kda'))
+        self.KDALabel.setText('%s' % '{:.2f}'.format(float(self.settings.value('kda',-1))))
+        self.connection.SetTotalKills()
+        self.killLabel.setText('%d' % self.settings.value('total_kills',-1))
+        self.connection.SetTotalDeaths()
+        self.deathLabel.setText('%d' % self.settings.value('total_deaths',-1))
+        self.connection.SetTotalAssists()
+        self.assistLabel.setText('%d' % self.settings.value('total_assists',-1))
 
     def HunterBox(self):
         self.hunterBox = GroupBox(QVBoxLayout())
@@ -68,7 +74,6 @@ class Hunter(GroupBox):
         self.hunterLabel.setObjectName('HunterTitle')
         self.hunterBox.layout.addWidget(self.hunterLabel,Qt.AlignLeft)
 
-        self.connection.SetTotalHuntCount()
         self.totalHunts = QLabel('Hunts: %d' % self.settings.value('total_hunts',-1))
         self.hunterBox.addWidget(self.totalHunts)
 
@@ -78,7 +83,6 @@ class Hunter(GroupBox):
         self.mmrBox = GroupBox(QVBoxLayout())
         self.mmrBox.setBorderVisible(False)
 
-        self.connection.SetOwnMMR()
         mmr = self.settings.value('mmr',-1)
         stars = MmrToStars(mmr)
         self.starLabel = QLabel()
@@ -95,5 +99,21 @@ class Hunter(GroupBox):
 
         return self.mmrBox
 
+    def UpdateMmrBox(self):
+        self.connection.SetOwnMMR()
+        mmr = self.settings.value('mmr',-1)
+        print('mmr',mmr)
+        stars = MmrToStars(mmr)
+        self.starLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
+        self.mmrLabel.setText('Current MMR: %d' % mmr)
+        self.bestMmrLabel.setText('Best MMR: %d' % mmr)
+
     def UpdateHunterBox(self):
         self.hunterLabel.setText(self.settings.value('hunterName',''))
+        self.connection.SetTotalHuntCount()
+        self.totalHunts.setText('Hunts: %d' % self.settings.value('total_hunts',-1))
+
+    def update(self):
+        self.UpdateHunterBox()
+        self.UpdateMmrBox()
+        self.UpdateKdaBox()
