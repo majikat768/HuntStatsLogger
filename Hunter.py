@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGridLayout, QLabel, QVBoxLayout,QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QGridLayout, QLabel, QVBoxLayout,QSpacerItem, QSizePolicy, QWidget
 from PyQt5.QtCore import QSettings, Qt
 from PyQt5 import QtGui
 from Connection import MmrToStars
@@ -9,79 +9,91 @@ class Hunter(GroupBox):
         super().__init__(layout,title)
         self.parent = parent
         self.connection = parent.connection
-        self.setStyleSheet('QLabel{padding:0px;margin:0px;}')
         self.settings = QSettings('majikat','HuntStats')
         self.layout = layout
         self.setLayout(self.layout)
+        self.layout.setAlignment(Qt.AlignTop)
         self.layout.setSpacing(0)
         self.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Fixed)
 
-        self.layout.addWidget(self.HunterBox(),0,0,Qt.AlignLeft | Qt.AlignTop)
+        self.hunterBox = self.HunterBox()
+        self.kdaBox = self.KdaBox()
+        self.mmrBox = self.MmrBox()
+        self.layout.addWidget(self.hunterBox)
+        self.layout.addStretch()
+        self.layout.addWidget(self.KdaBox(), Qt.AlignTop)
+        self.layout.addStretch()
+        self.layout.addWidget(self.MmrBox(), Qt.AlignRight)
 
-        self.layout.addWidget(self.MmrBox(),0,2,Qt.AlignRight | Qt.AlignTop)
-
-        self.layout.addWidget(self.KdaBox(),0,1, Qt.AlignHCenter)
-
-        self.layout.setRowStretch(self.layout.rowCount(),1)
+        #self.layout.setRowStretch(self.layout.rowCount(),1)
         #self.layout.setColumnStretch(self.layout.columnCount(),1)
-        self.layout.setColumnStretch(1,1)
+        #self.layout.setColumnStretch(1,1)
     
     def KdaBox(self):
-        self.kdaBox = GroupBox(QGridLayout())
-        self.kdaBox.setAlignment(Qt.AlignCenter)
+        kdaBox = QWidget()
+        kdaBox.layout = QGridLayout()
+        kdaBox.setLayout(kdaBox.layout)
+        kdaBox.layout.setAlignment(Qt.AlignCenter)
 
         self.KDALabel = QLabel('%s' % self.settings.value('kda',-1))
+        self.KDALabel.setAlignment(Qt.AlignCenter)
         self.KDALabel.setStyleSheet('QLabel{font-size:32px;}')
-        self.kdaBox.addWidget(self.KDALabel,0,1)
-        self.kdaBox.addWidget(QLabel('kda'),1,1)
+        kdaBox.layout.addWidget(self.KDALabel,1,2)
 
-        self.kdaBox.layout.setRowStretch(2,1)
-        self.kdaBox.layout.addItem(QSpacerItem(16,16,QSizePolicy.Expanding,QSizePolicy.Expanding),2,0,1,1)
+        self.killLabel = QLabel('%dk' % self.settings.value('total_kills',-1))
+        self.killLabel.setAlignment(Qt.AlignCenter)
+        kdaBox.layout.addWidget(self.killLabel,3,1)
 
-        self.killLabel = QLabel('%d' % self.settings.value('total_kills',-1))
-        self.kdaBox.addWidget(self.killLabel,3,0)
-        self.kdaBox.addWidget(QLabel('kills'),4,0)
+        self.deathLabel = QLabel('%dd' % self.settings.value('total_deaths',-1))
+        self.deathLabel.setAlignment(Qt.AlignCenter)
+        kdaBox.layout.addWidget(self.deathLabel,3,2)
 
-        self.deathLabel = QLabel('%d' % self.settings.value('total_deaths',-1))
-        self.kdaBox.addWidget(self.deathLabel,3,1)
-        self.kdaBox.addWidget(QLabel('deaths'),4,1)
-
-        self.assistLabel = QLabel('%d' % self.settings.value('total_assists',-1))
-        self.kdaBox.addWidget(self.assistLabel,3,2)
-        self.kdaBox.addWidget(QLabel('assists'),4,2)
+        self.assistLabel = QLabel('%da' % self.settings.value('total_assists',-1))
+        self.assistLabel.setAlignment(Qt.AlignCenter)
+        kdaBox.layout.addWidget(self.assistLabel,3,3)
         #self.AvgKDA = QLabel('Avg KDA')
         #self.kdaBox.addWidget(self.AvgKDA,5,1)
-        self.kdaBox.setBorderVisible(False)
+        #kdaBox.layout.setRowStretch(kdaBox.layout.rowCount(),1)
+        #kdaBox.layout.setColumnStretch(kdaBox.layout.columnCount(),1)
+        #kdaBox.layout.setColumnStretch(0,1)
 
-        return self.kdaBox
+        return kdaBox
 
     def UpdateKdaBox(self):
         self.connection.SetKDA()
         print(self.settings.value('kda'))
         self.KDALabel.setText('%s' % '{:.2f}'.format(float(self.settings.value('kda',-1))))
+        self.KDALabel.setAlignment(Qt.AlignHCenter)
         self.connection.SetTotalKills()
-        self.killLabel.setText('%d' % self.settings.value('total_kills',-1))
+        self.killLabel.setText('')
+        self.killLabel.setAlignment(Qt.AlignHCenter)
         self.connection.SetTotalDeaths()
-        self.deathLabel.setText('%d' % self.settings.value('total_deaths',-1))
+        self.deathLabel.setText('%dk %dd %da' % (self.settings.value('total_kills',-1),self.settings.value('total_deaths',-1),self.settings.value('total_assists',-1)))
+        self.deathLabel.setAlignment(Qt.AlignHCenter)
         self.connection.SetTotalAssists()
-        self.assistLabel.setText('%d' % self.settings.value('total_assists',-1))
+        self.assistLabel.setText('')
+        self.assistLabel.setAlignment(Qt.AlignHCenter)
 
     def HunterBox(self):
-        self.hunterBox = GroupBox(QVBoxLayout())
-        self.hunterBox.setBorderVisible(False)
+        hunterBox = QWidget()
+        hunterBox.layout = QVBoxLayout()
+        hunterBox.setLayout(hunterBox.layout)
 
         self.hunterLabel = QLabel(self.settings.value('hunterName',''))
         self.hunterLabel.setObjectName('HunterTitle')
-        self.hunterBox.layout.addWidget(self.hunterLabel,Qt.AlignLeft)
+        hunterBox.layout.addWidget(self.hunterLabel)
 
         self.totalHunts = QLabel('Hunts: %d' % self.settings.value('total_hunts',-1))
-        self.hunterBox.addWidget(self.totalHunts)
+        hunterBox.layout.addWidget(self.totalHunts)
+        hunterBox.layout.addStretch()
 
-        return self.hunterBox
+        return hunterBox
 
     def MmrBox(self):
-        self.mmrBox = GroupBox(QVBoxLayout())
-        self.mmrBox.setBorderVisible(False)
+        mmrBox = QWidget()
+        mmrBox.layout = QVBoxLayout()
+        mmrBox.setLayout(mmrBox.layout)
+        mmrBox.layout.setAlignment(Qt.AlignHCenter)
 
         mmr = self.settings.value('mmr',-1)
         stars = MmrToStars(mmr)
@@ -90,14 +102,15 @@ class Hunter(GroupBox):
         self.starLabel.setAlignment(Qt.AlignRight)
         self.mmrLabel = QLabel('Current MMR: %d' % mmr)
         self.mmrLabel.setAlignment(Qt.AlignRight)
-        self.bestMmrLabel = QLabel('Best MMR: %d' % mmr)
+        self.bestMmrLabel = QLabel('Best MMR: %d' % self.connection.GetMaxMMR())
         self.bestMmrLabel.setAlignment(Qt.AlignRight)
 
-        self.mmrBox.addWidget(self.starLabel)
-        self.mmrBox.addWidget(self.mmrLabel)
-        self.mmrBox.addWidget(self.bestMmrLabel)
+        mmrBox.layout.addWidget(self.starLabel)
+        mmrBox.layout.addWidget(self.mmrLabel)
+        mmrBox.layout.addWidget(self.bestMmrLabel)
 
-        return self.mmrBox
+        mmrBox.layout.addStretch()
+        return mmrBox
 
     def UpdateMmrBox(self):
         self.connection.SetOwnMMR()
@@ -106,7 +119,7 @@ class Hunter(GroupBox):
         stars = MmrToStars(mmr)
         self.starLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
         self.mmrLabel.setText('Current MMR: %d' % mmr)
-        self.bestMmrLabel.setText('Best MMR: %d' % mmr)
+        self.bestMmrLabel = QLabel('Best MMR: %d' % self.connection.GetMaxMMR())
 
     def UpdateHunterBox(self):
         self.hunterLabel.setText(self.settings.value('hunterName',''))

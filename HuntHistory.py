@@ -28,25 +28,28 @@ class HuntHistory(GroupBox):
         self.matchSelection.setStyleSheet('QComboBox{padding:8px;}')
         for timestamp in self.connection.GetAllTimestamps():
             self.matchSelection.addItem(
-                '%s - %s - %d team kills - %s' % (
+                '%s - %s - %d teams - %d kills - %s' % (
                     unix_to_datetime(timestamp),
                     'Quick Play' if self.connection.IsQuickPlay(timestamp) else 'Bounty Hunt',
+                    self.connection.getNTeams(timestamp),
                     self.connection.GetMatchKills(timestamp),
                     'lived' if self.connection.Survived(timestamp) else 'died'
                 )
                 ,timestamp
             )
 
-        self.matchSelection.activated.connect(self.update)
+        self.matchSelection.activated.connect(self.updateHuntInfo)
+        self.matchSelection.activated.connect(self.updateTeamInfo)
         return self.matchSelection
     
     def updateMatchSelect(self):
         self.matchSelection.clear()
         for timestamp in self.connection.GetAllTimestamps():
             self.matchSelection.addItem(
-                '%s - %s - %d team kills - %s' % (
+                '%s - %s - %d teams - %d kills - %s' % (
                     unix_to_datetime(timestamp),
                     'Quick Play' if self.connection.IsQuickPlay(timestamp) else 'Bounty Hunt',
+                    self.connection.getNTeams(timestamp),
                     self.connection.GetMatchKills(timestamp),
                     'lived' if self.connection.Survived(timestamp) else 'died'
                 )
@@ -121,6 +124,9 @@ class HuntHistory(GroupBox):
             )
         else:
             self.huntersKilled.setText('')
+
+        self.killsAndAssists.setText('you got %d kills and %d assists.' % (self.connection.GetMyKills(self.matchSelection.currentData()),assists))
+        self.myDeaths.setText('you were killed %d times.' % (self.connection.GetMyDeaths(self.matchSelection.currentData())))
         
         if monsterkills > 0:
             self.monstersKilled.setText(
@@ -159,6 +165,11 @@ class HuntHistory(GroupBox):
         self.huntersKilled = QLabel('Team killed 0 hunters')
         self.huntInfo.layout.addWidget(self.huntersKilled)
         self.huntInfo.layout.addWidget(QLabel())
+        self.killsAndAssists = QLabel('You got 0 assists and 0 kills.')
+        self.huntInfo.layout.addWidget(self.killsAndAssists)
+        self.myDeaths = QLabel('You were killed 0 times.')
+        self.huntInfo.layout.addWidget(self.myDeaths)
+        self.huntInfo.layout.addWidget(QLabel())
         self.monstersKilled = QLabel('Team killed 0 monsters')
         self.huntInfo.layout.addWidget(self.monstersKilled)
 
@@ -182,14 +193,14 @@ class HuntHistory(GroupBox):
             #self.teamInfoScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
             teamInfo = QWidget()
             teamInfoScrollArea.setWidget(teamInfo)
-            teamInfo.layout = QGridLayout()
+            teamInfo.layout = QVBoxLayout()
             teamInfo.setLayout(teamInfo.layout)
             teamSubInfo = QWidget()
             teamSubInfo.layout = QVBoxLayout()
             teamSubInfo.setLayout(teamSubInfo.layout)
             teammmr = QLabel('Team MMR: %d' % team['mmr'])
             teamSubInfo.layout.addWidget(teammmr)
-            teamInfo.layout.addWidget(teamSubInfo,0,0,1,3)
+            teamInfo.layout.addWidget(teamSubInfo)
             hunters = [x for x in allhunters if x['team_num'] == team['team_num']]
             if not isquickplay:
                 self.teamTabs.addTab(teamInfoScrollArea,'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
@@ -216,11 +227,11 @@ class HuntHistory(GroupBox):
                 if hunter['downedme']:
                     hunterInfo.layout.addWidget(QLabel('They downed you %d times.' % hunter['downedme']))
                 if hunter['downedbyme']:
-                    hunterInfo.layout.addWidget(QLabel('you downed them %d times.' % hunter['downedme']))
+                    hunterInfo.layout.addWidget(QLabel('you downed them %d times.' % hunter['downedbyme']))
                 if hunter['downedteammate']:
-                    hunterInfo.layout.addWidget(QLabel('They downed your teammate %d times.' % hunter['downedme']))
+                    hunterInfo.layout.addWidget(QLabel('They downed your teammate %d times.' % hunter['downedteammate']))
                 if hunter['downedbyteammate']:
-                    hunterInfo.layout.addWidget(QLabel('your teammate downed them %d times.' % hunter['downedme']))
+                    hunterInfo.layout.addWidget(QLabel('your teammate downed them %d times.' % hunter['downedbyteammate']))
                 if hunter['killedme']:
                     hunterInfo.layout.addWidget(QLabel('They killed you.'))
                 if hunter['killedbyme']:
@@ -240,7 +251,7 @@ class HuntHistory(GroupBox):
                     hunterInfo.layout.addWidget(QLabel('they extracted with the bounty.'))
                 if hunter['teamextraction']:
                     team_extract = True
-                teamInfo.layout.addWidget(hunterInfo,1,i)
+                teamInfo.layout.addWidget(hunterInfo)
                 hunterInfo.layout.addStretch()
             if got_bounty:
                 if extracted_bounty:
@@ -252,11 +263,8 @@ class HuntHistory(GroupBox):
             if team_extract and not extracted_bounty:
                 teamSubInfo.layout.addWidget(QLabel('They extracted.'))
 
-            teamInfo.layout.setColumnStretch(teamInfo.layout.columnCount(),1)
+            #teamInfo.layout.setColumnStretch(teamInfo.layout.columnCount(),1)
             
-
-
-
     def TeamInfoBox(self):
         self.teamTabs = QTabWidget()
         self.teamTabs.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)

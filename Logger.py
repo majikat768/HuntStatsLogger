@@ -15,7 +15,6 @@ def xmltodict(line):
     value = s[3]
     return { key : value }
 '''
-    
 
 def tables_empty():
     connection = sqlite3.connect(database)
@@ -102,6 +101,8 @@ class Logger(QObject):
                 json_files = os.listdir(self.json_out_dir)
 
                 sql_rows = self.build_json_from_xml()
+                self.clean_json(sql_rows)
+                print(sql_rows)
 
                 if len(os.listdir(self.json_out_dir)) == 0:
                     with open(json_outfile,'w',encoding='utf-8') as outfile:
@@ -172,6 +173,33 @@ class Logger(QObject):
                         elif 'Entry_' not in key:
                             sql_rows['game'][key] = value
         return sql_rows
+
+    def clean_json(self,sql_rows):
+        num_teams = sql_rows['game']['MissionBagNumTeams']
+        teams = sql_rows['team']
+        hunters = sql_rows['hunter']
+        teams_to_remove = []
+        for teamnum in teams:
+            if int(teamnum) > num_teams:
+                teams_to_remove.append(teamnum)
+        for teamnum in teams_to_remove:
+            sql_rows['team'].pop(teamnum)
+            sql_rows['hunter'].pop(teamnum)
+        
+        hunters_per_team = { teams[n]['team_num'] : teams[n]['numplayers'] for n in teams} 
+
+        for teamnum in hunters:
+            numhunters = hunters_per_team[teamnum]
+            hunters_to_remove = []
+            team = hunters[teamnum]
+            for hunternum in team:
+                hunter = team[hunternum]
+                if hunter['hunter_num'] > numhunters:
+                    hunters_to_remove.append(hunternum)
+            for hunternum in hunters_to_remove:
+                hunters[teamnum].pop(hunternum)
+
+
 
     def write_json_to_sql(self,sql_rows,timestamp):
         self.print('writing rows to database')

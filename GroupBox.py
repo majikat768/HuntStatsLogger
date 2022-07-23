@@ -9,7 +9,7 @@ class GroupBox(QGroupBox):
         self.setLayout(self.layout)
         self.alignment = None
 
-    def addWidget(self,widget,row=0,column=0,rowspan=1,colspan=1,alignment=Qt.AlignHCenter):
+    def addWidget(self,widget,row=0,column=0,rowspan=1,colspan=1,alignment=Qt.AlignLeft):
         if self.alignment != None:
             alignment = self.alignment
         if self.layout.__class__.__name__ == 'QGridLayout':

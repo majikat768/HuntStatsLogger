@@ -14,6 +14,56 @@ class Connection():
     def __init__(self) -> None:
         self.db = 'huntstats.db'
 
+    def GetMaxMMR(self):
+        connection = sqlite3.connect(self.db)
+        cursor = connection.cursor();
+        query = "select max(mmr) from 'hunter' where blood_line_name is '%s'" % settings.value('hunterName','')
+        try:
+            cursor.execute(query)
+            mmr = cursor.fetchone()[0]
+            print('bestmmr',mmr)
+        except sqlite3.OperationalError as msg:
+            print(msg)
+            mmr = 0
+        return 0 if mmr is None else mmr
+
+    def deleteRecord(self,timestamp):
+        connection = sqlite3.connect(self.db)
+        cursor = connection.cursor();
+        queries = [
+        "delete from 'game' where timestamp is ?", 
+        "delete from 'team' where timestamp is ?",
+        "delete from 'hunter' where timestamp is ?",
+        "delete from 'entry' where timestamp is ?"
+        ]
+
+        try:
+            for q in queries:
+                cursor.execute(q,(timestamp,))
+                connection.commit()
+        except sqlite3.OperationalError as msg:
+            print(msg)
+        query = "select * from 'game' where 'timestamp' is %s" % timestamp
+        cursor.execute(query)
+        print(cursor.fetchall())
+        connection.close()
+
+
+    def getNTeams(self,timestamp):
+        connection = sqlite3.connect(self.db)
+        cursor = connection.cursor();
+        query = "select MissionBagNumTeams from 'game' where timestamp is %s" % timestamp;
+        try:
+            cursor.execute(query)
+            numteams = int(cursor.fetchone()[0])
+            if numteams is None:
+                numteams = 0
+        except sqlite3.OperationalError as msg:
+            print(msg)
+            numteams = 0
+        connection.close()
+        return numteams
+
     def SetOwnMMR(self):
         connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
@@ -115,12 +165,12 @@ class Connection():
         query = "select MissionBagIsHunterDead from 'game' where timestamp is %d" % timestamp
         try:
             cursor.execute(query)
-            lived = cursor.fetchone()[0]
+            dead = cursor.fetchone()[0]
         except sqlite3.OperationalError as msg:
             print(msg)
-            kills = -1
+            dead = 0
         connection.close()
-        return lived if lived != None else -1
+        return not dead
 
     def GetMatchData(self, timestamp):
         connection = sqlite3.connect(self.db)
@@ -198,6 +248,34 @@ class Connection():
             teams = {}
         connection.close()
         return teams 
+
+    def GetMyDeaths(self, timestamp):
+        connection = sqlite3.connect(self.db)
+        cursor = connection.cursor();
+        print('getting match kills %d' % timestamp)
+        query = "select sum(downedme+killedme) from 'hunter' where timestamp is %d" % timestamp
+        try:
+            cursor.execute(query)
+            deaths = cursor.fetchone()[0]
+        except sqlite3.OperationalError as msg:
+            print(msg)
+            deaths = -1
+        connection.close()
+        return deaths if deaths != None else 0
+
+    def GetMyKills(self, timestamp):
+        connection = sqlite3.connect(self.db)
+        cursor = connection.cursor();
+        print('getting match kills %d' % timestamp)
+        query = "select sum(downedbyme+killedbyme) from 'hunter' where timestamp is %d" % timestamp
+        try:
+            cursor.execute(query)
+            kills = cursor.fetchone()[0]
+        except sqlite3.OperationalError as msg:
+            print(msg)
+            kills = -1
+        connection.close()
+        return kills if kills != None else 0
 
     def GetMatchKills(self, timestamp):
         connection = sqlite3.connect(self.db)

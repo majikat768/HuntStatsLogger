@@ -7,8 +7,8 @@ Last updated: 04/12/2018, 15:00.
 Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 */
 * {
-    font-size: 18px;
-    font-family: Ubuntu;
+    font-size: 16px;
+    font-family: Cambria;
     background-color: #1e282c;
 }
 
@@ -42,10 +42,7 @@ QPlainTextEdit {
 }
 QPushButton{
 	border-style: solid;
-	border-top-color: transparent;
-	border-right-color: transparent;
-	border-left-color: transparent;
-	border-bottom-color: transparent;
+	border-color: #dddddd;
 	border-width: 1px;
 	border-style: solid;
 	color: #a9b7c6;
@@ -84,7 +81,7 @@ QToolButton:hover{
 	border-bottom-width: 2px;
 	border-style: solid;
 	color: #FFFFFF;
-	padding-bottom: 1px;
+	padding: 2px;
 	background-color: #1e1d23;
 }
 QPushButton:hover{
@@ -124,15 +121,15 @@ QPushButton:disabled{
 	background-color: #1e1d23;
 }
 QGroupBox::title {
-	color:#882222;
+	color:#cccc67;
     background-color: transparent;
 }
 QGroupBox {
 	padding-top:24px;
     background-color: #1e282c;
 	font-size:24px;
-    border:2px solid #660000;
-    border-radius:4px;
+    border:1px solid #676767;
+    border-radius:2px;
 }
 
 
@@ -220,7 +217,7 @@ QTabWidget::pane {
 		border-color: rgb(77,77,77);
 		background-color: #1e282c;
 		border-style: none;
-		border-width: 1px;
+		border-width: 0px;
     	border-radius: 6px;
 }
 QTabBar::tab {
@@ -398,6 +395,8 @@ QToolBox::tab:selected {
 QScrollArea {
 	color: #FFFFFF;
 	background-color: #1e1d23;
+	border:1px solid #444444;
+	border-radius:2px
 }
 QSlider::groove:horizontal {
 	height: 5px;

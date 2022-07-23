@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import (
     QWidget,
     QGridLayout,
     QVBoxLayout,
+    QHBoxLayout
 )
 from PyQt5.QtCore import QSettings
 from HuntHistory import HuntHistory
@@ -25,7 +26,7 @@ class MainFrame(QWidget):
 
 
     def initUI(self):
-        self.hunterTab = Hunter(self,QGridLayout(),'Hunter')
+        self.hunterTab = Hunter(self,QHBoxLayout(),'Hunter')
         self.layout.addWidget(self.hunterTab)
 
         self.huntHistoryTab = HuntHistory(self,QGridLayout(),'Hunt History')

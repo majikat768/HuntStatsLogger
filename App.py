@@ -59,12 +59,12 @@ class App(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    QFontDatabase.addApplicationFont('./assets/fonts/ubuntu/Ubuntu-R.ttf')
+    QFontDatabase.addApplicationFont('./assets/fonts/ubuntu/Cambria.ttf')
     #app.setStyleSheet(open('./assets/stylesheet.qss','r').read())
     app.setStyleSheet(open('./assets/MaterialDark.qss','r').read())
+    #app.setStyleSheet(open('./assets/ManjaroMix.qss','r').read())
     ex2 = App()
     #app.setStyleSheet(open('./assets/SpyBot.qss','r').read())
-    #app.setStyleSheet(open('./assets/ManjaroMix.qss','r').read())
 
 
     app.exec_()
