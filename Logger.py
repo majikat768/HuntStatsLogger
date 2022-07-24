@@ -16,38 +16,10 @@ def xmltodict(line):
     return { key : value }
 '''
 
-def tables_empty():
-    connection = sqlite3.connect(database)
-    cursor = connection.cursor();
-    query = "select count(*) from 'game'"
-    cursor.execute(query)
-    return True if cursor.fetchone()[0] == 0 else False
-
-def create_tables():
-    print('creating tables')
-    connection = sqlite3.connect('huntstats.db')
-    cursor = connection.cursor()
-    schemafile = './schema.sql'
-    cursor.executescript(open(schemafile,'r').read())
-    print(cursor.fetchall())
-    for title in ['game','entry','hunter','team']:
-        print(title)
-        for c in cursor.execute('pragma table_info(%s)' % title):
-            print(c)
-        print()
-    connection.close()
-
 def diff(file1,file2):
-    with open(file1,'r',encoding='unicode_escape') as f1:
-        with open(file2,'r',encoding='unicode_escape') as f2:
+    with open(file1,'r',encoding='utf-8') as f1:
+        with open(file2,'r',encoding='utf-8') as f2:
             return f1.read() != f2.read()
-
-def get_num_hunters(sql_rows, team_num):
-    for i in sql_rows['team']:
-        team = sql_rows['team'][i]
-        if team['team_num'] == team_num:
-            return team['numplayers']
-    return -1
 
 def file_changed(filepath,last_change):
     return os.stat(filepath).st_mtime != last_change
@@ -70,8 +42,6 @@ class Logger(QObject):
 
     def __init__(self):
         QObject.__init__(self)
-        create_tables()
-        empty = tables_empty()
 
 
     def set_path(self,huntpath):
@@ -101,13 +71,10 @@ class Logger(QObject):
                 json_files = os.listdir(self.json_out_dir)
 
                 sql_rows = self.build_json_from_xml()
-                self.clean_json(sql_rows)
-                print(sql_rows)
 
                 if len(os.listdir(self.json_out_dir)) == 0:
                     with open(json_outfile,'w',encoding='utf-8') as outfile:
                         json.dump(sql_rows,outfile,indent=True)
-                        self.write_json_to_sql(sql_rows,timestamp)
                 else:
                     prev_json = os.path.join(self.json_out_dir,max(json_files,key=lambda x : os.stat(os.path.join(self.json_out_dir,x)).st_mtime))
                     with open(json_outfile_wait,'w',encoding='utf-8') as outfile:
@@ -116,9 +83,6 @@ class Logger(QObject):
                         os.remove(json_outfile_wait)
                     else:
                         os.replace(json_outfile_wait,json_outfile)
-                        self.write_json_to_sql(sql_rows,timestamp)
-                if tables_empty():
-                    self.write_json_to_sql(sql_rows,timestamp)
                 time.sleep(1)
                 self.print(time.strftime('%m/%d %H:%M:%S\n') + ' waiting for changes....\n')
 
@@ -142,7 +106,11 @@ class Logger(QObject):
         with open(self.xml_path,'r',encoding='utf-8') as xmlfile:
             for line in xmlfile:
                 if "MissionBag" in line:
-                    linedict = xmltodict.parse(line)
+                    try:
+                        linedict = xmltodict.parse(line)
+                    except:
+                        print(line)
+                        continue
                     key = parse_value(linedict['Attr']['@name'])
                     value = parse_value(linedict['Attr']['@value'])
                     if value != '' and 'tooltip' not in key:
@@ -172,7 +140,7 @@ class Logger(QObject):
                                 sql_rows['entry'][entry_num][category] = value
                         elif 'Entry_' not in key:
                             sql_rows['game'][key] = value
-        return sql_rows
+        return self.clean_json(sql_rows)
 
     def clean_json(self,sql_rows):
         num_teams = sql_rows['game']['MissionBagNumTeams']
@@ -189,7 +157,7 @@ class Logger(QObject):
         hunters_per_team = { teams[n]['team_num'] : teams[n]['numplayers'] for n in teams} 
 
         for teamnum in hunters:
-            numhunters = hunters_per_team[teamnum]
+            numhunters = hunters_per_team[int(teamnum)]
             hunters_to_remove = []
             team = hunters[teamnum]
             for hunternum in team:
@@ -198,56 +166,4 @@ class Logger(QObject):
                     hunters_to_remove.append(hunternum)
             for hunternum in hunters_to_remove:
                 hunters[teamnum].pop(hunternum)
-
-
-
-    def write_json_to_sql(self,sql_rows,timestamp):
-        self.print('writing rows to database')
-        num_teams = sql_rows['game']['MissionBagNumTeams']
-        num_entries = sql_rows['game']['MissionBagNumEntries']
-        
-        sql_rows['game']['timestamp'] = timestamp
-        self.insert_row('game',sql_rows['game'])
-        sql_rows['game'].pop('timestamp')
-
-        for i in sql_rows['team']:
-            team = sql_rows['team'][i]
-            if team['team_num'] < num_teams:
-                team['timestamp'] = timestamp
-                self.insert_row('team',team)
-                team.pop('timestamp')
-
-        for i in sql_rows['entry']:
-            entry = sql_rows['entry'][i]
-            if entry['entry_num'] < num_entries:
-                entry['timestamp'] = timestamp
-                self.insert_row('entry',entry)
-                entry.pop('timestamp')
-
-        for i in sql_rows['hunter']:
-            team = sql_rows['hunter'][i]
-            for j in team:
-                hunter = team[j]
-                if hunter['team_num'] < num_teams and hunter['hunter_num'] < get_num_hunters(sql_rows,hunter['team_num']):
-                    hunter['timestamp'] = timestamp
-                    self.insert_row('hunter',hunter)
-                    hunter.pop('timestamp')
-        self.print('data written')
-
-    def insert_row(self,table, row):
-        #print('inserting data into table %s' % table)
-        connection = sqlite3.connect(database)
-        cursor = connection.cursor();
-        
-        columns = [i for i in row.keys()]
-        values = [row[i] for i in columns]
-
-        query = "insert or ignore into %s (%s) values (%s)" % (table,','.join(columns), ('?,'*len(columns))[:-1])
-        try:
-            cursor.execute(query, (values))
-            #cursor.executemany(query,(values))
-            #print('success.')
-        except sqlite3.OperationalError as msg:
-            self.print('fail! ' + str(msg))
-        connection.commit()
-        connection.close()
+        return sql_rows

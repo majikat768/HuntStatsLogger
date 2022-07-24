@@ -1,8 +1,32 @@
+import json
+import time
+import os
 import sqlite3
 from datetime import datetime
-from PyQt5.QtCore import QSettings 
+from PyQt5.QtCore import QSettings,QObject, pyqtSignal
 
 settings = QSettings('majikat','HuntStats')
+
+def create_tables():
+    print('creating tables')
+    connection = sqlite3.connect('huntstats.db')
+    cursor = connection.cursor()
+    schemafile = './schema.sql'
+    cursor.executescript(open(schemafile,'r').read())
+    print(cursor.fetchall())
+    for title in ['game','entry','hunter','team']:
+        print(title)
+        for c in cursor.execute('pragma table_info(%s)' % title):
+            print(c)
+        print()
+    connection.close()
+
+def get_num_hunters(rows, team_num):
+    for i in rows['team']:
+        team = rows['team'][i]
+        if team['team_num'] == team_num:
+            return team['numplayers']
+    return -1
 
 def MmrToStars(mmr):
     return 0 if mmr == -1 else 1 if mmr < 2000 else 2 if mmr < 2300 else 3 if mmr < 2600 else 4 if mmr < 2750 else 5 if mmr < 3000 else 6
@@ -10,9 +34,47 @@ def MmrToStars(mmr):
 def unix_to_datetime(timestamp):
     return datetime.fromtimestamp(timestamp).strftime('%H:%M %m/%d/%y')
 
-class Connection():
+class Connection(QObject):
+    finished = pyqtSignal()
+    progress = pyqtSignal(str)
     def __init__(self) -> None:
+        QObject.__init__(self)
         self.db = 'huntstats.db'
+        create_tables()
+        self.jsondir = os.path.join(os.getcwd(),'json')
+        if not os.path.exists(self.jsondir):
+            os.makedirs(self.jsondir)
+        self.logdir = os.path.join(os.getcwd(),'logs')
+        if not os.path.exists(self.logdir):
+            os.makedirs(self.logdir)
+        self.logfile = os.path.join(self.logdir,'log')
+        self.current_files = os.listdir(self.jsondir)
+        for file in self.current_files:
+            self.write_json_to_sql(os.path.join(self.jsondir,file))
+
+    def file_added(self):
+        current_files = os.listdir(self.jsondir)
+        if len(current_files) > len(self.current_files):
+            self.current_files = current_files
+            print('file added %d' % len(self.current_files))
+            return True
+        return False
+
+    def newest_file(self):
+        f = os.path.join(
+            self.jsondir,max(
+                self.current_files,
+                key=lambda x : os.stat(os.path.join(self.jsondir,x)).st_mtime
+            )
+        )
+        print(f)
+        return f
+
+    def run(self):
+        while(True):
+            time.sleep(5)
+            if(self.file_added()):
+                self.write_json_to_sql(self.newest_file())
 
     def GetMaxMMR(self):
         connection = sqlite3.connect(self.db)
@@ -21,11 +83,76 @@ class Connection():
         try:
             cursor.execute(query)
             mmr = cursor.fetchone()[0]
-            print('bestmmr',mmr)
         except sqlite3.OperationalError as msg:
-            print(msg)
+            self.print(msg)
             mmr = 0
         return 0 if mmr is None else mmr
+
+    def insert_row(self,table, row):
+        connection = sqlite3.connect(self.db)
+        cursor = connection.cursor();
+        
+        columns = [i for i in row.keys()]
+        values = [row[i] for i in columns]
+
+        query = "insert or ignore into %s (%s) values (%s)" % (table,','.join(columns), ('?,'*len(columns))[:-1])
+        try:
+            cursor.execute(query, (values))
+            #cursor.executemany(query,(values))
+            #print('success.')
+
+        except sqlite3.OperationalError as msg:
+            self.print('fail! ' + str(msg))
+        connection.commit()
+        connection.close()
+
+    def print(self,msg, ping=True):
+        print(msg)
+        with open(self.logfile,'a') as log:
+            log.write(msg)
+            log.write('\n')
+        if(ping):
+            self.progress.emit(msg)
+
+    def write_json_to_sql(self,file):
+        rows = json.load(open(file,'r'))
+        timestamp = file.split('_')[1].split('.')[0]
+        print(timestamp)
+
+        self.print('writing rows to database from %s' % file,False)
+        num_teams = rows['game']['MissionBagNumTeams']
+        num_entries = rows['game']['MissionBagNumEntries']
+        
+        rows['game']['timestamp'] = timestamp
+        self.insert_row('game',rows['game'])
+        rows['game'].pop('timestamp')
+
+        for i in rows['team']:
+            team = rows['team'][i]
+            if team['team_num'] < num_teams:
+                team['timestamp'] = timestamp
+                self.insert_row('team',team)
+                team.pop('timestamp')
+
+        for i in rows['entry']:
+            entry = rows['entry'][i]
+            if entry['entry_num'] < num_entries:
+                entry['timestamp'] = timestamp
+                self.insert_row('entry',entry)
+                entry.pop('timestamp')
+
+        for i in rows['hunter']:
+            team = rows['hunter'][i]
+            for j in team:
+                hunter = team[j]
+                if hunter['team_num'] < num_teams and hunter['hunter_num'] < get_num_hunters(rows,hunter['team_num']):
+                    hunter['timestamp'] = timestamp
+                    self.insert_row('hunter',hunter)
+                    hunter.pop('timestamp')
+        self.print('data written')
+        self.SetTotalHuntCount()
+        #print(settings.value('total_hunts',-1))
+
 
     def deleteRecord(self,timestamp):
         connection = sqlite3.connect(self.db)
@@ -42,10 +169,9 @@ class Connection():
                 cursor.execute(q,(timestamp,))
                 connection.commit()
         except sqlite3.OperationalError as msg:
-            print(msg)
+            self.print(msg)
         query = "select * from 'game' where 'timestamp' is %s" % timestamp
         cursor.execute(query)
-        print(cursor.fetchall())
         connection.close()
 
 
@@ -59,7 +185,7 @@ class Connection():
             if numteams is None:
                 numteams = 0
         except sqlite3.OperationalError as msg:
-            print(msg)
+            self.print(msg)
             numteams = 0
         connection.close()
         return numteams
@@ -67,17 +193,15 @@ class Connection():
     def SetOwnMMR(self):
         connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
-        print('setting mmr for %s' % settings.value('hunterName',''))
         query = "select mmr from 'hunter' where timestamp is (select max(timestamp) from 'hunter') and blood_line_name is '%s'" % (settings.value('hunterName',''))
         try:
             cursor.execute(query)
             mmr = cursor.fetchone()
             mmr = -1 if mmr is None else mmr[0]
         except sqlite3.OperationalError as msg:
-            print('get own mmr error')
+            self.print('get own mmr error')
             mmr = -1
         connection.close()
-        print('mmr',mmr)
         settings.setValue('mmr',mmr)
     
     def SetTotalHuntCount(self):
@@ -88,7 +212,7 @@ class Connection():
             cursor.execute(query)
             huntcount = cursor.fetchone()[0]
         except sqlite3.OperationalError as msg:
-            print(msg)
+            self.print(msg)
             huntcount = -1
         connection.close()
         if huntcount is None:
@@ -103,7 +227,7 @@ class Connection():
             cursor.execute(query)
             kills = cursor.fetchone()[0]
         except sqlite3.OperationalError as msg:
-            print('SetMyTotalKills %s' % msg)
+            self.print('SetMyTotalKills %s' % msg)
             kills = -1
         if kills is None:
             kills = 0
@@ -117,7 +241,7 @@ class Connection():
             cursor.execute(query)
             deaths = cursor.fetchone()[0]
         except sqlite3.OperationalError as msg:
-            print('SetMyTotalDeaths %s' % msg)
+            self.print('SetMyTotalDeaths %s' % msg)
             deaths = -1
         if deaths is None:
             deaths = 0
@@ -131,7 +255,7 @@ class Connection():
             cursor.execute(query)
             assists = cursor.fetchone()[0]
         except sqlite3.OperationalError as msg:
-            print('SetMyTotalAssists %s' % msg)
+            self.print('SetMyTotalAssists %s' % msg)
             assists = -1
         if assists is None:
             assists = 0
@@ -167,7 +291,7 @@ class Connection():
             cursor.execute(query)
             dead = cursor.fetchone()[0]
         except sqlite3.OperationalError as msg:
-            print(msg)
+            print('survived %s' % msg)
             dead = 0
         connection.close()
         return not dead
@@ -188,6 +312,23 @@ class Connection():
             print('GetMatchData %s' % msg)
             print(query)
             return {}
+
+    def GetHunterData(self, name, timestamp):
+        connection = sqlite3.connect(self.db)
+        cursor = connection.cursor();
+        query = "select * from 'hunter' where blood_line_name is ? and timestamp is ?"
+        try:
+            cursor.execute(query,(name, timestamp,))
+            results = cursor.fetchone()
+            if results is None:
+                return {}
+            cols = [desc[0] for desc in cursor.description]
+            hunter = {cols[i] : results[i] for i in range(len(cols))}
+        except sqlite3.OperationalError as msg:
+            print(msg)
+            hunter = {}
+        connection.close()
+        return hunter
 
     def GetMatchEntries(self, timestamp):
         connection = sqlite3.connect(self.db)
@@ -252,7 +393,6 @@ class Connection():
     def GetMyDeaths(self, timestamp):
         connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
-        print('getting match kills %d' % timestamp)
         query = "select sum(downedme+killedme) from 'hunter' where timestamp is %d" % timestamp
         try:
             cursor.execute(query)
@@ -266,7 +406,6 @@ class Connection():
     def GetMyKills(self, timestamp):
         connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
-        print('getting match kills %d' % timestamp)
         query = "select sum(downedbyme+killedbyme) from 'hunter' where timestamp is %d" % timestamp
         try:
             cursor.execute(query)
@@ -280,7 +419,6 @@ class Connection():
     def GetMatchKills(self, timestamp):
         connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
-        print('getting match kills %d' % timestamp)
         query = "select sum(amount) from 'entry' where category is 'accolade_players_killed' and timestamp is %d" % timestamp
         try:
             cursor.execute(query)
@@ -290,6 +428,7 @@ class Connection():
             kills = -1
         connection.close()
         return kills if kills != None else 0
+
 
     def GetAllTimestamps(self):
         connection = sqlite3.connect(self.db)

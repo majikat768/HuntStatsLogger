@@ -2,13 +2,18 @@ from PyQt5.QtWidgets import (
     QWidget,
     QGridLayout,
     QVBoxLayout,
-    QHBoxLayout
+    QHBoxLayout,
+    QPushButton,
+    QMainWindow,
+    QSizePolicy
 )
-from PyQt5.QtCore import QSettings
+from PyQt5.QtCore import QSettings, QPoint, Qt
+from PyQt5 import QtGui
 from HuntHistory import HuntHistory
 from Settings import Settings
 from Hunter import Hunter
 from Connection import Connection
+from TitleBar import TitleBar
 
 
 class MainFrame(QWidget):
@@ -19,11 +24,12 @@ class MainFrame(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.settings = QSettings('majikat','HuntStats')
-        #self.setMinimumSize(500,500)
         self.huntDir = self.settings.value('huntDir','')
 
         self.initUI()
 
+        self.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
+        self.mouseXY = QPoint()
 
     def initUI(self):
         self.hunterTab = Hunter(self,QHBoxLayout(),'Hunter')
@@ -32,13 +38,27 @@ class MainFrame(QWidget):
         self.huntHistoryTab = HuntHistory(self,QGridLayout(),'Hunt History')
         self.layout.addWidget(self.huntHistoryTab)
 
-        self.settingsTab = Settings(self,QGridLayout(),'Settings')
-        self.layout.addWidget(self.settingsTab)
+        self.settingsButton = QPushButton('Settings')
+        self.settingsButton.clicked.connect(self.OpenSettings)
+        #self.settingsTab = Settings(self,QGridLayout(),'Settings')
+        #self.layout.addWidget(self.settingsTab)
+        self.layout.addWidget(self.settingsButton)
+        self.settings = Settings(self,QGridLayout(),'Settings')
 
     def StartLogger(self):
         self.parent.StartLogger()
 
+    def OpenSettings(self):
+        window = QMainWindow()
+        window.setCentralWidget(self.settings)
+        window.setMenuBar(TitleBar(window))
+        window.menuBar().setFixedHeight(48)
+        window.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        window.setWindowFlags(Qt.FramelessWindowHint)
+        window.setFixedSize(window.sizeHint())
+        window.show()
+
     def update(self):
+        print('mainframe: updating')
         self.hunterTab.update()
         self.huntHistoryTab.update()
-

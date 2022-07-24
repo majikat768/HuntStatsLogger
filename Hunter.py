@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGridLayout, QLabel, QVBoxLayout,QSpacerItem, QSizePolicy, QWidget
+from PyQt5.QtWidgets import QGridLayout, QVBoxLayout,QSpacerItem, QSizePolicy, QWidget, QLabel
 from PyQt5.QtCore import QSettings, Qt
 from PyQt5 import QtGui
 from Connection import MmrToStars
@@ -35,22 +35,22 @@ class Hunter(GroupBox):
         kdaBox.setLayout(kdaBox.layout)
         kdaBox.layout.setAlignment(Qt.AlignCenter)
 
-        self.KDALabel = QLabel('%s' % self.settings.value('kda',-1))
-        self.KDALabel.setAlignment(Qt.AlignCenter)
-        self.KDALabel.setStyleSheet('QLabel{font-size:32px;}')
-        kdaBox.layout.addWidget(self.KDALabel,1,2)
+        self.KDAQLabel = QLabel('%s' % self.settings.value('kda',-1))
+        self.KDAQLabel.setAlignment(Qt.AlignCenter)
+        self.KDAQLabel.setStyleSheet('QLabel{font-size:48px;}')
+        kdaBox.layout.addWidget(self.KDAQLabel,1,2)
 
-        self.killLabel = QLabel('%dk' % self.settings.value('total_kills',-1))
-        self.killLabel.setAlignment(Qt.AlignCenter)
-        kdaBox.layout.addWidget(self.killLabel,3,1)
+        self.killQLabel = QLabel('%dk' % self.settings.value('total_kills',-1))
+        self.killQLabel.setAlignment(Qt.AlignCenter)
+        kdaBox.layout.addWidget(self.killQLabel,3,1)
 
-        self.deathLabel = QLabel('%dd' % self.settings.value('total_deaths',-1))
-        self.deathLabel.setAlignment(Qt.AlignCenter)
-        kdaBox.layout.addWidget(self.deathLabel,3,2)
+        self.deathQLabel = QLabel('%dd' % self.settings.value('total_deaths',-1))
+        self.deathQLabel.setAlignment(Qt.AlignCenter)
+        kdaBox.layout.addWidget(self.deathQLabel,3,2)
 
-        self.assistLabel = QLabel('%da' % self.settings.value('total_assists',-1))
-        self.assistLabel.setAlignment(Qt.AlignCenter)
-        kdaBox.layout.addWidget(self.assistLabel,3,3)
+        self.assistQLabel = QLabel('%da' % self.settings.value('total_assists',-1))
+        self.assistQLabel.setAlignment(Qt.AlignCenter)
+        kdaBox.layout.addWidget(self.assistQLabel,3,3)
         #self.AvgKDA = QLabel('Avg KDA')
         #self.kdaBox.addWidget(self.AvgKDA,5,1)
         #kdaBox.layout.setRowStretch(kdaBox.layout.rowCount(),1)
@@ -62,26 +62,26 @@ class Hunter(GroupBox):
     def UpdateKdaBox(self):
         self.connection.SetKDA()
         print(self.settings.value('kda'))
-        self.KDALabel.setText('%s' % '{:.2f}'.format(float(self.settings.value('kda',-1))))
-        self.KDALabel.setAlignment(Qt.AlignHCenter)
+        self.KDAQLabel.setText('%s' % '{:.2f}'.format(float(self.settings.value('kda',-1))))
+        self.KDAQLabel.setAlignment(Qt.AlignHCenter)
         self.connection.SetTotalKills()
-        self.killLabel.setText('')
-        self.killLabel.setAlignment(Qt.AlignHCenter)
+        self.killQLabel.setText('')
+        self.killQLabel.setAlignment(Qt.AlignHCenter)
         self.connection.SetTotalDeaths()
-        self.deathLabel.setText('%dk %dd %da' % (self.settings.value('total_kills',-1),self.settings.value('total_deaths',-1),self.settings.value('total_assists',-1)))
-        self.deathLabel.setAlignment(Qt.AlignHCenter)
+        self.deathQLabel.setText('%dk %dd %da' % (self.settings.value('total_kills',-1),self.settings.value('total_deaths',-1),self.settings.value('total_assists',-1)))
+        self.deathQLabel.setAlignment(Qt.AlignHCenter)
         self.connection.SetTotalAssists()
-        self.assistLabel.setText('')
-        self.assistLabel.setAlignment(Qt.AlignHCenter)
+        self.assistQLabel.setText('')
+        self.assistQLabel.setAlignment(Qt.AlignHCenter)
 
     def HunterBox(self):
         hunterBox = QWidget()
         hunterBox.layout = QVBoxLayout()
         hunterBox.setLayout(hunterBox.layout)
 
-        self.hunterLabel = QLabel(self.settings.value('hunterName',''))
-        self.hunterLabel.setObjectName('HunterTitle')
-        hunterBox.layout.addWidget(self.hunterLabel)
+        self.hunterQLabel = QLabel(self.settings.value('hunterName',''))
+        self.hunterQLabel.setObjectName('HunterTitle')
+        hunterBox.layout.addWidget(self.hunterQLabel)
 
         self.totalHunts = QLabel('Hunts: %d' % self.settings.value('total_hunts',-1))
         hunterBox.layout.addWidget(self.totalHunts)
@@ -97,17 +97,17 @@ class Hunter(GroupBox):
 
         mmr = self.settings.value('mmr',-1)
         stars = MmrToStars(mmr)
-        self.starLabel = QLabel()
-        self.starLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
-        self.starLabel.setAlignment(Qt.AlignRight)
-        self.mmrLabel = QLabel('Current MMR: %d' % mmr)
-        self.mmrLabel.setAlignment(Qt.AlignRight)
-        self.bestMmrLabel = QLabel('Best MMR: %d' % self.connection.GetMaxMMR())
-        self.bestMmrLabel.setAlignment(Qt.AlignRight)
+        self.starQLabel = QLabel()
+        self.starQLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
+        self.starQLabel.setAlignment(Qt.AlignRight)
+        self.mmrQLabel = QLabel('MMR: %d' % mmr)
+        self.mmrQLabel.setAlignment(Qt.AlignRight)
+        self.bestMmrQLabel = QLabel('Best MMR: %d' % self.connection.GetMaxMMR())
+        self.bestMmrQLabel.setAlignment(Qt.AlignRight)
 
-        mmrBox.layout.addWidget(self.starLabel)
-        mmrBox.layout.addWidget(self.mmrLabel)
-        mmrBox.layout.addWidget(self.bestMmrLabel)
+        mmrBox.layout.addWidget(self.starQLabel)
+        mmrBox.layout.addWidget(self.mmrQLabel)
+        mmrBox.layout.addWidget(self.bestMmrQLabel)
 
         mmrBox.layout.addStretch()
         return mmrBox
@@ -117,12 +117,12 @@ class Hunter(GroupBox):
         mmr = self.settings.value('mmr',-1)
         print('mmr',mmr)
         stars = MmrToStars(mmr)
-        self.starLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
-        self.mmrLabel.setText('Current MMR: %d' % mmr)
-        self.bestMmrLabel = QLabel('Best MMR: %d' % self.connection.GetMaxMMR())
+        self.starQLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
+        self.mmrQLabel.setText('MMR: %d' % mmr)
+        self.bestMmrQLabel = QLabel('Best MMR: %d' % self.connection.GetMaxMMR())
 
     def UpdateHunterBox(self):
-        self.hunterLabel.setText(self.settings.value('hunterName',''))
+        self.hunterQLabel.setText(self.settings.value('hunterName',''))
         self.connection.SetTotalHuntCount()
         self.totalHunts.setText('Hunts: %d' % self.settings.value('total_hunts',-1))
 

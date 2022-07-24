@@ -23,6 +23,7 @@ class TitleBar(QMenuBar):
         self.mouseHold = False
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        print(self.size())
         super().mousePressEvent(event)
         self.start = event.pos()
         self.mouseHold = True

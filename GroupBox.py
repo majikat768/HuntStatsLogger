@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 class GroupBox(QGroupBox):
     def __init__(self,layout,title=''):
         super().__init__()
-        self.setTitle(title)
+        #self.setTitle(title)
         self.layout = layout
         self.setLayout(self.layout)
         self.alignment = None
