@@ -43,14 +43,14 @@ class MainFrame(QWidget):
         #self.settingsTab = Settings(self,QGridLayout(),'Settings')
         #self.layout.addWidget(self.settingsTab)
         self.layout.addWidget(self.settingsButton)
-        self.settings = Settings(self,QGridLayout(),'Settings')
+        self.settingsWindow = Settings(self,QGridLayout(),'Settings')
 
     def StartLogger(self):
         self.parent.StartLogger()
 
     def OpenSettings(self):
         window = QMainWindow()
-        window.setCentralWidget(self.settings)
+        window.setCentralWidget(self.settingsWindow)
         window.setMenuBar(TitleBar(window))
         window.menuBar().setFixedHeight(48)
         window.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)

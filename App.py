@@ -51,7 +51,7 @@ class App(QMainWindow):
         self.show()
 
     def StartConnection(self):
-        self.connThread = QThread(parent=self)
+        self.connThread = QThread()
         self.connection.moveToThread(self.connThread)
         self.connThread.started.connect(self.connection.run)
         self.connection.finished.connect(self.connThread.quit)
@@ -62,7 +62,7 @@ class App(QMainWindow):
 
     def StartLogger(self):
         if(self.log):
-            self.loggerThread = QThread(parent=self)
+            self.loggerThread = QThread()
             self.logger.set_path(self.settings.value('huntDir',''))
             self.logger.moveToThread(self.loggerThread)
             self.loggerThread.started.connect(self.logger.run)

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGridLayout, QVBoxLayout,QSpacerItem, QSizePolicy, QWidget, QLabel
+from PyQt5.QtWidgets import QGridLayout, QVBoxLayout,QSpacerItem, QSizePolicy, QWidget, QLabel,QComboBox
 from PyQt5.QtCore import QSettings, Qt
 from PyQt5 import QtGui
 from Connection import MmrToStars
@@ -123,8 +123,7 @@ class Hunter(GroupBox):
 
     def UpdateHunterBox(self):
         self.hunterQLabel.setText(self.settings.value('hunterName',''))
-        self.connection.SetTotalHuntCount()
-        self.totalHunts.setText('Hunts: %d' % self.settings.value('total_hunts',-1))
+        self.totalHunts.setText('Hunts: %d' % self.connection.GetTotalHuntCount())
 
     def update(self):
         self.UpdateHunterBox()

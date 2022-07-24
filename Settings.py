@@ -97,6 +97,7 @@ class Settings(GroupBox):
     def UpdateHunterName(self):
         if self.nameInput.isVisible():
             self.settings.setValue('hunterName',self.nameInput.text())
+            self.settings.setValue('profileid',self.connection.GetProfileId(self.nameInput.text()))
             self.nameQLabel.setText(self.settings.value('hunterName',''))
             self.parent.update()
             self.nameInput.setVisible(False)

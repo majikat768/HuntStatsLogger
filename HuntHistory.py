@@ -49,12 +49,11 @@ class HuntHistory(GroupBox):
         self.matchSelection.setStyleSheet('QComboBox{padding:8px;}')
         width = 0
         for timestamp in self.connection.GetAllTimestamps():
-            line = '%s - %s - %d teams - %d kills - %s' % (
+            line = '\t%s - %s - %d teams - %d kills' % (
                     unix_to_datetime(timestamp),
                     'Quick Play' if self.connection.IsQuickPlay(timestamp) else 'Bounty Hunt',
                     self.connection.getNTeams(timestamp),
-                    self.connection.GetMatchKills(timestamp),
-                    'lived' if self.connection.Survived(timestamp) else 'died'
+                    self.connection.GetMatchKills(timestamp)
                 )
             self.matchSelection.addItem(line,timestamp)
             width = max(width,len(line))
@@ -68,16 +67,15 @@ class HuntHistory(GroupBox):
         width = 0
         for timestamp in self.connection.GetAllTimestamps():
             dead = not self.connection.Survived(timestamp)
-            line = '%s - %s - %d teams - %d kills - %s' % (
+            line = '\t%s - %s - %d teams - %d kills' % (
                     unix_to_datetime(timestamp),
                     'Quick Play' if self.connection.IsQuickPlay(timestamp) else 'Bounty Hunt',
                     self.connection.getNTeams(timestamp),
-                    self.connection.GetMatchKills(timestamp),
-                    'lived' if self.connection.Survived(timestamp) else 'died'
+                    self.connection.GetMatchKills(timestamp)
                 )
             width = max(width,len(line))
             self.matchSelection.addItem(
-                QtGui.QIcon('./assets/icons/death.png' if dead else './assets/icons/lived.png'),
+                QtGui.QIcon('./assets/icons/death2.png' if dead else './assets/icons/lived2.png'),
                 line,
                 timestamp
             )
@@ -150,9 +148,9 @@ class HuntHistory(GroupBox):
         self.huntersKilled.setText(
             'Hunter kills: %d<br> %s' % (hunterkills, '<br>'.join(["%dx <img src='./assets/icons/_%dstar.png'>" % (hunters_killed[m], m) for m in hunters_killed if hunters_killed[m] > 0]))
         )
-        self.killsAndAssists.setText('you killed %d with %d assists.' % (self.connection.GetMyKills(self.matchSelection.currentData()),assists))
+        self.killsAndAssists.setText('%d kills, %d assists' % (self.connection.GetMyKills(self.matchSelection.currentData()),assists))
 
-        self.myDeaths.setText('downed %d times.' % (self.connection.GetMyDeaths(self.matchSelection.currentData())))
+        self.myDeaths.setText('downed %d times' % (self.connection.GetMyDeaths(self.matchSelection.currentData())))
         
         if monsterkills > 0:
             self.monstersKilled.setText(
@@ -253,6 +251,8 @@ class HuntHistory(GroupBox):
                 name.setObjectName('name')
                 mmr = QLabel('%d' % hunter['mmr'])
                 stars = QLabel()
+                profileid = hunter['profileid']
+                n_games = self.connection.NumTimesSeen(profileid)
                 stars.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % MmrToStars(hunter['mmr'])))
                 hunterInfo.layout.addWidget(name)
                 hunterInfo.layout.addWidget(mmr)
@@ -287,8 +287,17 @@ class HuntHistory(GroupBox):
                         extracted_bounty = True
                 if hunter['hadWellspring']:
                     had_wellspring = True
+                    wellspringinfo = QPushButton('wellspring')
+                    wellspringinfo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+                    wellspringinfo.setObjectName('link')
+                    hunterInfo.layout.addWidget(wellspringinfo)
+                    wellspringinfo.installEventFilter(self)
                 if hunter['teamextraction']:
                     team_extract = True
+                if n_games > 1:
+                    gamesLabel = QLabel("%d games" % n_games)
+                    gamesLabel.setFont(QtGui.QFont('Courier New',10))
+                    hunterInfo.layout.addWidget(gamesLabel)
                 hunterInfo.layout.addStretch()
                 huntersInfo.layout.addWidget(hunterInfo)
                 #hunterInfo.layout.addStretch()
@@ -301,8 +310,6 @@ class HuntHistory(GroupBox):
                     teamSubInfo.layout.addWidget(QLabel('They extracted with the bounty.'))
                 else:
                     teamSubInfo.layout.addWidget(QLabel('They had the bounty.'))
-            if had_wellspring:
-                teamSubInfo.layout.addWidget(QLabel('They had the wellspring.'))
             if team_extract and not extracted_bounty:
                 teamSubInfo.layout.addWidget(QLabel('They extracted.'))
             teamInfo.layout.addStretch()
