@@ -6,6 +6,7 @@ from datetime import datetime
 from PyQt5.QtCore import QSettings,QObject, pyqtSignal
 
 settings = QSettings('majikat','HuntStats')
+killall = False
 
 def create_tables():
     print('creating tables')
@@ -72,9 +73,11 @@ class Connection(QObject):
 
     def run(self):
         while(True):
-            time.sleep(5)
+            time.sleep(1)
             if(self.file_added()):
                 self.write_json_to_sql(self.newest_file())
+            if killall: break
+        exit()
 
     def GetMaxMMR(self):
         connection = sqlite3.connect(self.db)

@@ -267,7 +267,7 @@ class HuntHistory(GroupBox):
                 hunter['killedteammate'] or \
                 hunter['killedbyteammate']:
                     killinfo = QPushButton('kills')
-                    killinfo.underMouse()
+                    #killinfo.underMouse()
                     killinfo.mousePressEvent = lambda e : self.ShowWindow(hunter,e)
                     killinfo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                     killinfo.setObjectName('link')
@@ -275,19 +275,21 @@ class HuntHistory(GroupBox):
                     killinfo.installEventFilter(self)
                     #killinfo.mousePressEvent = partial(self.ShowWindow,hunter)
                     #hunterInfo.installEventFilter(self)
+                if hunter['bountypickedup'] or hunter['bountyextracted']:
+                    bountyinfo = QPushButton('bounties')
+                    bountyinfo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+                    bountyinfo.setObjectName('link')
+                    hunterInfo.layout.addWidget(bountyinfo)
+                    bountyinfo.installEventFilter(self)
                 if hunter['bountypickedup']:
                     got_bounty = True
                     if hunter['bountyextracted']:
                         extracted_bounty = True
-                        hunterInfo.layout.addWidget(QLabel('they extracted with the bounty.'))
-                    else:
-                        hunterInfo.layout.addWidget(QLabel('they picked up the bounty.'))
                 if hunter['hadWellspring']:
                     had_wellspring = True
-                    hunterInfo.layout.addWidget(QLabel('they activated the wellspring.'))
                 if hunter['teamextraction']:
                     team_extract = True
-
+                hunterInfo.layout.addStretch()
                 huntersInfo.layout.addWidget(hunterInfo)
                 #hunterInfo.layout.addStretch()
             huntersInfo.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
@@ -311,11 +313,12 @@ class HuntHistory(GroupBox):
             
     def eventFilter(self, obj, e) -> bool:
         child = obj.parent().findChild(QWidget,'name')
+        dataType = obj.text()
         if e.type() == QEvent.Enter:
             if child:
                 name = child.text()
                 hunter = self.connection.GetHunterData(name,self.matchSelection.currentData())
-                self.ShowWindow(hunter)
+                self.ShowWindow(hunter,dataType)
                 self.popup.move(e.globalX()+self.popup.size().width()/4,e.globalY()-self.popup.size().height()/4)
                 self.setFocus()
                 #print(name)
@@ -323,7 +326,7 @@ class HuntHistory(GroupBox):
             self.popup = None
         return super().eventFilter(obj, e)
 
-    def ShowWindow(self,hunter,e=None):
+    def ShowWindow(self,hunter,data):
         self.popup = QMainWindow()
         self.popup.setStyleSheet('QWidget{border:1px solid red;}QLabel{border:0px;}')
         self.popup.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
@@ -336,22 +339,33 @@ class HuntHistory(GroupBox):
 
         info.layout.addWidget(QLabel(hunter['blood_line_name']))
         info.layout.addWidget(QLabel())
-        if hunter['downedme']:
-           info.layout.addWidget(QLabel('They downed you %d times.' % hunter['downedme']))
-        if hunter['downedbyme']:
-            info.layout.addWidget(QLabel('you downed them %d times.' % hunter['downedbyme']))
-        if hunter['downedteammate']:
-            info.layout.addWidget(QLabel('They downed your teammate %d times.' % hunter['downedteammate']))
-        if hunter['downedbyteammate']:
-            info.layout.addWidget(QLabel('your teammate downed them %d times.' % hunter['downedbyteammate']))
-        if hunter['killedme']:
-            info.layout.addWidget(QLabel('They killed you.'))
-        if hunter['killedbyme']:
-            info.layout.addWidget(QLabel('you killed them.'))
-        if hunter['killedteammate']:
-            info.layout.addWidget(QLabel('They killed your teammate.'))
-        if hunter['killedbyteammate']:
-            info.layout.addWidget(QLabel('your teammate killed them.'))
+        if data == 'kills':
+            if hunter['downedme']:
+                info.layout.addWidget(QLabel('They downed you %d times.' % hunter['downedme']))
+            if hunter['downedbyme']:
+                info.layout.addWidget(QLabel('you downed them %d times.' % hunter['downedbyme']))
+            if hunter['downedteammate']:
+                info.layout.addWidget(QLabel('They downed your teammate %d times.' % hunter['downedteammate']))
+            if hunter['downedbyteammate']:
+                info.layout.addWidget(QLabel('your teammate downed them %d times.' % hunter['downedbyteammate']))
+            if hunter['killedme']:
+                info.layout.addWidget(QLabel('They killed you.'))
+            if hunter['killedbyme']:
+                info.layout.addWidget(QLabel('you killed them.'))
+            if hunter['killedteammate']:
+                info.layout.addWidget(QLabel('They killed your teammate.'))
+            if hunter['killedbyteammate']:
+                info.layout.addWidget(QLabel('your teammate killed them.'))
+        elif data == 'bounties':
+            if hunter['bountypickedup']:
+                if hunter['bountyextracted']:
+                    info.layout.addWidget(QLabel('they extracted with the bounty.'))
+                else:
+                    info.layout.addWidget(QLabel('they picked up the bounty.'))
+        elif data == 'wellspring':
+            if hunter['hadWellspring']:
+                info.layout.addWidget(QLabel('they activated the wellspring.'))
+        info.layout.addStretch()
         self.popup.show()
         self.setFocus()
 

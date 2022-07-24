@@ -91,6 +91,8 @@ class Logger(QObject):
             time.sleep(1)
             if killall: break
 
+        exit()
+
         self.finished.emit()
 
         

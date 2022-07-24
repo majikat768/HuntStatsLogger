@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QHBoxLayout, QPushButton,QMenuBar,QSizePolicy
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
+import Logger,Connection
 
 class TitleBar(QMenuBar):
     def __init__(self, parent) -> None:
@@ -15,12 +16,18 @@ class TitleBar(QMenuBar):
         self.setObjectName('TitleBar')
 
         self.setFixedHeight(33)
-        self.ExitButton = QPushButton('X',parent,clicked=parent.close)
+        self.ExitButton = QPushButton('X',parent)
+        self.ExitButton.clicked.connect(self.killall)
+        self.ExitButton.clicked.connect(parent.close)
         self.ExitButton.setObjectName('Exit')
         self.ExitButton.setFixedSize(32,32)
         self.layout.addStretch(0)
         self.layout.addWidget(self.ExitButton)
         self.mouseHold = False
+
+    def killall(self):
+        Logger.killall = True
+        Connection.killall = True
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         print(self.size())

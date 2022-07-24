@@ -1,12 +1,12 @@
 from datetime import datetime
 from Mainframe import MainFrame
-from Connection import Connection
 import sys
 from PyQt5.QtCore import QThread,QSettings,Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from threading import *
 from TitleBar import TitleBar
+import Connection 
 import Logger
 
 '''
@@ -24,7 +24,7 @@ class App(QMainWindow):
     def __init__(self,log=True):
         super().__init__()
         self.log = log 
-        self.connection = Connection()
+        self.connection = Connection.Connection()
         self.settings = QSettings('majikat','HuntStats')
         self.setMenuBar(TitleBar(self))
         self.menuBar().setFixedHeight(48)
@@ -51,7 +51,7 @@ class App(QMainWindow):
         self.show()
 
     def StartConnection(self):
-        self.connThread = QThread()
+        self.connThread = QThread(parent=self)
         self.connection.moveToThread(self.connThread)
         self.connThread.started.connect(self.connection.run)
         self.connection.finished.connect(self.connThread.quit)
@@ -62,7 +62,7 @@ class App(QMainWindow):
 
     def StartLogger(self):
         if(self.log):
-            self.loggerThread = QThread()
+            self.loggerThread = QThread(parent=self)
             self.logger.set_path(self.settings.value('huntDir',''))
             self.logger.moveToThread(self.loggerThread)
             self.loggerThread.started.connect(self.logger.run)
@@ -104,3 +104,4 @@ if __name__ == '__main__':
 
         app.exec_()
         Logger.killall = True
+        Connection.killall = True
