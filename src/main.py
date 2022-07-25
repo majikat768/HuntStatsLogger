@@ -29,7 +29,6 @@ if __name__ == '__main__':
         app = QApplication(sys.argv)
         app.aboutToQuit.connect(killall)
         #app.setStyleSheet(open('./assets/stylesheet.qss','r').read())
-        QFontDatabase.addApplicationFont('assets/ubuntu/UbuntuMono-R.ttf')
         app.setStyleSheet(open('./assets/MaterialDark.qss','r').read())
         #app.setStyleSheet(open('./assets/ManjaroMix.qss','r').read())
         ex2 = App.App()

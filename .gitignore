@@ -6,4 +6,3 @@ dist/
 huntstats.db
 logs/
 .venv/
-logs/

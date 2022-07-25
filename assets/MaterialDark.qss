@@ -8,6 +8,7 @@ Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 */
 * {
     font-size: 16px;
+    font-family: Courier New;
     background-color: #1e282c;
 	color: #a9b7c6;
 }
