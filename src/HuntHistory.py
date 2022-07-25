@@ -11,7 +11,7 @@ class HuntHistory(GroupBox):
         self.parent = parent
         self.popup = None
         self.connection = parent.connection
-        self.settings = QSettings('majikat','HuntStats')
+        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
         self.layout.setSpacing(4)
         #self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
         if self.layout.__class__.__name__ == 'QGridLayout':

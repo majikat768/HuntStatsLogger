@@ -12,7 +12,7 @@ class Settings(GroupBox):
         self.connection = Connection()
         self.huntDir = ''
         self.parent = parent
-        self.settings = QSettings('majikat','HuntStats')
+        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
         self.layout = layout
         self.setLayout(self.layout)
         self.layout.setAlignment(Qt.AlignLeft)
@@ -27,12 +27,9 @@ class Settings(GroupBox):
         self.nameInputButton = QPushButton('Update Steam Name')
         self.nameInput = QLineEdit(self.settings.value('hunterName',''))
         self.nameInput.setPlaceholderText('Enter your Steam username')
-        self.nameInput.setVisible(False)
-        self.nameQLabel = QLabel(self.settings.value('hunterName',''))
         self.nameInputButton.clicked.connect(self.UpdateHunterName)
         self.nameInput.returnPressed.connect(self.UpdateHunterName)
         self.layout.addWidget(self.nameInputButton,1,0)
-        self.layout.addWidget(self.nameQLabel,1,1)
         self.layout.addWidget(self.nameInput,1,1)
 
         self.layout.addWidget(QLabel('\ndev stuff:'),2,0)
@@ -93,15 +90,6 @@ class Settings(GroupBox):
             self.parent.update()
 
     def UpdateHunterName(self):
-        if self.nameInput.isVisible():
-            self.settings.setValue('hunterName',self.nameInput.text())
-            self.settings.setValue('profileid',self.connection.GetProfileId(self.nameInput.text()))
-            self.nameQLabel.setText(self.settings.value('hunterName',''))
-            self.parent.update()
-            self.nameInput.hide()
-            self.nameQLabel.setVisible(True)
-
-        else:
-            self.nameQLabel.setVisible(False)
-            self.nameInput.setVisible(True)
-            self.nameInput.setFocus()
+        self.settings.setValue('hunterName',self.nameInput.text())
+        self.settings.setValue('profileid',self.connection.GetProfileId(self.nameInput.text()))
+        self.parent.update()

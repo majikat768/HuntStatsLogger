@@ -21,7 +21,7 @@ class App(QMainWindow):
         super().__init__()
         self.log = log 
         self.connection = Connection.Connection()
-        self.settings = QSettings('majikat','HuntStats')
+        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
         self.setMenuBar(TitleBar.TitleBar(self))
         self.menuBar().setFixedHeight(48)
         self.mainFrame = MainFrame(self)

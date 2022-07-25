@@ -24,7 +24,7 @@ class MainFrame(QWidget):
         self.connection = Connection()
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.settings = QSettings('majikat','HuntStats')
+        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
         self.huntDir = self.settings.value('huntDir','')
 
         self.initUI()
@@ -44,12 +44,12 @@ class MainFrame(QWidget):
         #self.settingsTab = Settings(self,QGridLayout(),'Settings')
         #self.layout.addWidget(self.settingsTab)
         self.layout.addWidget(self.settingsButton)
-        self.settingsWindow = Settings(self,QGridLayout(),'Settings')
 
     def StartLogger(self):
         self.parent.StartLogger()
 
     def OpenSettings(self):
+        self.settingsWindow = Settings(self,QGridLayout(),'Settings')
         window = QMainWindow()
         window.setCentralWidget(self.settingsWindow)
         window.setMenuBar(TitleBar(window))

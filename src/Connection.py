@@ -6,7 +6,7 @@ from datetime import datetime
 from PyQt5.QtCore import QSettings,QObject, pyqtSignal
 
 db = 'huntstats.db'
-settings = QSettings('majikat','HuntStats')
+settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
 killall = False
 
 def tables_exist():
@@ -188,7 +188,6 @@ class Connection(QObject):
         if log:
             self.print('data written')
         self.GetTotalHuntCount()
-        #print(settings.value('total_hunts',-1))
 
 
     def deleteRecord(self,timestamp):
@@ -228,12 +227,14 @@ class Connection(QObject):
         return numteams
 
     def GetProfileId(self,name):
+        print('profile name ',name)
         connection = sqlite3.connect(db)
         cursor = connection.cursor();
         query = "select profileid from 'hunter' where blood_line_name is ?"
         try:
             cursor.execute(query,(name,))
             id = cursor.fetchone()
+            print(id)
             id = id[0] if id != None else -1 
         except sqlite3.OperationalError as msg:
             self.print('Connection.GetProfileId()')
@@ -317,24 +318,18 @@ class Connection(QObject):
     def SetKDA(self):
         connection = sqlite3.connect(db)
         cursor = connection.cursor()
-        killQuery = "select sum(downedbyme + killedbyme) from 'hunter' where (downedbyme > 0 or killedbyme > 0)"
-        deathQuery = "select sum(downedme + killedme) from 'hunter' where (downedme > 0 or killedme > 0)"
-        assistQuery = "select sum(amount) from 'entry' where category is 'accolade_players_killed_assist'"
+        self.SetTotalKills()
+        self.SetTotalDeaths()
+        self.SetTotalAssists()
+        kills = int(settings.value('total_kills',-1))
+        deaths = int(settings.value('total_deaths',-1))
+        assists = int(settings.value('total_assists',-1))
         kda = -1.0
-        try:
-            cursor.execute(killQuery)
-            kills = cursor.fetchone()[0]
-            cursor.execute(deathQuery)
-            deaths = cursor.fetchone()[0]
-            cursor.execute(assistQuery)
-            assists = cursor.fetchone()[0]
-            if kills is None or deaths is None or assists is None:
-                kda = 0
-            else:
-                kda = (kills + assists) / deaths
-        except sqlite3.OperationalError as msg:
-            print('SetMyTotalAssists %s' % msg)
-        settings.setValue('kda',round(kda,3))
+        if deaths == 0:
+            kda = 0
+        else:
+            kda = (kills + assists) / deaths
+        settings.setValue('kda',round(kda,4))
 
     def Survived(self, timestamp):
         connection = sqlite3.connect(db)

@@ -6,3 +6,4 @@ dist/
 huntstats.db
 logs/
 .venv/
+settings.ini
