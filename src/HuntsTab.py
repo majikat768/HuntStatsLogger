@@ -1,11 +1,10 @@
-import random
 from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QSizePolicy, QComboBox, QScrollArea, QWidget, QTabWidget, QLabel, QMainWindow, QPushButton, QDockWidget
 from PyQt5.QtCore import QSettings, Qt, QEvent, QPoint,QSize
 from PyQt5 import QtGui
 from Connection import MmrToStars, unix_to_datetime
 from GroupBox import GroupBox
 
-class HuntHistory(GroupBox):
+class HuntsTab(GroupBox):
     def __init__(self,parent,layout,title='') -> None:
         super().__init__(layout,title)
         self.parent = parent

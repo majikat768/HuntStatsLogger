@@ -122,8 +122,15 @@ QGroupBox::title {
 	color:#cccc67;
     background-color: transparent;
 }
-QGroupBox {
+GroupBox {
 	/*padding-top:24px;*/
+    background-color: #1e282c;
+	font-size:24px;
+    border:1px solid #676767;
+    border-radius:2px;
+}
+QGroupBox {
+	padding-top:24px;
     background-color: #1e282c;
 	font-size:24px;
     border:1px solid #676767;

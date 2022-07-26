@@ -99,7 +99,6 @@ class Connection(QObject):
                 key=lambda x : os.stat(os.path.join(self.jsondir,x)).st_mtime
             )
         )
-        print(f)
         return f
 
     def run(self):
@@ -107,10 +106,72 @@ class Connection(QObject):
         while(True):
             time.sleep(1)
             if(self.file_added()):
-                self.write_json_to_sql(self.newest_file())
+                f = self.newest_file()
+                if f[-2:] != '.2':
+                    self.write_json_to_sql(f)
             if killall:
                 self.finished.emit()
                 break
+
+    def GetTopKiller(self):
+        connection = sqlite3.connect(db)
+        cursor = connection.cursor();
+        query = "select blood_line_name, sum(downedme+killedme) as kills from 'hunter' group by profileid order by kills desc limit 1"
+        cols = ['blood_line_name','kills']
+        try:
+            cursor.execute(query)
+            vals = cursor.fetchone()
+            if vals != None:
+                result = { cols[i] : vals[i] for i in range(len(cols))}
+            else:
+                result = {}
+        except sqlite3.OperationalError as msg:
+            print("GetTopKiller()")
+            print(msg)
+            result = {}
+        connection.close()
+        return result
+
+    def GetTopKilled(self):
+        connection = sqlite3.connect(db)
+        cursor = connection.cursor();
+        query = "select blood_line_name, sum(downedbyme+killedbyme) as kills from 'hunter' group by profileid order by kills desc limit 1"
+        cols = ['blood_line_name','kills']
+        try:
+            cursor.execute(query)
+            vals = cursor.fetchone()
+            if vals != None:
+                result = { cols[i] : vals[i] for i in range(len(cols))}
+            else:
+                result = {}
+        except sqlite3.OperationalError as msg:
+            print("GetTopKiller()")
+            print(msg)
+            result = {}
+        connection.close()
+        return result
+
+
+    def TopNHunters(self, n):
+        connection = sqlite3.connect(db)
+        cursor = connection.cursor();
+        query = "select blood_line_name, sum(ispartner), sum(downedme), sum(downedbyme),sum(killedme),sum(killedbyme), count(profileid) as N, profileid from 'hunter' group by profileid order by N desc limit %d" % (n+1)
+        cols = ['blood_line_name','ispartner','downedme','downedbyme','killedme','killedbyme','count','profileid']
+        try:
+            cursor.execute(query)
+            vals = cursor.fetchall()[1:]
+            results = []
+            if vals != None:
+                for v in vals:
+                    results.append(
+                        {cols[i] : v[i] for i in range(len(cols))}
+                    )
+        except sqlite3.OperationalError as msg:
+            print("Connection.TopNHunters()")
+            print(msg)
+            results = []
+        connection.close()
+        return results
 
     def GetMaxMMR(self):
         connection = sqlite3.connect(db)

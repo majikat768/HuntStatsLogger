@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import (
+    QTabWidget,
     QWidget,
     QGridLayout,
     QVBoxLayout,
@@ -8,12 +9,7 @@ from PyQt5.QtWidgets import (
     QSizePolicy
 )
 from PyQt5.QtCore import QSettings, QPoint, Qt
-from PyQt5 import QtGui
-from HuntHistory import HuntHistory
-from Settings import Settings
-from Hunter import Hunter
-from Connection import Connection
-from TitleBar import TitleBar
+import HuntsTab, Settings, Hunter, Connection, TitleBar, HuntersTab
 
 killall = False
 
@@ -21,7 +17,7 @@ class MainFrame(QWidget):
     def __init__(self, parent) -> None:
         super().__init__(parent)
         self.parent = parent
-        self.connection = Connection()
+        self.connection = Connection.Connection()
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
@@ -33,29 +29,44 @@ class MainFrame(QWidget):
         self.mouseXY = QPoint()
 
     def initUI(self):
-        self.settingsBox = Settings(self,QVBoxLayout())
-        self.settingsWindow = QMainWindow()
-        self.settingsWindow.setWindowFlags(Qt.FramelessWindowHint)
-        self.settingsWindow.setCentralWidget(self.settingsBox)
-        self.settingsWindow.setMenuBar(TitleBar(self.settingsWindow))
-        self.settingsWindow.menuBar().setFixedHeight(48)
-        self.settingsWindow.setFixedSize(self.settingsWindow.sizeHint())
-        self.hunterTab = Hunter(self,QHBoxLayout(),'Hunter')
-        self.layout.addWidget(self.hunterTab)
+        self.hunterBox = Hunter.Hunter(self,QHBoxLayout(),'Hunter')
+        self.layout.addWidget(self.hunterBox)
 
-        self.huntHistoryTab = HuntHistory(self,QGridLayout(),'Hunt History')
-        self.layout.addWidget(self.huntHistoryTab)
+        self.tabs = QTabWidget();
+        self.layout.addWidget(self.tabs)
+
+        self.huntsTab = HuntsTab.HuntsTab(self,QGridLayout(),'Hunts')
+        self.tabs.addTab(self.huntsTab,'Hunts')
+
+        self.huntersTab = HuntersTab.HuntersTab(self, QGridLayout(),'Hunters')
+        self.tabs.addTab(self.huntersTab,'Hunters')
+
+        self.settingsWindow = self.initSettingsWindow();
 
         self.settingsButton = QPushButton('Settings')
         self.settingsButton.clicked.connect(self.settingsWindow.show)
-        #self.settingsTab = Settings(self,QGridLayout(),'Settings')
-        #self.layout.addWidget(self.settingsTab)
+
         self.layout.addWidget(self.settingsButton)
 
+    def initTabs(self):
+        tabs = QTabWidget()
+
+    def initSettingsWindow(self):
+        settingsBox = Settings.Settings(self,QVBoxLayout())
+
+        settingsWindow = QMainWindow()
+        settingsWindow.setWindowFlags(Qt.FramelessWindowHint)
+        settingsWindow.setCentralWidget(settingsBox)
+        settingsWindow.setMenuBar(TitleBar.TitleBar(settingsWindow))
+        settingsWindow.menuBar().setFixedHeight(48)
+        settingsWindow.setFixedSize(settingsWindow.sizeHint())
+        return settingsWindow;
+
+        
     def StartLogger(self):
         self.parent.StartLogger()
 
     def update(self):
         print('mainframe: updating')
-        self.hunterTab.update()
-        self.huntHistoryTab.update()
+        self.hunterBox.update()
+        self.huntsTab.update()
