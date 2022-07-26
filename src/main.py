@@ -1,6 +1,5 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QFontDatabase
 import Logger, App, Connection
 
 def killall():
