@@ -8,7 +8,7 @@ a = Analysis(
     ['./src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('./assets', 'assets/'), ('./src/App.py', '.'), ('./src/Connection.py', '.'), ('./src/GroupBox.py', '.'), ('./src/Hunter.py', '.'), ('./src/HuntHistory.py', '.'), ('./src/Logger.py', '.'), ('./src/Mainframe.py', '.'), ('./src/Settings.py', '.'), ('./src/TitleBar.py', '.'), ('./.venv/Lib', 'Lib/')],
+    datas=[('./assets', 'assets/'), ('./src/App.py', '.'), ('./src/Connection.py', '.'), ('./src/GroupBox.py', '.'), ('./src/Hunter.py', '.'), ('./src/HuntHistory.py', '.'), ('./src/Logger.py', '.'), ('./src/Mainframe.py', '.'), ('./src/Settings.py', '.'), ('./src/TitleBar.py', '.'), ('./schema.sql','.')],
     hiddenimports=['xmltodict','json','sqlite3','PyQt5'],
     hookspath=[],
     hooksconfig={},
