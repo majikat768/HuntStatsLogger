@@ -33,6 +33,13 @@ class MainFrame(QWidget):
         self.mouseXY = QPoint()
 
     def initUI(self):
+        self.settingsBox = Settings(self,QVBoxLayout())
+        self.settingsWindow = QMainWindow()
+        self.settingsWindow.setWindowFlags(Qt.FramelessWindowHint)
+        self.settingsWindow.setCentralWidget(self.settingsBox)
+        self.settingsWindow.setMenuBar(TitleBar(self.settingsWindow))
+        self.settingsWindow.menuBar().setFixedHeight(48)
+        self.settingsWindow.setFixedSize(self.settingsWindow.sizeHint())
         self.hunterTab = Hunter(self,QHBoxLayout(),'Hunter')
         self.layout.addWidget(self.hunterTab)
 
@@ -40,24 +47,13 @@ class MainFrame(QWidget):
         self.layout.addWidget(self.huntHistoryTab)
 
         self.settingsButton = QPushButton('Settings')
-        self.settingsButton.clicked.connect(self.OpenSettings)
+        self.settingsButton.clicked.connect(self.settingsWindow.show)
         #self.settingsTab = Settings(self,QGridLayout(),'Settings')
         #self.layout.addWidget(self.settingsTab)
         self.layout.addWidget(self.settingsButton)
 
     def StartLogger(self):
         self.parent.StartLogger()
-
-    def OpenSettings(self):
-        self.settingsWindow = Settings(self,QGridLayout(),'Settings')
-        window = QMainWindow()
-        window.setCentralWidget(self.settingsWindow)
-        window.setMenuBar(TitleBar(window))
-        window.menuBar().setFixedHeight(48)
-        window.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
-        window.setWindowFlags(Qt.FramelessWindowHint)
-        window.setFixedSize(window.sizeHint())
-        window.show()
 
     def update(self):
         print('mainframe: updating')

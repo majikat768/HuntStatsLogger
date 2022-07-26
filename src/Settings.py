@@ -6,45 +6,49 @@ import json
 from Connection import Connection, unix_to_datetime
 from GroupBox import GroupBox
 
+settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
 class Settings(GroupBox):
-    def __init__(self,parent,layout,title=''):
-        super().__init__(layout,title)
+    def __init__(self, parent,layout):
+        super().__init__(layout)
+        self.setStyleSheet('*{margin:4px;padding:4px;}')
+        self.parent = parent
         self.connection = Connection()
         self.huntDir = ''
-        self.parent = parent
-        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
         self.layout = layout
         self.setLayout(self.layout)
         self.layout.setAlignment(Qt.AlignLeft)
+        self.layout.setSpacing(0)
 
-        self.huntDirButton = QPushButton('Select Hunt Installation Directory')
+        self.layout.addWidget(QLabel('Hunt Installation Directory:'))
+        self.huntDirButton = QPushButton('Select Folder')
         self.huntDirButton.clicked.connect(self.SelectHuntFolder)
-        self.huntDirQLabel = QLabel(self.settings.value('huntDir','select Hunt Installation Directory'))
-        self.layout.addWidget(self.huntDirButton,0,0)
-        self.layout.addWidget(self.huntDirQLabel,0,1)
-        self.layout.setRowStretch(0,0)
+        self.huntDirQLabel = QLabel(settings.value('huntDir','select Hunt Installation Directory'))
+        self.layout.addWidget(self.huntDirQLabel)
+        self.layout.addWidget(self.huntDirButton)
 
+        self.layout.addWidget(QLabel())
+
+        self.layout.addWidget(QLabel('Steam username:'))
         self.nameInputButton = QPushButton('Update Steam Name')
-        self.nameInput = QLineEdit(self.settings.value('hunterName',''))
+        self.nameInput = QLineEdit(settings.value('hunterName',''))
         self.nameInput.setPlaceholderText('Enter your Steam username')
         self.nameInputButton.clicked.connect(self.UpdateHunterName)
         self.nameInput.returnPressed.connect(self.UpdateHunterName)
-        self.layout.addWidget(self.nameInputButton,1,0)
-        self.layout.addWidget(self.nameInput,1,1)
+        self.layout.addWidget(self.nameInput)
+        self.layout.addWidget(self.nameInputButton)
 
-        self.layout.addWidget(QLabel('\ndev stuff:'),2,0)
-        self.importJsonButton = QPushButton('Import a json file....')
-        self.importJsonButton.clicked.connect(self.ImportJson)
-        self.layout.addWidget(self.importJsonButton,3,0)
+        self.layout.addWidget(QLabel())
 
-        self.deleteRecordButton = QPushButton('Delete a record....')
-        self.deleteRecordButton.clicked.connect(self.DeleteRecordDialog)
-        self.layout.addWidget(self.deleteRecordButton,3,1)
+        self.layout.addWidget(QLabel('\ndev stuff:'))
+        importJsonButton = QPushButton('Import a json file....')
+        importJsonButton.clicked.connect(self.ImportJson)
+        self.layout.addWidget(importJsonButton)
 
+        deleteRecordButton = QPushButton('Delete a record....')
+        deleteRecordButton.clicked.connect(self.DeleteRecordDialog)
+        self.layout.addWidget(deleteRecordButton)
+        self.layout.addStretch()
 
-        self.layout.setRowStretch(self.layout.rowCount(),1)
-        #self.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Maximum)
-    
     def DeleteRecordDialog(self):
         self.window = QWidget()
         self.window.layout = QVBoxLayout()
@@ -63,6 +67,10 @@ class Settings(GroupBox):
         self.window.layout.addWidget(select)
         self.window.layout.addWidget(button)
         self.window.show()
+
+    def close(self) -> bool:
+        self.hide()
+        #return super().close()
 
     def updateMatchSelect(self):
         self.parent.huntHistoryTab.updateMatchSelect()
@@ -84,12 +92,12 @@ class Settings(GroupBox):
         directory = QFileDialog.getExistingDirectory(self, "Select Hunt Installation Directory",self.huntDir,options=options)
         if directory != '':
             print('directory set')
-            self.settings.setValue('huntDir',directory)
-            self.huntDirQLabel.setText(self.settings.value('huntDir',''))
+            settings.setValue('huntDir',directory)
+            self.huntDirQLabel.setText(settings.value('huntDir',''))
             self.parent.StartLogger()
             self.parent.update()
 
     def UpdateHunterName(self):
-        self.settings.setValue('hunterName',self.nameInput.text())
-        self.settings.setValue('profileid',self.connection.GetProfileId(self.nameInput.text()))
+        settings.setValue('hunterName',self.nameInput.text())
+        settings.setValue('profileid',self.connection.GetProfileId(self.nameInput.text()))
         self.parent.update()
