@@ -5,10 +5,10 @@ block_cipher = None
 
 
 a = Analysis(
-    ['C:/Users/atki7/Programs/python/HuntStatsLogger/src/main.py'],
+    ['./src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('C:/Users/atki7/Programs/python/HuntStatsLogger/assets', 'assets/'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/App.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/Connection.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/GroupBox.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/Hunter.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/HuntHistory.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/Logger.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/Mainframe.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/Settings.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/src/TitleBar.py', '.'), ('C:/Users/atki7/Programs/python/HuntStatsLogger/.venv/Lib', 'Lib/')],
+    datas=[('./assets', 'assets/'), ('./src/App.py', '.'), ('./src/Connection.py', '.'), ('./src/GroupBox.py', '.'), ('./src/Hunter.py', '.'), ('./src/HuntHistory.py', '.'), ('./src/Logger.py', '.'), ('./src/Mainframe.py', '.'), ('./src/Settings.py', '.'), ('./src/TitleBar.py', '.'), ('./.venv/Lib', 'Lib/')],
     hiddenimports=['xmltodict','json','sqlite3','PyQt5'],
     hookspath=[],
     hooksconfig={},
