@@ -36,10 +36,10 @@ class MainFrame(QWidget):
         self.layout.addWidget(self.tabs)
 
         self.huntsTab = HuntsTab.HuntsTab(self,QGridLayout(),'Hunts')
-        self.tabs.addTab(self.huntsTab,'Hunts')
+        self.tabs.addTab(self.huntsTab,'\t Hunts\t')
 
         self.huntersTab = HuntersTab.HuntersTab(self, QGridLayout(),'Hunters')
-        self.tabs.addTab(self.huntersTab,'Hunters')
+        self.tabs.addTab(self.huntersTab,'\tHunters\t')
 
         self.settingsWindow = self.initSettingsWindow();
 
@@ -55,10 +55,10 @@ class MainFrame(QWidget):
         settingsBox = Settings.Settings(self,QVBoxLayout())
 
         settingsWindow = QMainWindow()
-        settingsWindow.setWindowFlags(Qt.FramelessWindowHint)
+        #settingsWindow.setWindowFlags(Qt.FramelessWindowHint)
         settingsWindow.setCentralWidget(settingsBox)
-        settingsWindow.setMenuBar(TitleBar.TitleBar(settingsWindow))
-        settingsWindow.menuBar().setFixedHeight(48)
+        #settingsWindow.setMenuBar(TitleBar.TitleBar(settingsWindow))
+        #settingsWindow.menuBar().setFixedHeight(48)
         settingsWindow.setFixedSize(settingsWindow.sizeHint())
         return settingsWindow;
 
@@ -70,3 +70,4 @@ class MainFrame(QWidget):
         print('mainframe: updating')
         self.hunterBox.update()
         self.huntsTab.update()
+        self.huntersTab.update()

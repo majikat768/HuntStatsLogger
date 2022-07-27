@@ -60,6 +60,11 @@ class Connection(QObject):
         QObject.__init__(self)
         if not tables_exist():
             create_tables()
+        evnt_exists = self.execute_query("select count(*) from pragma_table_info('game') where name='EventPoints'")
+        print('event',evnt_exists[0][0])
+        if evnt_exists == None or evnt_exists[0][0] == 0:
+            print('adding event column')
+            self.execute_query("alter table 'game'  add column 'EventPoints' integer")
         self.jsondir = os.path.join(os.getcwd(),'json')
         if not os.path.exists(self.jsondir):
             os.makedirs(self.jsondir)
@@ -71,6 +76,19 @@ class Connection(QObject):
         for file in self.current_files:
             self.write_json_to_sql(os.path.join(self.jsondir,file),log=False)
 
+    def execute_query(self, query):
+        connection = sqlite3.connect(db)
+        cursor = connection.cursor();
+        try:
+            cursor.execute(query)
+            result = cursor.fetchall()
+        except sqlite3.OperationalError as msg:
+            print(query)
+            print(msg)
+            result = None
+        connection.close()
+        return result
+        
     def file_added(self):
         current_files = os.listdir(self.jsondir)
         if len(current_files) > len(self.current_files):
@@ -155,11 +173,11 @@ class Connection(QObject):
     def TopNHunters(self, n):
         connection = sqlite3.connect(db)
         cursor = connection.cursor();
-        query = "select blood_line_name, sum(ispartner), sum(downedme), sum(downedbyme),sum(killedme),sum(killedbyme), count(profileid) as N, profileid from 'hunter' group by profileid order by N desc limit %d" % (n+1)
+        query = "select blood_line_name, sum(ispartner), sum(downedme), sum(downedbyme),sum(killedme),sum(killedbyme), count(profileid) as N, profileid from 'hunter' where profileid is not %d group by profileid order by N desc limit %d" % (int(settings.value('profileid','-1')), n)
         cols = ['blood_line_name','ispartner','downedme','downedbyme','killedme','killedbyme','count','profileid']
         try:
             cursor.execute(query)
-            vals = cursor.fetchall()[1:]
+            vals = cursor.fetchall()
             results = []
             if vals != None:
                 for v in vals:

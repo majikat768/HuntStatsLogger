@@ -122,15 +122,20 @@ QGroupBox::title {
 	color:#cccc67;
     background-color: transparent;
 }
+#SerpentMoon {
+	color:#ff0000;
+	font-style:italic;
+}
 GroupBox {
-	/*padding-top:24px;*/
+	padding:0px;
+	margin:0px;
     background-color: #1e282c;
 	font-size:24px;
-    border:1px solid #676767;
     border-radius:2px;
 }
 QGroupBox {
-	padding-top:24px;
+	padding:0px;
+	margin:0px;
     background-color: #1e282c;
 	font-size:24px;
     border:1px solid #676767;
@@ -360,7 +365,7 @@ QDateEdit {
 QComboBox {	
 	background: #0e0d23;
 	font-weight:bold;
-	height:36px;
+	height:24px;
 }
 QComboBox:editable {
 	background: #0e0d23;

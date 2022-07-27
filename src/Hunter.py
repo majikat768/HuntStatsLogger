@@ -3,6 +3,7 @@ from PyQt5.QtCore import QSettings, Qt
 from PyQt5 import QtGui
 from Connection import MmrToStars
 from GroupBox import GroupBox
+import HunterLabel
 
 class Hunter(GroupBox):
     def __init__(self,parent,layout,title='') -> None:
@@ -16,6 +17,7 @@ class Hunter(GroupBox):
         self.layout.setSpacing(0)
         self.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Fixed)
 
+        self.setStyleSheet('Hunter{padding:0px;margin:0px}')
         self.hunterBox = self.HunterBox()
         self.kdaBox = self.KdaBox()
         self.mmrBox = self.MmrBox()
@@ -78,7 +80,7 @@ class Hunter(GroupBox):
         hunterBox.layout = QVBoxLayout()
         hunterBox.setLayout(hunterBox.layout)
 
-        self.hunterQLabel = QLabel(self.settings.value('hunterName',''))
+        self.hunterQLabel = HunterLabel.HunterLabel(self.settings.value('hunterName',''))
         self.hunterQLabel.setObjectName('HunterTitle')
         hunterBox.layout.addWidget(self.hunterQLabel)
 

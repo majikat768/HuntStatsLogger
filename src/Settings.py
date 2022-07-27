@@ -1,12 +1,14 @@
-from PyQt5.QtWidgets import QPushButton,QLineEdit,QFileDialog, QSizePolicy,QWidget, QVBoxLayout,QComboBox, QLabel
+from PyQt5.QtWidgets import QPushButton,QLineEdit,QFileDialog, QSizePolicy,QWidget, QVBoxLayout,QComboBox, QLabel,QCheckBox
 import time
 from PyQt5.QtCore import Qt, QSettings
 import os
 import json
 from Connection import Connection, unix_to_datetime
 from GroupBox import GroupBox
+from HunterLabel import HunterLabel
 
 settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
+
 class Settings(GroupBox):
     def __init__(self, parent,layout):
         super().__init__(layout)
@@ -38,6 +40,10 @@ class Settings(GroupBox):
         self.layout.addWidget(self.nameInputButton)
 
         self.layout.addWidget(QLabel())
+        hideUsers = QCheckBox('Hide usernames')
+        hideUsers.stateChanged.connect(self.hideUserToggle)
+        self.layout.addWidget(hideUsers)
+        self.layout.addWidget(QLabel())
 
         self.layout.addWidget(QLabel('\ndev stuff:'))
         importJsonButton = QPushButton('Import a json file....')
@@ -47,7 +53,13 @@ class Settings(GroupBox):
         deleteRecordButton = QPushButton('Delete a record....')
         deleteRecordButton.clicked.connect(self.DeleteRecordDialog)
         self.layout.addWidget(deleteRecordButton)
+
         self.layout.addStretch()
+
+
+    def hideUserToggle(self):
+        HunterLabel.HideUsers = not HunterLabel.HideUsers 
+        HunterLabel.ToggleNames()
 
     def DeleteRecordDialog(self):
         self.window = QWidget()
@@ -73,8 +85,8 @@ class Settings(GroupBox):
         #return super().close()
 
     def updateMatchSelect(self):
-        self.parent.huntHistoryTab.updateMatchSelect()
-        self.parent.huntHistoryTab.update()
+        self.parent.huntsTab.updateMatchSelect()
+        self.parent.huntsTab.update()
         self.window.deleteLater()
         self.window.close()
 

@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QSizePolicy, QComboBox, QScrollArea, QWidget, QTabWidget, QLabel, QMainWindow, QPushButton, QDockWidget
-from PyQt5.QtCore import QSettings, Qt, QEvent, QPoint,QSize
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QSizePolicy, QComboBox, QScrollArea, QWidget, QTabWidget, QLabel, QMainWindow, QPushButton
+from PyQt5.QtCore import QSettings, Qt, QEvent, QSize
 from PyQt5 import QtGui
 from Connection import MmrToStars, unix_to_datetime
 from GroupBox import GroupBox
+from HunterLabel import HunterLabel
 
 class HuntsTab(GroupBox):
     def __init__(self,parent,layout,title='') -> None:
@@ -42,7 +43,7 @@ class HuntsTab(GroupBox):
 
     def MatchSelect(self):
         self.matchSelection = QComboBox()
-        self.matchSelection.view().setSpacing(8)
+        self.matchSelection.view().setSpacing(4)
         self.matchSelection.setIconSize(QSize(32,32))
         self.matchSelection.setStyleSheet('QComboBox{padding:8px;}')
         width = 0
@@ -122,7 +123,7 @@ class HuntsTab(GroupBox):
                 if 'players_killed' in cat:
                     if 'assist' in cat:
                         assists += entry['amount']
-                    else:
+                    elif 'mm rating' in entry['descriptorName']:
                         mm = int(entry['descriptorName'].split(' ')[4])
                         hunters_killed[mm] = entry['amount']
                         hunterkills += entry['amount']
@@ -164,6 +165,10 @@ class HuntsTab(GroupBox):
         else:
             self.bounties.setText('%s' % (', '.join(self.GetMatchBounties(game))))
         self.teams.setText('Teams: %d' % (game['MissionBagNumTeams']))
+        if game['EventPoints'] != None:
+            self.eventPoints.setText('Serpent Moon points: %s' % game['EventPoints'])
+        else:
+            self.eventPoints.setText('')
 
     def HuntInfoBox(self):
         self.huntInfoScrollArea = QScrollArea()
@@ -180,7 +185,10 @@ class HuntsTab(GroupBox):
         self.bounties = QLabel('Assassin and Scrapbeak')
         self.huntInfo.layout.addWidget(self.bounties)
         self.teams = QLabel('Teams: 12')
+        self.eventPoints = QLabel('Serpent Moon Points: 36')
+        self.eventPoints.setObjectName('SerpentMoon')
         self.huntInfo.layout.addWidget(self.teams)
+        self.huntInfo.layout.addWidget(self.eventPoints)
         self.huntInfo.layout.addWidget(QLabel())
 
         self.cluesFound = QLabel('Found 3 of the clues for butcher\t')
@@ -227,6 +235,7 @@ class HuntsTab(GroupBox):
 
             huntersInfo = QWidget()
             huntersInfo.layout = QHBoxLayout()
+            huntersInfo.layout.setSpacing(32)
             huntersInfo.setLayout(huntersInfo.layout)
             hunters = [x for x in allhunters if x['team_num'] == team['team_num']]
             if not isquickplay:
@@ -245,7 +254,7 @@ class HuntsTab(GroupBox):
                 hunterInfo = QWidget()
                 hunterInfo.layout = QVBoxLayout()
                 hunterInfo.setLayout(hunterInfo.layout)
-                name = QLabel(hunter['blood_line_name'])
+                name = HunterLabel(hunter['blood_line_name'])
                 name.setObjectName('name')
                 mmr = QLabel('%d' % hunter['mmr'])
                 stars = QLabel()
@@ -398,7 +407,7 @@ class HuntsTab(GroupBox):
             hunterInfo = QWidget()
             hunterInfo.layout = QVBoxLayout()
             hunterInfo.setLayout(hunterInfo.layout)
-            name = QLabel('Hunter %d' % i)
+            name = HunterLabel('Hunter %d' % i)
             name.setObjectName('name')
             mmr = QLabel('0000')
             stars = QLabel()

@@ -105,7 +105,22 @@ class Logger(QObject):
                 }
 
         with open(self.xml_path,'r',encoding='utf-8') as xmlfile:
+            points = 0
             for line in xmlfile:
+                if 'MissionAccoladeEntry_' in line:
+                    try:
+                       linedict = xmltodict.parse(line)
+                    except:
+                        print(line)
+                        continue
+                    key = parse_value(linedict['Attr']['@name'])
+                    value= parse_value(linedict['Attr']['@value'])
+                    if value != '' and 'tooltip' not in key:
+                        keysplit = key.split('_')
+                        if 'MissionAccoladeEntry_' in key:
+                            if "eventPoints" in key:
+                                points += value
+                                #sql_rows['game']['EventPoints'] = value
                 if "MissionBag" in line:
                     try:
                         linedict = xmltodict.parse(line)
@@ -141,6 +156,8 @@ class Logger(QObject):
                                 sql_rows['entry'][entry_num][category] = value
                         elif 'Entry_' not in key:
                             sql_rows['game'][key] = value
+            print('points',points)
+            sql_rows['game']['EventPoints'] = points
         return self.clean_json(sql_rows)
 
     def clean_json(self,sql_rows):

@@ -22,11 +22,12 @@ class App(QMainWindow):
         self.log = log 
         self.connection = Connection.Connection()
         self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
-        self.setMenuBar(TitleBar.TitleBar(self))
-        self.menuBar().setFixedHeight(48)
+        #self.setMenuBar(TitleBar.TitleBar(self))
+        #self.menuBar().setFixedHeight(48)
         self.mainFrame = MainFrame(self)
+        self.setWindowTitle('Hunt Stats Tracker')
         #self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setWindowFlags(Qt.CustomizeWindowHint)
+        #self.setWindowFlags(Qt.CustomizeWindowHint)
         #self.setAttribute(Qt.WA_NoSystemBackground, True)
         #self.setAttribute(Qt.WA_TranslucentBackground, True)
 
