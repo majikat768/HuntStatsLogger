@@ -23,7 +23,9 @@ class HunterLabel(QLabel):
     
     def setText(self, a0: str) -> None:
         self.name = a0
-        super().setText(self.text())
+        super().setText(self.name)
+        if(HunterLabel.HideUsers and self.name != settings.value('hunterName','')):
+            self.HideUsername()
     
     def HideUsername(self):
         if self.name != settings.value('hunterName',''):

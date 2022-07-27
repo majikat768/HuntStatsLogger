@@ -50,7 +50,8 @@ class Logger(QObject):
         if not os.path.exists(self.xml_path):
             self.print('attributes.xml not found.')
             print('attributes.xml not found.')
-            exit()
+            return -1
+        return 1
 
     def print(self,msg):
         print(msg)

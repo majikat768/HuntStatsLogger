@@ -329,6 +329,7 @@ class Connection(QObject):
         try:
             cursor.execute(query)
             mmr = cursor.fetchone()
+            print('setting mmr',mmr)
             mmr = -1 if mmr is None else mmr[0]
         except sqlite3.OperationalError as msg:
             self.print('get own mmr error')

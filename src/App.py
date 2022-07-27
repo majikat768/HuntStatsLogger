@@ -58,8 +58,10 @@ class App(QMainWindow):
 
     def StartLogger(self):
         if(self.log):
+            validPath = self.logger.set_path(self.settings.value('huntDir',''))
+            if validPath != 1:
+                return
             self.loggerThread = QThread(parent=self)
-            self.logger.set_path(self.settings.value('huntDir',''))
             self.logger.moveToThread(self.loggerThread)
             self.loggerThread.started.connect(self.logger.run)
             self.logger.finished.connect(self.loggerThread.quit)
