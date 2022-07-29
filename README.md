@@ -6,6 +6,9 @@ This program was made to record hunt statistics in the game <b>Hunt: Showdown</b
 <p>
 To run it, you'll need to have Python3 and pip installed.
 </p>
+<p>
+App has to be running for hunts to be tracked.
+</p>
 
 ### When running the app for the first time, click on Settings, Select Folder, and choose your Hunt install directory ( something like C:/Steam/steamapps/common/Hunt Showdown ) .
 ### Then enter your Steam username and click Update Steam Name.
