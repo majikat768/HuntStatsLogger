@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QSizePolicy
 )
-from PyQt5.QtCore import QSettings, QPoint, Qt
-import HuntsTab, Settings, Hunter, Connection, TitleBar, HuntersTab
+from PyQt5.QtCore import QSettings, QPoint
+import HuntsTab, Settings, Hunter, HuntersTab
 
 killall = False
 
@@ -17,7 +17,7 @@ class MainFrame(QWidget):
     def __init__(self, parent) -> None:
         super().__init__(parent)
         self.parent = parent
-        self.connection = Connection.Connection()
+        self.connection = parent.connection
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
@@ -25,7 +25,6 @@ class MainFrame(QWidget):
 
         self.initUI()
 
-        self.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
         self.mouseXY = QPoint()
 
     def initUI(self):
@@ -47,9 +46,7 @@ class MainFrame(QWidget):
         self.settingsButton.clicked.connect(self.settingsWindow.show)
 
         self.layout.addWidget(self.settingsButton)
-
-    def initTabs(self):
-        tabs = QTabWidget()
+        self.layout.addStretch()
 
     def initSettingsWindow(self):
         settingsBox = Settings.Settings(self,QVBoxLayout())
@@ -71,3 +68,17 @@ class MainFrame(QWidget):
         self.hunterBox.update()
         self.huntsTab.update()
         self.huntersTab.update()
+
+    def HideBoxes(self):
+        self.tabs.hide()
+        self.parent.resize(self.parent.width(),self.parent.height()-10)
+        print(self.parent.height())
+
+    def ShowBoxes(self):
+        self.tabs.show()
+
+    def ToggleBoxes(self):
+        if self.tabs.isVisible():
+            self.HideBoxes()
+        else:
+            self.ShowBoxes()

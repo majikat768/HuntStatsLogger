@@ -122,7 +122,7 @@ class Logger(QObject):
                             if "eventPoints" in key:
                                 points += value
                                 #sql_rows['game']['EventPoints'] = value
-                if "MissionBag" in line:
+                elif "MissionBag" in line:
                     try:
                         linedict = xmltodict.parse(line)
                     except:
@@ -157,7 +157,16 @@ class Logger(QObject):
                                 sql_rows['entry'][entry_num][category] = value
                         elif 'Entry_' not in key:
                             sql_rows['game'][key] = value
-            print('points',points)
+                elif "UnlockRank" in line:
+                    try:
+                       linedict = xmltodict.parse(line)
+                    except:
+                        print(line)
+                        continue
+                    key = parse_value(linedict['Attr']['@name'])
+                    value= parse_value(linedict['Attr']['@value'])
+                    sql_rows['game']['HunterLevel'] = value
+
             sql_rows['game']['EventPoints'] = points
         return self.clean_json(sql_rows)
 
@@ -176,13 +185,17 @@ class Logger(QObject):
         hunters_per_team = { teams[n]['team_num'] : teams[n]['numplayers'] for n in teams} 
 
         for teamnum in hunters:
-            numhunters = hunters_per_team[int(teamnum)]
-            hunters_to_remove = []
-            team = hunters[teamnum]
-            for hunternum in team:
-                hunter = team[hunternum]
-                if hunter['hunter_num'] > numhunters:
-                    hunters_to_remove.append(hunternum)
-            for hunternum in hunters_to_remove:
-                hunters[teamnum].pop(hunternum)
+            try:
+                numhunters = hunters_per_team[int(teamnum)]
+                hunters_to_remove = []
+                team = hunters[teamnum]
+                for hunternum in team:
+                    hunter = team[hunternum]
+                    if hunter['hunter_num'] > numhunters:
+                        hunters_to_remove.append(hunternum)
+                for hunternum in hunters_to_remove:
+                    hunters[teamnum].pop(hunternum)
+            except KeyError as msg:
+                print(msg)
+                continue
         return sql_rows

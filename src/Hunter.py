@@ -15,9 +15,7 @@ class Hunter(GroupBox):
         self.setLayout(self.layout)
         self.layout.setAlignment(Qt.AlignTop)
         self.layout.setSpacing(0)
-        self.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Fixed)
-
-        self.setStyleSheet('Hunter{padding:0px;margin:0px}')
+        self.setStyleSheet('Hunter{padding:0px;margin:0px};QLabel{padding:0px;margin:0px;}')
         self.hunterBox = self.HunterBox()
         self.kdaBox = self.KdaBox()
         self.mmrBox = self.MmrBox()
@@ -39,41 +37,55 @@ class Hunter(GroupBox):
 
         self.KDAQLabel = QLabel('%s' % self.settings.value('kda',-1))
         self.KDAQLabel.setAlignment(Qt.AlignCenter)
-        self.KDAQLabel.setStyleSheet('QLabel{font-size:48px;}')
-        kdaBox.layout.addWidget(self.KDAQLabel,1,2)
+        self.KDAQLabel.setStyleSheet('QLabel{font-size:36px;}')
+        kdaBox.layout.addWidget(self.KDAQLabel,0,2)
 
-        self.killQLabel = QLabel('%sk' % self.settings.value('total_kills',-1))
-        self.killQLabel.setAlignment(Qt.AlignCenter)
-        kdaBox.layout.addWidget(self.killQLabel,3,1)
+        self.missionSelect = QComboBox();
+        self.missionSelect.setStyleSheet("QComboBox{font-size:12px;}")
+        self.missionSelect.addItem('All Hunts')
+        self.missionSelect.addItem('Bounty Hunt')
+        self.missionSelect.addItem('Quick Play')
+        self.missionSelect.currentIndexChanged.connect(self.UpdateKdaBox)
+        kdaBox.layout.addWidget(self.missionSelect,2,2)
 
-        self.deathQLabel = QLabel('%sd' % self.settings.value('total_deaths',-1))
+        self.deathQLabel = QLabel('%sk %sd %sa' % (self.settings.value('total_kills',-1),self.settings.value('total_deaths',-1),self.settings.value('total_assists',-1)))
         self.deathQLabel.setAlignment(Qt.AlignCenter)
-        kdaBox.layout.addWidget(self.deathQLabel,3,2)
-
-        self.assistQLabel = QLabel('%sa' % self.settings.value('total_assists',-1))
-        self.assistQLabel.setAlignment(Qt.AlignCenter)
-        kdaBox.layout.addWidget(self.assistQLabel,3,3)
-        #self.AvgKDA = QLabel('Avg KDA')
-        #self.kdaBox.addWidget(self.AvgKDA,5,1)
-        #kdaBox.layout.setRowStretch(kdaBox.layout.rowCount(),1)
-        #kdaBox.layout.setColumnStretch(kdaBox.layout.columnCount(),1)
-        #kdaBox.layout.setColumnStretch(0,1)
+        kdaBox.layout.addWidget(self.deathQLabel,1,2)
 
         return kdaBox
 
     def UpdateKdaBox(self):
-        self.connection.SetKDA()
-        self.KDAQLabel.setText('%s' % '{:.2f}'.format(float(self.settings.value('kda',-1))))
+        gameType = self.missionSelect.currentText();
+        kills = self.connection.execute_query(
+            "select downedbyme + killedbyme,timestamp from 'hunter' where (downedbyme > 0 or killedbyme > 0)"
+        )
+        deaths = self.connection.execute_query(
+            "select downedme + killedme,timestamp from 'hunter' where (downedme > 0 or killedme > 0)"
+        )
+        assists = self.connection.execute_query(
+            "select amount,timestamp from 'entry' where category is 'accolade_players_killed_assist'"
+        )
+        if gameType != 'All Hunts':
+            valid = [i[0] for i in self.connection.execute_query("select timestamp from 'game' where MissionBagIsQuickPlay is %d" % (0 if gameType == 'Bounty Hunt' else 1))]
+            kills = [k for k in kills if k[1] in valid]
+            deaths = [d for d in deaths if d[1] in valid]
+            assists = [a for a in assists if a[1] in valid]
+        
+
+        kills = sum([k[0] for k in kills])
+        deaths = sum([d[0] for d in deaths])
+        assists = sum([a[0] for a in assists])
+
+        print(kills,deaths,assists)
+        if int(deaths) == 0:
+            kda = (kills + assists)
+        else:
+            kda = (kills + assists) / deaths
+
+        self.KDAQLabel.setText('%s' % '{:.3f}'.format(kda))
         self.KDAQLabel.setAlignment(Qt.AlignHCenter)
-        self.connection.SetTotalKills()
-        self.killQLabel.setText('')
-        self.killQLabel.setAlignment(Qt.AlignHCenter)
-        self.connection.SetTotalDeaths()
-        self.deathQLabel.setText('%sk %sd %sa' % (self.settings.value('total_kills',-1),self.settings.value('total_deaths',-1),self.settings.value('total_assists',-1)))
+        self.deathQLabel.setText('%sk %sd %sa' % (kills,deaths,assists))
         self.deathQLabel.setAlignment(Qt.AlignHCenter)
-        self.connection.SetTotalAssists()
-        self.assistQLabel.setText('')
-        self.assistQLabel.setAlignment(Qt.AlignHCenter)
 
     def HunterBox(self):
         hunterBox = QWidget()
@@ -85,7 +97,9 @@ class Hunter(GroupBox):
         hunterBox.layout.addWidget(self.hunterQLabel)
 
         self.totalHunts = QLabel('Hunts: %s' % self.settings.value('total_hunts',-1))
+        self.level = QLabel('Level 0')
         hunterBox.layout.addWidget(self.totalHunts)
+        hunterBox.layout.addWidget(self.level)
         hunterBox.layout.addStretch()
 
         return hunterBox
@@ -103,7 +117,7 @@ class Hunter(GroupBox):
         self.starQLabel.setAlignment(Qt.AlignRight)
         self.mmrQLabel = QLabel('MMR: %d' % mmr)
         self.mmrQLabel.setAlignment(Qt.AlignRight)
-        self.bestMmrQLabel = QLabel('Best MMR: %d' % self.connection.GetMaxMMR())
+        self.bestMmrQLabel = QLabel('Best: %d' % self.connection.GetMaxMMR())
         self.bestMmrQLabel.setAlignment(Qt.AlignRight)
 
         mmrBox.layout.addWidget(self.starQLabel)
@@ -120,11 +134,17 @@ class Hunter(GroupBox):
         stars = MmrToStars(mmr)
         self.starQLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
         self.mmrQLabel.setText('MMR: %d' % mmr)
-        self.bestMmrQLabel = QLabel('Best MMR: %d' % self.connection.GetMaxMMR())
+        self.bestMmrQLabel = QLabel('Best: %d' % self.connection.GetMaxMMR())
 
     def UpdateHunterBox(self):
         self.hunterQLabel.setText(self.settings.value('hunterName',''))
         self.totalHunts.setText('Hunts: %d' % self.connection.GetTotalHuntCount())
+        lvl = self.connection.execute_query("select HunterLevel from 'game' order by timestamp desc limit 1")
+        print('lvl',lvl)
+        if lvl == None or lvl == [] or lvl == [(None,)]:
+            self.level.setText('')
+        else:
+            self.level.setText('Level %d' % lvl[0][0])
 
     def update(self):
         self.UpdateHunterBox()

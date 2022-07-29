@@ -31,7 +31,6 @@ class HuntsTab(GroupBox):
         self.layout.addWidget(self.huntInfoBox,2,0,1,1)
         self.layout.addWidget(self.teamInfoBox,2,1,1,3)
         self.huntInfoScrollArea.setSizePolicy(QSizePolicy.Maximum,QSizePolicy.Expanding)
-        self.teamTabs.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Expanding)
 
     def initVBoxLayout(self):
         self.layout.addWidget(self.MatchSelect())
@@ -239,75 +238,76 @@ class HuntsTab(GroupBox):
             huntersInfo.setLayout(huntersInfo.layout)
             hunters = [x for x in allhunters if x['team_num'] == team['team_num']]
             if not isquickplay:
-                self.teamTabs.addTab(teamInfoScrollArea,'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
+                if team['ownteam']:
+                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon('./assets/icons/lived2.png'),'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
+                else:
+                    self.teamTabs.addTab(teamInfoScrollArea,'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
             else:
                 hunter = hunters[0]
-                self.teamTabs.addTab(teamInfoScrollArea,'%s' % hunter['blood_line_name'])
+                if team['ownteam']:
+                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon('./assets/icons/lived2.png'),'%s' % hunter['blood_line_name'])
+                else:
+                    self.teamTabs.addTab(teamInfoScrollArea,'%s' % hunter['blood_line_name'])
             
             got_bounty = False
             extracted_bounty = False
             had_wellspring = False
             team_extract = False
 
-            for i in range(len(hunters)):
-                hunter = hunters[i]
+            for i in range(3):
                 hunterInfo = QWidget()
-                hunterInfo.layout = QVBoxLayout()
-                hunterInfo.setLayout(hunterInfo.layout)
-                name = HunterLabel(hunter['blood_line_name'])
-                name.setObjectName('name')
-                mmr = QLabel('%d' % hunter['mmr'])
-                stars = QLabel()
-                profileid = hunter['profileid']
-                n_games = self.connection.NumTimesSeen(profileid)
-                stars.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % MmrToStars(hunter['mmr'])))
-                hunterInfo.layout.addWidget(name)
-                hunterInfo.layout.addWidget(mmr)
-                hunterInfo.layout.addWidget(stars)
+                if i < len(hunters):
+                    hunter = hunters[i]
+                    hunterInfo.layout = QVBoxLayout()
+                    hunterInfo.setLayout(hunterInfo.layout)
+                    name = HunterLabel(hunter['blood_line_name'])
+                    if name.name == self.settings.value('hunterName'):
+                        hunterInfo.setStyleSheet('QLabel{color:#cccc67}')
+                    name.setObjectName('name')
+                    mmr = QLabel('%d' % hunter['mmr'])
+                    stars = QLabel()
+                    profileid = hunter['profileid']
+                    n_games = self.connection.NumTimesSeen(profileid)
+                    stars.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % MmrToStars(hunter['mmr'])))
+                    hunterInfo.layout.addWidget(name)
+                    hunterInfo.layout.addWidget(mmr)
+                    hunterInfo.layout.addWidget(stars)
 
-                if hunter['downedme'] or \
-                hunter['downedbyme'] or \
-                hunter['downedteammate'] or \
-                hunter['downedbyteammate'] or \
-                hunter['killedme'] or \
-                hunter['killedbyme'] or \
-                hunter['killedteammate'] or \
-                hunter['killedbyteammate']:
-                    killinfo = QPushButton('kills')
-                    #killinfo.underMouse()
-                    killinfo.mousePressEvent = lambda e : self.ShowWindow(hunter,e)
-                    killinfo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                    killinfo.setObjectName('link')
-                    hunterInfo.layout.addWidget(killinfo)
-                    killinfo.installEventFilter(self)
-                    #killinfo.mousePressEvent = partial(self.ShowWindow,hunter)
-                    #hunterInfo.installEventFilter(self)
-                if hunter['bountypickedup'] or hunter['bountyextracted']:
-                    bountyinfo = QPushButton('bounties')
-                    bountyinfo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-                    bountyinfo.setObjectName('link')
-                    hunterInfo.layout.addWidget(bountyinfo)
-                    bountyinfo.installEventFilter(self)
-                if hunter['bountypickedup']:
-                    got_bounty = True
-                    if hunter['bountyextracted']:
-                        extracted_bounty = True
-                if hunter['hadWellspring']:
-                    had_wellspring = True
-                    wellspringinfo = QPushButton('wellspring')
-                    wellspringinfo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-                    wellspringinfo.setObjectName('link')
-                    hunterInfo.layout.addWidget(wellspringinfo)
-                    wellspringinfo.installEventFilter(self)
-                if hunter['teamextraction']:
-                    team_extract = True
-                if n_games > 1:
-                    gamesLabel = QLabel("%d games" % n_games)
-                    gamesLabel.setFont(QtGui.QFont('Courier New',10))
-                    hunterInfo.layout.addWidget(gamesLabel)
-                hunterInfo.layout.addStretch()
+                    if hunter['downedme'] or \
+                    hunter['downedbyme'] or \
+                    hunter['downedteammate'] or \
+                    hunter['downedbyteammate'] or \
+                    hunter['killedme'] or \
+                    hunter['killedbyme'] or \
+                    hunter['killedteammate'] or \
+                    hunter['killedbyteammate']:
+                        killinfo = QPushButton('kills')
+                        killinfo.setObjectName('link')
+                        hunterInfo.layout.addWidget(killinfo)
+                        killinfo.installEventFilter(self)
+                    if hunter['bountypickedup'] or hunter['bountyextracted']:
+                        bountyinfo = QPushButton('bounties')
+                        bountyinfo.setObjectName('link')
+                        hunterInfo.layout.addWidget(bountyinfo)
+                        bountyinfo.installEventFilter(self)
+                    if hunter['bountypickedup']:
+                        got_bounty = True
+                        if hunter['bountyextracted']:
+                            extracted_bounty = True
+                    if hunter['hadWellspring']:
+                        had_wellspring = True
+                        wellspringinfo = QPushButton('wellspring')
+                        wellspringinfo.setObjectName('link')
+                        hunterInfo.layout.addWidget(wellspringinfo)
+                        wellspringinfo.installEventFilter(self)
+                    if hunter['teamextraction']:
+                        team_extract = True
+                    if n_games > 1:
+                        gamesLabel = QLabel("%d games" % n_games)
+                        gamesLabel.setFont(QtGui.QFont('Courier New',10))
+                        hunterInfo.layout.addWidget(gamesLabel)
+                    hunterInfo.layout.addStretch()
                 huntersInfo.layout.addWidget(hunterInfo)
-                #hunterInfo.layout.addStretch()
             huntersInfo.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
             huntersInfo.layout.addStretch()
             teamInfo.layout.addWidget(huntersInfo)
@@ -321,37 +321,33 @@ class HuntsTab(GroupBox):
                 teamSubInfo.layout.addWidget(QLabel('They extracted.'))
             teamInfo.layout.addStretch()
 
-            #teamInfo.layout.setColumnStretch(teamInfo.layout.columnCount(),1)
             teamInfoScrollArea.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
-        self.teamTabs.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
+        self.teamTabs.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Expanding)
             
     def eventFilter(self, obj, e) -> bool:
         child = obj.parent().findChild(QWidget,'name')
         dataType = obj.text()
         if e.type() == QEvent.Enter:
             if child:
-                name = child.text()
+                name = child.fullname
                 hunter = self.connection.GetHunterData(name,self.matchSelection.currentData())
                 self.ShowWindow(hunter,dataType)
                 self.popup.move(e.globalX()+self.popup.size().width()/4,e.globalY()-self.popup.size().height()/4)
                 self.setFocus()
-                #print(name)
         elif e.type() == QEvent.Leave:
             self.popup = None
         return super().eventFilter(obj, e)
 
     def ShowWindow(self,hunter,data):
+        if hunter == {}:    return
         self.popup = QMainWindow()
         self.popup.setStyleSheet('QWidget{border:1px solid red;}QLabel{border:0px;}')
         self.popup.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        #self.popup.setWindowFlags(Qt.FramelessWindowHint | Qt.Popup | Qt.WindowStaysOnTopHint)
-        #self.popup.move(self.mouseXY.x() + 100, self.mouseXY.y() + 100)
         info = QWidget()
         self.popup.setCentralWidget(info)
         info.layout = QVBoxLayout()
         info.setLayout(info.layout)
 
-        info.layout.addWidget(QLabel(hunter['blood_line_name']))
         info.layout.addWidget(QLabel())
         if data == 'kills':
             if hunter['downedme']:
@@ -417,11 +413,9 @@ class HuntsTab(GroupBox):
             hunterInfo.layout.addWidget(stars)
 
             killinfo = QPushButton('kills')
-            killinfo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             killinfo.setObjectName('link')
             hunterInfo.layout.addWidget(killinfo)
             bountyinfo = QPushButton('bounties')
-            bountyinfo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
             bountyinfo.setObjectName('link')
             hunterInfo.layout.addWidget(bountyinfo)
             gamesLabel = QLabel("0 games") 
@@ -429,45 +423,19 @@ class HuntsTab(GroupBox):
             hunterInfo.layout.addWidget(gamesLabel)
             hunterInfo.layout.addStretch()
             huntersInfo.layout.addWidget(hunterInfo)
-            #hunterInfo.layout.addStretch()
-        huntersInfo.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
+            hunterInfo.layout.addStretch()
+        huntersInfo.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Preferred)
         huntersInfo.layout.addStretch()
         teamInfo.layout.addWidget(huntersInfo)
         teamInfo.layout.addStretch()
         teamSubInfo.layout.addWidget(QLabel('They extracted with the bounty.'))
         teamInfo.layout.addStretch()
 
-        #teamInfo.layout.setColumnStretch(teamInfo.layout.columnCount(),1)
-        teamInfoScrollArea.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
-        self.teamTabs.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
-        self.teamTabs.addTab(teamInfoScrollArea,'Team 0')
+        teamInfoScrollArea.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Expanding)
+        self.teamTabs.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Expanding)
+        self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon('./assets/icons/lived2.png'),'Team 0')
         return self.teamTabs
             
-        teamInfoScrollArea = QScrollArea()
-        teamInfoScrollArea.setWidgetResizable(True)
-        #self.teamInfoScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        teamInfo = QWidget()
-        teamInfoScrollArea.setWidget(teamInfo)
-        teamInfo.layout = QHBoxLayout()
-        teamInfo.setLayout(teamInfo.layout)
-        teamInfo.layout.addWidget(QLabel('Team MMR: 0'))
-        teamInfo.layout.addWidget(QLabel())
-        for i in range(3):
-            teamInfo.layout.addWidget(QLabel('Hunter %d' % i))
-            teamInfo.layout.addWidget(QLabel('0'))
-            s = QLabel()
-            s.setPixmap(QtGui.QPixmap('./assets/icons/_6star.png'))
-            teamInfo.layout.addWidget(s)
-            killinfo = QPushButton('kill info')
-            killinfo.setObjectName('link')
-            teamInfo.layout.addWidget(killinfo)
-            teamInfo.layout.addWidget(QLabel())
-        teamInfo.layout.addStretch()
-        #self.teamTabs.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
-        #teamInfoScrollArea.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
-        self.teamTabs.addTab(teamInfoScrollArea,'Team N')
-        return self.teamTabs
-
     def GetMatchBounties(self,game):
         bounties = []
         if game['MissionBagBoss_0']: bounties.append('Butcher')

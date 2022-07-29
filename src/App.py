@@ -1,8 +1,8 @@
 from datetime import datetime
 from Mainframe import MainFrame
-from PyQt5.QtCore import QThread,QSettings,Qt
+from PyQt5.QtCore import QThread,QSettings
 from PyQt5.QtWidgets import QMainWindow
-import TitleBar, Connection, Logger
+import Connection, Logger
 
 '''
 detects changes to the Hunt Showdown 'attributes.xml' file.
@@ -22,17 +22,10 @@ class App(QMainWindow):
         self.log = log 
         self.connection = Connection.Connection()
         self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
-        #self.setMenuBar(TitleBar.TitleBar(self))
-        #self.menuBar().setFixedHeight(48)
         self.mainFrame = MainFrame(self)
         self.setWindowTitle('Hunt Stats Tracker')
-        #self.setWindowFlags(Qt.FramelessWindowHint)
-        #self.setWindowFlags(Qt.CustomizeWindowHint)
-        #self.setAttribute(Qt.WA_NoSystemBackground, True)
-        #self.setAttribute(Qt.WA_TranslucentBackground, True)
 
         self.setCentralWidget(self.mainFrame)
-        #self.setMaximumSize(self.sizeHint())
 
         self.StartConnection()
 

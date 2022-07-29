@@ -91,6 +91,4 @@ class HuntersTab(GroupBox):
             topHuntersWidget.layout.addWidget(QLabel())
         topHuntersBox.layout.addStretch()
 
-        topHuntersScroll.setFixedHeight(topHuntersScroll.sizeHint().height()/1.5)
-
         return topHuntersBox

@@ -59,22 +59,32 @@ class Connection(QObject):
     def __init__(self) -> None:
         QObject.__init__(self)
         if not tables_exist():
+            print('creating tables')
             create_tables()
+
         evnt_exists = self.execute_query("select count(*) from pragma_table_info('game') where name='EventPoints'")
-        print('event',evnt_exists[0][0])
         if evnt_exists == None or evnt_exists[0][0] == 0:
             print('adding event column')
             self.execute_query("alter table 'game'  add column 'EventPoints' integer")
+
         self.jsondir = os.path.join(os.getcwd(),'json')
         if not os.path.exists(self.jsondir):
             os.makedirs(self.jsondir)
+
         self.logdir = os.path.join(os.getcwd(),'logs')
         if not os.path.exists(self.logdir):
             os.makedirs(self.logdir)
+
         self.logfile = os.path.join(self.logdir,'log')
         self.current_files = os.listdir(self.jsondir)
+
+        # if file hasn't been written to database, write file.
         for file in self.current_files:
-            self.write_json_to_sql(os.path.join(self.jsondir,file),log=False)
+            timestamp = file[file.index('attributes'):].split('_')[1].split('.')[0]
+            exists = self.execute_query("select timestamp from 'game' where timestamp = '%s'" % timestamp)
+            if exists == []:
+                print('writing %s to database' % timestamp)
+                self.write_json_to_sql(os.path.join(self.jsondir,file),log=False)
 
     def execute_query(self, query):
         connection = sqlite3.connect(db)
@@ -217,7 +227,9 @@ class Connection(QObject):
             #print('success.')
 
         except sqlite3.OperationalError as msg:
-            self.print('fail! ' + str(msg))
+            self.print('operational error\n' + str(msg))
+        except sqlite3.IntegrityError as msg:
+            self.print('integrity error\n%s'%str(msg))
         connection.commit()
         connection.close()
 
@@ -239,6 +251,8 @@ class Connection(QObject):
         num_entries = rows['game']['MissionBagNumEntries']
         
         rows['game']['timestamp'] = timestamp
+        if 'MissionBagBoss_-1' in rows['game']:
+            rows['game'].pop('MissionBagBoss_-1')
         self.insert_row('game',rows['game'])
         rows['game'].pop('timestamp')
 

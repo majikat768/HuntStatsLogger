@@ -1,4 +1,6 @@
 /*
+Updated by majikat in July of 2022.
+*
 Material Dark Style Sheet for QT Applications
 Author: Jaime A. Quiroga P.
 Inspired on https://github.com/jxfwinter/qt-material-stylesheet
@@ -8,7 +10,7 @@ Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 */
 * {
     font-size: 16px;
-    font-family: Courier New;
+    font-family: Libre Baskerville;
     background-color: #1e282c;
 	color: #a9b7c6;
 }
@@ -16,7 +18,7 @@ Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 QWidget {
     background-color: #1e282c;
 	font-size: 16px;
-	font-family: Courier New;
+	font-family: Libre Baskerville;
 }
 
 QMainWindow {
@@ -123,7 +125,7 @@ QGroupBox::title {
     background-color: transparent;
 }
 #SerpentMoon {
-	color:#ff0000;
+	color:#44cc88;
 	font-style:italic;
 }
 GroupBox {
@@ -154,7 +156,8 @@ QGroupBox {
 
 
 QLineEdit {
-	border-width: 1px; border-radius: 4px;
+	border-width: 1px; 
+	border-radius: 4px;
 	border-color: rgb(58, 58, 58);
 	border-style: inset;
 	padding: 0 8px;
@@ -225,6 +228,10 @@ QMenu::item {
 QMenu{
 	background-color:#1e1d23;
 }
+QToolTip {
+	color:black;
+	font-family: sans serif;
+}
 QTabWidget {
 	color:rgb(0,0,0);
 	background-color:#1e1d23;
@@ -235,6 +242,9 @@ QTabWidget::pane {
 		border-style: none;
 		border-width: 0px;
     	border-radius: 6px;
+}
+QTabBar {
+	background-color: transparent;
 }
 QTabBar::tab {
 	border-style: solid;
@@ -248,6 +258,8 @@ QTabBar::tab {
 	padding: 8px;
 	margin-left:3px;
 	background-color: #1e1d23;
+    border-top-right-radius:2px;
+    border-top-left-radius:2px;
 }
 QTabBar::tab:!selected {
   	border-style: solid;
@@ -255,13 +267,14 @@ QTabBar::tab:!selected {
 	border-right-color: black;
 	border-left-color: black;
 	border-bottom-color: #14494f;
-    border-top-right-radius:4px;
-    border-top-left-radius:4px;
     border-top-width: 1px;
     border-left-width: 1px;
     border-right-width: 1px;
 	border-bottom-width: 2px;
 	border-style: solid;
+	padding-left: 3px;
+	padding-bottom: 2px;
+	margin-top:4px;
 
 }
 QTabBar::tab:selected, QTabBar::tab:last:selected, QTabBar::tab:hover {
@@ -270,8 +283,6 @@ QTabBar::tab:selected, QTabBar::tab:last:selected, QTabBar::tab:hover {
 	border-right-color: black;
 	border-left-color: black;
 	border-bottom-color: #04b97f;
-    border-top-right-radius:4px;
-    border-top-left-radius:4px;
     border-top-width: 1px;
     border-left-width: 1px;
     border-right-width: 1px;
@@ -283,6 +294,8 @@ QTabBar::tab:selected, QTabBar::tab:last:selected, QTabBar::tab:hover {
 	margin-left:3px;
 	background-color: #1e1d23;
     background-color: #1e282c;
+	padding-left: 3px;
+	padding-bottom: 2px;
 }
 
 QCheckBox {
@@ -364,7 +377,6 @@ QDateEdit {
 }
 QComboBox {	
 	background: #0e0d23;
-	font-weight:bold;
 	height:24px;
 }
 QComboBox:editable {

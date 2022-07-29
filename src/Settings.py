@@ -3,7 +3,7 @@ import time
 from PyQt5.QtCore import Qt, QSettings
 import os
 import json
-from Connection import Connection, unix_to_datetime
+from Connection import unix_to_datetime
 from GroupBox import GroupBox
 from HunterLabel import HunterLabel
 
@@ -14,7 +14,7 @@ class Settings(GroupBox):
         super().__init__(layout)
         self.setStyleSheet('*{margin:4px;padding:4px;}')
         self.parent = parent
-        self.connection = Connection()
+        self.connection = parent.connection
         self.huntDir = ''
         self.layout = layout
         self.setLayout(self.layout)
@@ -45,6 +45,11 @@ class Settings(GroupBox):
         self.layout.addWidget(hideUsers)
         self.layout.addWidget(QLabel())
 
+        HeaderOnly = QCheckBox('Show only header bar')
+        HeaderOnly.stateChanged.connect(self.HeaderToggle)
+        self.layout.addWidget(HeaderOnly)
+        self.layout.addWidget(QLabel())
+
         self.layout.addWidget(QLabel('\ndev stuff:'))
         importJsonButton = QPushButton('Import a json file....')
         importJsonButton.clicked.connect(self.ImportJson)
@@ -56,6 +61,9 @@ class Settings(GroupBox):
 
         self.layout.addStretch()
 
+
+    def HeaderToggle(self):
+        self.parent.ToggleBoxes()
 
     def hideUserToggle(self):
         HunterLabel.HideUsers = not HunterLabel.HideUsers 

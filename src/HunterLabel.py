@@ -11,12 +11,12 @@ class HunterLabel(QLabel):
     def __init__(self,name=''):
         super().__init__()
         self.name = name
-        self.tooltip = name
+        self.fullname = name
         if len(self.name) > HunterLabel.maxLen:
             self.name = self.name[:HunterLabel.maxLen-3]+'...'
 
         super().setText(self.name)
-        self.setToolTip(self.tooltip)
+        self.setToolTip(self.fullname)
         if(HunterLabel.HideUsers and self.name != settings.value('hunterName','')):
             self.HideUsername()
         HunterLabel.instanceList.append(self)
