@@ -446,6 +446,7 @@ class HuntsTab(GroupBox):
         teamInfo.layout.addStretch()
         teamSubInfo.layout.addWidget(QLabel('They extracted with the bounty.'))
         teamInfo.layout.addStretch()
+        teamInfoScrollArea.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
 
         #teamInfoScrollArea.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
         #self.teamTabs.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
