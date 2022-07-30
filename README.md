@@ -1,4 +1,7 @@
 # Hunt Stats Logger
+<p>
+  <img src="screenshots/huntapp.png" width=50% height=50%>
+</p>
 ![](screenshots/huntapp.png)
 <p>
 This program was made to record hunt statistics in the game <b>Hunt: Showdown</b>.
