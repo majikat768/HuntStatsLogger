@@ -1,7 +1,8 @@
 from datetime import datetime
+import os,sys
 from Mainframe import MainFrame
-from PyQt5.QtCore import QThread,QSettings
-from PyQt5.QtWidgets import QMainWindow
+from PyQt6.QtCore import QThread,QSettings,QStandardPaths
+from PyQt6.QtWidgets import QMainWindow
 import Connection, Logger
 
 '''
@@ -14,14 +15,36 @@ killall = True
 def unix_to_datetime(timestamp):
     return datetime.fromtimestamp(timestamp).strftime('%H:%M %m/%d/%y')
 
-database = 'huntstats.db'
+def base_path():
+    try:
+    # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+        print(base_path)
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return base_path
+
+def resource_path(relative_path):
+    return os.path.join(base_path(), relative_path)
+
 
 class App(QMainWindow):
     def __init__(self,log=True):
         super().__init__()
+        self.resource_path = resource_path
+        #self.app_data_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation),'hsl_files')
+        self.app_data_path = os.path.join(os.getcwd(),'hsl_files')
+        if not os.path.exists(self.app_data_path):
+            os.makedirs(self.app_data_path)
+        #self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
+        self.settings = QSettings(
+            os.path.join(self.app_data_path,'settings.ini'),
+            QSettings.Format.IniFormat
+        )
+        print(self.settings.fileName)
         self.log = log 
-        self.connection = Connection.Connection()
-        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
+        self.connection = Connection.Connection(self)
         self.mainFrame = MainFrame(self)
         self.setWindowTitle('Hunt Stats Tracker')
 
@@ -30,7 +53,7 @@ class App(QMainWindow):
         self.StartConnection()
 
         if(self.log):
-            self.logger = Logger.Logger()
+            self.logger = Logger.Logger(self)
             if self.settings.value('huntDir','') != '':
                 print('starting logger')
                 self.StartLogger()

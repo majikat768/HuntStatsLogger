@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QTabWidget,
     QWidget,
     QGridLayout,
@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QSizePolicy
 )
-from PyQt5.QtCore import QSettings, QPoint
-import HuntsTab, Settings, Hunter, HuntersTab
+from PyQt6.QtCore import QSettings, QPoint
+import HuntsTab, Settings, Hunter, HuntersTab, Chart
 
 killall = False
 
@@ -17,10 +17,11 @@ class MainFrame(QWidget):
     def __init__(self, parent) -> None:
         super().__init__(parent)
         self.parent = parent
+        self.resource_path = self.parent.resource_path
         self.connection = parent.connection
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
+        self.settings = self.parent.settings
         self.huntDir = self.settings.value('huntDir','')
 
         self.initUI()
@@ -40,6 +41,9 @@ class MainFrame(QWidget):
         self.huntersTab = HuntersTab.HuntersTab(self, QGridLayout(),'Hunters')
         self.tabs.addTab(self.huntersTab,'\tHunters\t')
 
+        self.chartTab = Chart.Chart(self,QGridLayout(),'Chart')
+        self.tabs.addTab(self.chartTab,'\tChart\t')
+
         self.settingsWindow = self.initSettingsWindow();
 
         self.settingsButton = QPushButton('Settings')
@@ -52,7 +56,7 @@ class MainFrame(QWidget):
         settingsBox = Settings.Settings(self,QVBoxLayout())
 
         settingsWindow = QMainWindow()
-        #settingsWindow.setWindowFlags(Qt.FramelessWindowHint)
+        #settingsWindow.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         settingsWindow.setCentralWidget(settingsBox)
         #settingsWindow.setMenuBar(TitleBar.TitleBar(settingsWindow))
         #settingsWindow.menuBar().setFixedHeight(48)
@@ -68,6 +72,7 @@ class MainFrame(QWidget):
         self.hunterBox.update()
         self.huntsTab.update()
         self.huntersTab.update()
+        self.chartTab.update()
 
     def HideBoxes(self):
         self.tabs.hide()

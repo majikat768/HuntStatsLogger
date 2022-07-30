@@ -1,19 +1,20 @@
-from PyQt5.QtWidgets import QGridLayout, QVBoxLayout,QSpacerItem, QSizePolicy, QWidget, QLabel,QComboBox
-from PyQt5.QtCore import QSettings, Qt
-from PyQt5 import QtGui
+from PyQt6.QtWidgets import QGridLayout, QVBoxLayout,QWidget, QLabel,QComboBox
+from PyQt6.QtCore import Qt
+from PyQt6 import QtGui
 from Connection import MmrToStars
 from GroupBox import GroupBox
 import HunterLabel
+import os
 
 class Hunter(GroupBox):
     def __init__(self,parent,layout,title='') -> None:
         super().__init__(layout,title)
         self.parent = parent
         self.connection = parent.connection
-        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
+        self.settings = self.parent.settings
         self.layout = layout
         self.setLayout(self.layout)
-        self.layout.setAlignment(Qt.AlignTop)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.layout.setSpacing(0)
         self.setStyleSheet('Hunter{padding:0px;margin:0px};QLabel{padding:0px;margin:0px;}')
         self.hunterBox = self.HunterBox()
@@ -21,9 +22,9 @@ class Hunter(GroupBox):
         self.mmrBox = self.MmrBox()
         self.layout.addWidget(self.hunterBox)
         self.layout.addStretch()
-        self.layout.addWidget(self.KdaBox(), Qt.AlignTop)
+        self.layout.addWidget(self.KdaBox(), Qt.AlignmentFlag.AlignTop)
         self.layout.addStretch()
-        self.layout.addWidget(self.MmrBox(), Qt.AlignRight)
+        self.layout.addWidget(self.MmrBox(), Qt.AlignmentFlag.AlignRight)
 
         #self.layout.setRowStretch(self.layout.rowCount(),1)
         #self.layout.setColumnStretch(self.layout.columnCount(),1)
@@ -33,10 +34,10 @@ class Hunter(GroupBox):
         kdaBox = QWidget()
         kdaBox.layout = QGridLayout()
         kdaBox.setLayout(kdaBox.layout)
-        kdaBox.layout.setAlignment(Qt.AlignCenter)
+        kdaBox.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.KDAQLabel = QLabel('%s' % self.settings.value('kda',-1))
-        self.KDAQLabel.setAlignment(Qt.AlignCenter)
+        self.KDAQLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.KDAQLabel.setStyleSheet('QLabel{font-size:36px;}')
         kdaBox.layout.addWidget(self.KDAQLabel,0,2)
 
@@ -49,7 +50,7 @@ class Hunter(GroupBox):
         kdaBox.layout.addWidget(self.missionSelect,2,2)
 
         self.deathQLabel = QLabel('%sk %sd %sa' % (self.settings.value('total_kills',-1),self.settings.value('total_deaths',-1),self.settings.value('total_assists',-1)))
-        self.deathQLabel.setAlignment(Qt.AlignCenter)
+        self.deathQLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         kdaBox.layout.addWidget(self.deathQLabel,1,2)
 
         return kdaBox
@@ -83,9 +84,9 @@ class Hunter(GroupBox):
             kda = (kills + assists) / deaths
 
         self.KDAQLabel.setText('%s' % '{:.3f}'.format(kda))
-        self.KDAQLabel.setAlignment(Qt.AlignHCenter)
+        self.KDAQLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.deathQLabel.setText('%sk %sd %sa' % (kills,deaths,assists))
-        self.deathQLabel.setAlignment(Qt.AlignHCenter)
+        self.deathQLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
     def HunterBox(self):
         hunterBox = QWidget()
@@ -108,17 +109,17 @@ class Hunter(GroupBox):
         mmrBox = QWidget()
         mmrBox.layout = QVBoxLayout()
         mmrBox.setLayout(mmrBox.layout)
-        mmrBox.layout.setAlignment(Qt.AlignHCenter)
+        mmrBox.layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         mmr = int(self.settings.value('mmr',-1))
         stars = MmrToStars(mmr)
         self.starQLabel = QLabel()
-        self.starQLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
-        self.starQLabel.setAlignment(Qt.AlignRight)
+        self.starQLabel.setPixmap(QtGui.QPixmap(os.path.join(self.parent.resource_path('./assets/icons/),_%dstar.png' % stars))))
+        self.starQLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.mmrQLabel = QLabel('MMR: %d' % mmr)
-        self.mmrQLabel.setAlignment(Qt.AlignRight)
+        self.mmrQLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.bestMmrQLabel = QLabel('Best: %d' % self.connection.GetMaxMMR())
-        self.bestMmrQLabel.setAlignment(Qt.AlignRight)
+        self.bestMmrQLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         mmrBox.layout.addWidget(self.starQLabel)
         mmrBox.layout.addWidget(self.mmrQLabel)
@@ -139,12 +140,8 @@ class Hunter(GroupBox):
     def UpdateHunterBox(self):
         self.hunterQLabel.setText(self.settings.value('hunterName',''))
         self.totalHunts.setText('Hunts: %d' % self.connection.GetTotalHuntCount())
-        lvl = self.connection.execute_query("select HunterLevel from 'game' order by timestamp desc limit 1")
-        print('lvl',lvl)
-        if lvl == None or lvl == [] or lvl == [(None,)]:
-            self.level.setText('')
-        else:
-            self.level.setText('Level %d' % lvl[0][0])
+        lvl = self.settings.value('HunterLevel','0')
+        self.level.setText('Level %s' % lvl)
 
     def update(self):
         self.UpdateHunterBox()

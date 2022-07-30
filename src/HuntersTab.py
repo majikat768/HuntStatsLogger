@@ -1,15 +1,14 @@
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout,QLabel, QScrollArea,QWidget,QGridLayout
-from PyQt5.QtCore import QSettings, Qt
+from PyQt6.QtWidgets import QGroupBox, QVBoxLayout,QLabel, QScrollArea,QWidget,QGridLayout
+from PyQt6.QtCore import Qt
 from GroupBox import GroupBox
 from HunterLabel import HunterLabel
-
-settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
 
 class HuntersTab(GroupBox):
     def __init__(self, parent, layout, title=''):
         super().__init__(layout, title)
         self.parent = parent
         self.connection = self.parent.connection
+        self.settings = self.parent.settings
 
         self.topHuntersBox = self.initTopHunters()
         self.layout.addWidget(self.topHuntersBox,1,0,1,2)

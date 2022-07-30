@@ -3,13 +3,12 @@ import time
 import os
 import sqlite3
 from datetime import datetime
-from PyQt5.QtCore import QSettings,QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal,QStandardPaths
 
-db = 'huntstats.db'
-settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
+#self.db = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation),'huntstats.db')
 killall = False
 
-def tables_exist():
+def tables_exist(db):
     connection = sqlite3.connect(db)
     cursor = connection.cursor()
     query = "select name from sqlite_master where type = 'table' and name = ? or name = ? or name = ? or name = ?"
@@ -24,11 +23,10 @@ def tables_exist():
     connection.close()
     return result
 
-def create_tables():
+def create_tables(db,schemafile):
     print('creating tables')
     connection = sqlite3.connect(db)
     cursor = connection.cursor()
-    schemafile = './schema.sql'
     cursor.executescript(open(schemafile,'r').read())
     print(cursor.fetchall())
     '''
@@ -56,22 +54,26 @@ def unix_to_datetime(timestamp):
 class Connection(QObject):
     finished = pyqtSignal()
     progress = pyqtSignal(str)
-    def __init__(self) -> None:
+    def __init__(self,parent) -> None:
         QObject.__init__(self)
-        if not tables_exist():
+        self.parent = parent
+        self.db = os.path.join(self.parent.app_data_path,'huntstats.db')
+        if not tables_exist(self.db):
             print('creating tables')
-            create_tables()
-
+            create_tables(self.db,self.parent.resource_path('schema.sql'))
+        self.settings = self.parent.settings
         evnt_exists = self.execute_query("select count(*) from pragma_table_info('game') where name='EventPoints'")
         if evnt_exists == None or evnt_exists[0][0] == 0:
             print('adding event column')
             self.execute_query("alter table 'game'  add column 'EventPoints' integer")
 
-        self.jsondir = os.path.join(os.getcwd(),'json')
+        self.jsondir = os.path.join(self.parent.app_data_path,'json')
+        #self.jsondir = os.path.join(os.getcwd(),'json')
         if not os.path.exists(self.jsondir):
             os.makedirs(self.jsondir)
 
-        self.logdir = os.path.join(os.getcwd(),'logs')
+        self.logdir = os.path.join(self.parent.app_data_path,'logs')
+        #self.logdir = os.path.join(os.getcwd(),'logs')
         if not os.path.exists(self.logdir):
             os.makedirs(self.logdir)
 
@@ -87,7 +89,7 @@ class Connection(QObject):
                 self.write_json_to_sql(os.path.join(self.jsondir,file),log=False)
 
     def execute_query(self, query):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         try:
             cursor.execute(query)
@@ -108,7 +110,7 @@ class Connection(QObject):
         return False
 
     def NumTimesSeen(self,profileid):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select count(*) from 'hunter' where profileid is ?"
         try:
@@ -142,7 +144,7 @@ class Connection(QObject):
                 break
 
     def GetTopKiller(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select blood_line_name, sum(downedme+killedme) as kills from 'hunter' group by profileid order by kills desc limit 1"
         cols = ['blood_line_name','kills']
@@ -161,7 +163,7 @@ class Connection(QObject):
         return result
 
     def GetTopKilled(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select blood_line_name, sum(downedbyme+killedbyme) as kills from 'hunter' group by profileid order by kills desc limit 1"
         cols = ['blood_line_name','kills']
@@ -181,9 +183,9 @@ class Connection(QObject):
 
 
     def TopNHunters(self, n):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
-        query = "select blood_line_name, sum(ispartner), sum(downedme), sum(downedbyme),sum(killedme),sum(killedbyme), count(profileid) as N, profileid from 'hunter' where profileid is not %d group by profileid order by N desc limit %d" % (int(settings.value('profileid','-1')), n)
+        query = "select blood_line_name, sum(ispartner), sum(downedme), sum(downedbyme),sum(killedme),sum(killedbyme), count(profileid) as N, profileid from 'hunter' where profileid is not %d group by profileid order by N desc limit %d" % (int(self.settings.value('profileid','-1')), n)
         cols = ['blood_line_name','ispartner','downedme','downedbyme','killedme','killedbyme','count','profileid']
         try:
             cursor.execute(query)
@@ -202,9 +204,9 @@ class Connection(QObject):
         return results
 
     def GetMaxMMR(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
-        query = "select max(mmr) from 'hunter' where blood_line_name is '%s'" % settings.value('hunterName','')
+        query = "select max(mmr) from 'hunter' where blood_line_name is '%s'" % self.settings.value('hunterName','')
         try:
             cursor.execute(query)
             mmr = cursor.fetchone()[0]
@@ -214,7 +216,7 @@ class Connection(QObject):
         return 0 if mmr is None else mmr
 
     def insert_row(self,table, row):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         
         columns = [i for i in row.keys()]
@@ -228,6 +230,10 @@ class Connection(QObject):
 
         except sqlite3.OperationalError as msg:
             self.print('operational error\n' + str(msg))
+            if 'has no column' in str(msg):
+                column = str(msg).split(' ')[-1]
+                row.pop(column)
+                self.insert_row(table,row)
         except sqlite3.IntegrityError as msg:
             self.print('integrity error\n%s'%str(msg))
         connection.commit()
@@ -284,7 +290,7 @@ class Connection(QObject):
 
 
     def deleteRecord(self,timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         queries = [
         "delete from 'game' where timestamp is ?", 
@@ -305,7 +311,7 @@ class Connection(QObject):
 
 
     def getNTeams(self,timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select MissionBagNumTeams from 'game' where timestamp is %s" % timestamp;
         try:
@@ -321,7 +327,7 @@ class Connection(QObject):
 
     def GetProfileId(self,name):
         print('profile name ',name)
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select profileid from 'hunter' where blood_line_name is ?"
         try:
@@ -337,9 +343,9 @@ class Connection(QObject):
         return id
 
     def SetOwnMMR(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
-        query = "select mmr from 'hunter' where timestamp is (select max(timestamp) from 'hunter') and profileid is '%s'" % (settings.value('profileid',''))
+        query = "select mmr from 'hunter' where timestamp is (select max(timestamp) from 'hunter') and profileid is '%s'" % (self.settings.value('profileid',''))
         try:
             cursor.execute(query)
             mmr = cursor.fetchone()
@@ -349,10 +355,10 @@ class Connection(QObject):
             self.print('get own mmr error')
             mmr = -1
         connection.close()
-        settings.setValue('mmr',mmr)
+        self.settings.setValue('mmr',mmr)
     
     def GetTotalHuntCount(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select count(timestamp) from 'game'"
         try:
@@ -364,11 +370,11 @@ class Connection(QObject):
         connection.close()
         if huntcount is None:
             huntcount = 0
-        settings.setValue('total_hunts',huntcount)
+        self.settings.setValue('total_hunts',huntcount)
         return huntcount
 
     def SetTotalKills(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor()
         query = "select sum(downedbyme + killedbyme) from 'hunter' where (downedbyme > 0 or killedbyme > 0)"
         try:
@@ -379,10 +385,10 @@ class Connection(QObject):
             kills = -1
         if kills is None:
             kills = 0
-        settings.setValue('total_kills',kills)
+        self.settings.setValue('total_kills',kills)
     
     def SetTotalDeaths(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor()
         query = "select sum(downedme + killedme) from 'hunter' where (downedme > 0 or killedme > 0)"
         try:
@@ -393,10 +399,10 @@ class Connection(QObject):
             deaths = -1
         if deaths is None:
             deaths = 0
-        settings.setValue('total_deaths',deaths)
+        self.settings.setValue('total_deaths',deaths)
     
     def SetTotalAssists(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor()
         query = "select sum(amount) from 'entry' where category is 'accolade_players_killed_assist'"
         try:
@@ -407,26 +413,26 @@ class Connection(QObject):
             assists = -1
         if assists is None:
             assists = 0
-        settings.setValue('total_assists',assists)
+        self.settings.setValue('total_assists',assists)
 
     def SetKDA(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor()
         self.SetTotalKills()
         self.SetTotalDeaths()
         self.SetTotalAssists()
-        kills = int(settings.value('total_kills',-1))
-        deaths = int(settings.value('total_deaths',-1))
-        assists = int(settings.value('total_assists',-1))
+        kills = int(self.settings.value('total_kills',-1))
+        deaths = int(self.settings.value('total_deaths',-1))
+        assists = int(self.settings.value('total_assists',-1))
         kda = -1.0
         if deaths == 0:
             kda = 0
         else:
             kda = (kills + assists) / deaths
-        settings.setValue('kda',round(kda,4))
+        self.settings.setValue('kda',round(kda,4))
 
     def Survived(self, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select MissionBagIsHunterDead from 'game' where timestamp is %d" % timestamp
         try:
@@ -439,7 +445,7 @@ class Connection(QObject):
         return not dead
 
     def GetMatchData(self, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select * from 'game' where timestamp is %s" % timestamp
         try:
@@ -456,7 +462,7 @@ class Connection(QObject):
             return {}
 
     def GetHunterData(self, name, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select * from 'hunter' where blood_line_name is ? and timestamp is ?"
         try:
@@ -473,7 +479,7 @@ class Connection(QObject):
         return hunter
 
     def GetMatchEntries(self, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select * from 'entry' where timestamp is %s" % timestamp
         try:
@@ -493,7 +499,7 @@ class Connection(QObject):
         return entries 
 
     def GetAllHunterData(self,timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select * from 'hunter' where timestamp is %s" % timestamp
         allhunters = []
@@ -513,7 +519,7 @@ class Connection(QObject):
         return allhunters
 
     def GetMatchTeams(self, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select * from 'team' where timestamp is %s" % timestamp
         try:
@@ -533,7 +539,7 @@ class Connection(QObject):
         return teams 
 
     def GetMyDeaths(self, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select sum(downedme+killedme) from 'hunter' where timestamp is %d" % timestamp
         try:
@@ -546,7 +552,7 @@ class Connection(QObject):
         return deaths if deaths != None else 0
 
     def GetMyKills(self, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select sum(downedbyme+killedbyme) from 'hunter' where timestamp is %d" % timestamp
         try:
@@ -559,7 +565,7 @@ class Connection(QObject):
         return kills if kills != None else 0
 
     def GetMatchKills(self, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select sum(amount) from 'entry' where category is 'accolade_players_killed' and timestamp is %d" % timestamp
         try:
@@ -573,7 +579,7 @@ class Connection(QObject):
 
 
     def GetAllTimestamps(self):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select timestamp from 'game' order by timestamp desc"
         try:
@@ -586,7 +592,7 @@ class Connection(QObject):
         return timestamps
 
     def IsQuickPlay(self, timestamp):
-        connection = sqlite3.connect(db)
+        connection = sqlite3.connect(self.db)
         cursor = connection.cursor()
         query = "select MissionBagIsQuickPlay from 'game' where timestamp is %s" % timestamp
         try:

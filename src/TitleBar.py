@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QHBoxLayout, QPushButton,QMenuBar,QSizePolicy
-from PyQt5.QtCore import Qt
-from PyQt5 import QtGui
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton,QMenuBar,QSizePolicy
+from PyQt6.QtCore import Qt
+from PyQt6 import QtGui
 import Logger,Connection
 
 class TitleBar(QMenuBar):

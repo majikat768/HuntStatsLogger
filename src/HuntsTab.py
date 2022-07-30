@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QSizePolicy, QComboBox, QScrollArea, QWidget, QTabWidget, QLabel, QMainWindow, QPushButton
-from PyQt5.QtCore import QSettings, Qt, QEvent, QSize
-from PyQt5 import QtGui
+from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QSizePolicy, QComboBox, QScrollArea, QWidget, QTabWidget, QLabel, QMainWindow, QPushButton
+import os
+from PyQt6.QtCore import QSettings, Qt, QEvent, QSize
+from PyQt6 import QtGui
 from Connection import MmrToStars, unix_to_datetime
 from GroupBox import GroupBox
 from HunterLabel import HunterLabel
@@ -11,9 +12,10 @@ class HuntsTab(GroupBox):
         self.parent = parent
         self.popup = None
         self.connection = parent.connection
-        self.settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
+        self.settings = self.parent.settings
         self.layout.setSpacing(4)
-        #self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
+        self.deadIcon = self.parent.resource_path('assets/icons/death2.png')
+        self.livedIcon = self.parent.resource_path('assets/icons/lived2.png')
         if self.layout.__class__.__name__ == 'QGridLayout':
             self.initGridLayout()
         elif self.layout.__class__.__name__ == 'QVBoxLayout':
@@ -23,6 +25,9 @@ class HuntsTab(GroupBox):
         #self.layout.setRowStretch(self.layout.rowCount(),1)
         self.setMouseTracking(True)
     
+    def star_icon(self,stars):
+        return os.path.join(self.parent.resource_path('assets/icons'),'_%dstar.png' % stars)
+
     def initGridLayout(self):
         self.layout.addWidget(self.MatchSelect(),0,0,1,4)
         self.layout.addWidget(QLabel(),1,0,1,4)
@@ -30,7 +35,7 @@ class HuntsTab(GroupBox):
         self.teamInfoBox = self.TeamInfoBox()
         self.layout.addWidget(self.huntInfoBox,2,0,1,1)
         self.layout.addWidget(self.teamInfoBox,2,1,1,3)
-        self.huntInfoScrollArea.setSizePolicy(QSizePolicy.Maximum,QSizePolicy.Expanding)
+        self.huntInfoScrollArea.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Expanding)
 
     def initVBoxLayout(self):
         self.layout.addWidget(self.MatchSelect())
@@ -73,7 +78,7 @@ class HuntsTab(GroupBox):
                 )
             width = max(width,len(line))
             self.matchSelection.addItem(
-                QtGui.QIcon('./assets/icons/death2.png' if dead else './assets/icons/lived2.png'),
+                QtGui.QIcon(self.deadIcon if dead else self.livedIcon),
                 line,
                 timestamp
             )
@@ -144,7 +149,7 @@ class HuntsTab(GroupBox):
         )
         
         self.huntersKilled.setText(
-            'Hunter kills: %d<br> %s' % (hunterkills, '<br>'.join(["%dx <img src='./assets/icons/_%dstar.png'>" % (hunters_killed[m], m) for m in hunters_killed if hunters_killed[m] > 0]))
+            'Hunter kills: %d<br> %s' % (hunterkills, '<br>'.join(["%dx <img src='%s'>" % (hunters_killed[m], self.star_icon(m)) for m in hunters_killed if hunters_killed[m] > 0]))
         )
         self.killsAndAssists.setText('%d kills, %d assists' % (self.connection.GetMyKills(self.matchSelection.currentData()),assists))
 
@@ -210,6 +215,7 @@ class HuntsTab(GroupBox):
         self.huntInfoScrollArea.setWidget(self.huntInfo)
 
         self.cluesFound.setWordWrap(True)
+        self.huntInfoScrollArea.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Expanding)
         return self.huntInfoScrollArea
 
     def updateTeamInfo(self):
@@ -239,13 +245,13 @@ class HuntsTab(GroupBox):
             hunters = [x for x in allhunters if x['team_num'] == team['team_num']]
             if not isquickplay:
                 if team['ownteam']:
-                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon('./assets/icons/lived2.png'),'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
+                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.livedIcon),'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
                 else:
                     self.teamTabs.addTab(teamInfoScrollArea,'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
             else:
                 hunter = hunters[0]
                 if team['ownteam']:
-                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon('./assets/icons/lived2.png'),'%s' % hunter['blood_line_name'])
+                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.livedIcon),'%s' % hunter['blood_line_name'])
                 else:
                     self.teamTabs.addTab(teamInfoScrollArea,'%s' % hunter['blood_line_name'])
             
@@ -268,7 +274,7 @@ class HuntsTab(GroupBox):
                     stars = QLabel()
                     profileid = hunter['profileid']
                     n_games = self.connection.NumTimesSeen(profileid)
-                    stars.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % MmrToStars(hunter['mmr'])))
+                    stars.setPixmap(QtGui.QPixmap(self.star_icon(MmrToStars(hunter['mmr']))))
                     hunterInfo.layout.addWidget(name)
                     hunterInfo.layout.addWidget(mmr)
                     hunterInfo.layout.addWidget(stars)
@@ -308,7 +314,7 @@ class HuntsTab(GroupBox):
                         hunterInfo.layout.addWidget(gamesLabel)
                     hunterInfo.layout.addStretch()
                 huntersInfo.layout.addWidget(hunterInfo)
-            huntersInfo.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
+            huntersInfo.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding)
             huntersInfo.layout.addStretch()
             teamInfo.layout.addWidget(huntersInfo)
             teamInfo.layout.addStretch()
@@ -321,20 +327,20 @@ class HuntsTab(GroupBox):
                 teamSubInfo.layout.addWidget(QLabel('They extracted.'))
             teamInfo.layout.addStretch()
 
-            teamInfoScrollArea.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
-        self.teamTabs.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Expanding)
+            teamInfoScrollArea.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding)
+        self.teamTabs.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
             
     def eventFilter(self, obj, e) -> bool:
         child = obj.parent().findChild(QWidget,'name')
         dataType = obj.text()
-        if e.type() == QEvent.Enter:
+        if e.type() == QEvent.Type.Enter:
             if child:
                 name = child.fullname
                 hunter = self.connection.GetHunterData(name,self.matchSelection.currentData())
                 self.ShowWindow(hunter,dataType)
-                self.popup.move(e.globalX()+self.popup.size().width()/4,e.globalY()-self.popup.size().height()/4)
+                self.popup.move(e.globalPosition().x()+self.popup.size().width()/4,e.globalPosition().y()-self.popup.size().height()/4)
                 self.setFocus()
-        elif e.type() == QEvent.Leave:
+        elif e.type() == QEvent.Type.Leave:
             self.popup = None
         return super().eventFilter(obj, e)
 
@@ -342,7 +348,7 @@ class HuntsTab(GroupBox):
         if hunter == {}:    return
         self.popup = QMainWindow()
         self.popup.setStyleSheet('QWidget{border:1px solid red;}QLabel{border:0px;}')
-        self.popup.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.popup.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         info = QWidget()
         self.popup.setCentralWidget(info)
         info.layout = QVBoxLayout()
@@ -407,7 +413,7 @@ class HuntsTab(GroupBox):
             name.setObjectName('name')
             mmr = QLabel('0000')
             stars = QLabel()
-            stars.setPixmap(QtGui.QPixmap('./assets/icons/_4star.png'))
+            stars.setPixmap(QtGui.QPixmap(self.star_icon(4)))
             hunterInfo.layout.addWidget(name)
             hunterInfo.layout.addWidget(mmr)
             hunterInfo.layout.addWidget(stars)
@@ -424,16 +430,16 @@ class HuntsTab(GroupBox):
             hunterInfo.layout.addStretch()
             huntersInfo.layout.addWidget(hunterInfo)
             hunterInfo.layout.addStretch()
-        huntersInfo.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Preferred)
+        huntersInfo.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Preferred)
         huntersInfo.layout.addStretch()
         teamInfo.layout.addWidget(huntersInfo)
         teamInfo.layout.addStretch()
         teamSubInfo.layout.addWidget(QLabel('They extracted with the bounty.'))
         teamInfo.layout.addStretch()
 
-        teamInfoScrollArea.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Expanding)
-        self.teamTabs.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Expanding)
-        self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon('./assets/icons/lived2.png'),'Team 0')
+        teamInfoScrollArea.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
+        self.teamTabs.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
+        self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.livedIcon),'Team 0')
         return self.teamTabs
             
     def GetMatchBounties(self,game):

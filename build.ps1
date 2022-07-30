@@ -1,7 +1,5 @@
-python -m venv .venv
-./.venv/Scripts/activate
 pip install -r requirements.txt
-pyinstaller main.spec --noconfirm
+pyinstaller main-onefile.spec --noconfirm
 
 $wd = ($pwd).Path
 $MainPath = "$wd/dist/main/main.exe"

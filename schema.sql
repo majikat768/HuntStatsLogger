@@ -13,8 +13,7 @@ CREATE TABLE IF NOT EXISTS game (
     MissionBagNumEntries integer,
     MissionBagNumTeams integer,
     EventPoints integer,
-    MissionBagTeamDetailsVersion integer,
-    HunterLevel integer
+    MissionBagTeamDetailsVersion integer
 );
 CREATE TABLE IF NOT EXISTS team (
     timestamp integer,

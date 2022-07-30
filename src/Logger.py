@@ -1,11 +1,10 @@
-from PyQt5.QtCore import QObject,pyqtSignal
+from PyQt6.QtCore import QObject,pyqtSignal
 import xmltodict
 import os
 import json
 import time
 
 killall = False
-database = 'huntstats.db'
 
 '''
 def xmltodict(line):
@@ -19,6 +18,14 @@ def diff(file1,file2):
     with open(file1,'r',encoding='utf-8') as f1:
         with open(file2,'r',encoding='utf-8') as f2:
             return f1.read() != f2.read()
+
+def data_eq(json1,json2):
+    eq = json1['hunter'] == json2['hunter']
+    if not eq:
+        print(str(json1['hunter']))
+        print(str(json2['hunter']))
+        return False
+    return True
 
 def file_changed(filepath,last_change):
     return os.stat(filepath).st_mtime != last_change
@@ -35,21 +42,23 @@ class Logger(QObject):
     finished = pyqtSignal()
     progress = pyqtSignal(str)
     xml_path = ''
-    json_out_dir = os.path.join(os.getcwd(),'json')
-    if not os.path.exists(json_out_dir):
-        os.makedirs(json_out_dir)
 
-    def __init__(self):
+    def __init__(self,parent):
         QObject.__init__(self)
-
+        self.parent = parent
+        self.json_out_dir = os.path.join(self.parent.app_data_path,'json')
+        if not os.path.exists(self.json_out_dir):
+            os.makedirs(self.json_out_dir)
+        self.settings = self.parent.settings
 
     def set_path(self,huntpath):
+        self.print('setting path to %s' % huntpath)
         suffix = 'user/profiles/default/attributes.xml' 
         self.xml_path = os.path.join(huntpath,suffix)
         print(self.xml_path)
         if not os.path.exists(self.xml_path):
             self.print('attributes.xml not found.')
-            print('attributes.xml not found.')
+            self.print(self.xml_path)
             return -1
         return 1
 
@@ -59,7 +68,6 @@ class Logger(QObject):
 
 
     def run(self):
-        print(self.parent())
         global killall
         last_change = -1
         while True:
@@ -78,15 +86,20 @@ class Logger(QObject):
                     with open(json_outfile,'w',encoding='utf-8') as outfile:
                         json.dump(sql_rows,outfile,indent=True)
                 else:
-                    prev_json = os.path.join(self.json_out_dir,max(json_files,key=lambda x : os.stat(os.path.join(self.json_out_dir,x)).st_mtime))
                     with open(json_outfile_wait,'w',encoding='utf-8') as outfile:
                         json.dump(sql_rows,outfile,indent=True)
-                    if not diff(prev_json,json_outfile_wait):
+
+                    prev_json = os.path.join(self.json_out_dir,max(json_files,key=lambda x : os.stat(os.path.join(self.json_out_dir,x)).st_mtime))
+                    new_data = json.load(open(json_outfile_wait,'r'))
+                    prev_data = json.load(open(prev_json,'r'))
+                    if data_eq(new_data,prev_data):
+                        self.print('identical file found')
                         os.remove(json_outfile_wait)
                     else:
+                        self.print('writing new file')
                         os.replace(json_outfile_wait,json_outfile)
+
                 time.sleep(1)
-                self.print(time.strftime('%m/%d %H:%M:%S\n') + ' waiting for changes....\n')
 
                 last_change = os.stat(self.xml_path).st_mtime
 
@@ -165,7 +178,7 @@ class Logger(QObject):
                         continue
                     key = parse_value(linedict['Attr']['@name'])
                     value= parse_value(linedict['Attr']['@value'])
-                    sql_rows['game']['HunterLevel'] = value
+                    self.settings.setValue('HunterLevel',value)
 
             sql_rows['game']['EventPoints'] = points
         return self.clean_json(sql_rows)
@@ -176,7 +189,7 @@ class Logger(QObject):
         hunters = sql_rows['hunter']
         teams_to_remove = []
         for teamnum in teams:
-            if int(teamnum) > num_teams:
+            if int(teamnum) >= num_teams:
                 teams_to_remove.append(teamnum)
         for teamnum in teams_to_remove:
             sql_rows['team'].pop(teamnum)
@@ -191,7 +204,7 @@ class Logger(QObject):
                 team = hunters[teamnum]
                 for hunternum in team:
                     hunter = team[hunternum]
-                    if hunter['hunter_num'] > numhunters:
+                    if hunter['hunter_num'] >= numhunters:
                         hunters_to_remove.append(hunternum)
                 for hunternum in hunters_to_remove:
                     hunters[teamnum].pop(hunternum)
