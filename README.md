@@ -1,4 +1,5 @@
 # Hunt Stats Logger
+![](screenshots/huntapp.png)
 <p>
 This program was made to record hunt statistics in the game <b>Hunt: Showdown</b>.
 <br>It works by tracking changes in the attributes.xml file, which is updated after every game, logging those changes to a local .json file, and uploading them to a local sqlite database.
@@ -36,4 +37,4 @@ $ pip install -r requirements.txt; pyinstaller main.spec
 executable will then be found at ./dist/main/main.exe
 #
 
-![](huntapp.png)
+
