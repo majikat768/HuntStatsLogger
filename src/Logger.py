@@ -80,24 +80,23 @@ class Logger(QObject):
                 json_outfile_wait = json_outfile + '.2'
                 json_files = os.listdir(self.json_out_dir)
 
-                sql_rows = self.build_json_from_xml()
+                new_data = self.build_json_from_xml()
 
                 if len(os.listdir(self.json_out_dir)) == 0:
                     with open(json_outfile,'w',encoding='utf-8') as outfile:
-                        json.dump(sql_rows,outfile,indent=True)
+                        json.dump(new_data,outfile,indent=True)
                 else:
-                    with open(json_outfile_wait,'w',encoding='utf-8') as outfile:
-                        json.dump(sql_rows,outfile,indent=True)
-
                     prev_json = os.path.join(self.json_out_dir,max(json_files,key=lambda x : os.stat(os.path.join(self.json_out_dir,x)).st_mtime))
-                    new_data = json.load(open(json_outfile_wait,'r'))
                     prev_data = json.load(open(prev_json,'r'))
+
+                    #new_data = json.load(open(json_outfile_wait,'r'))
                     if data_eq(new_data,prev_data):
-                        self.print('identical file found')
-                        os.remove(json_outfile_wait)
+                        print('identical file found')
+                        return
                     else:
                         self.print('writing new file')
-                        os.replace(json_outfile_wait,json_outfile)
+                        with open(json_outfile,'w',encoding='utf-8') as outfile:
+                            json.dump(new_data,outfile,indent=True)
 
                 time.sleep(1)
 
@@ -127,13 +126,13 @@ class Logger(QObject):
                     except:
                         print(line)
                         continue
-                    key = parse_value(linedict['Attr']['@name'])
+                    key = linedict['Attr']['@name']
                     value= parse_value(linedict['Attr']['@value'])
                     if value != '' and 'tooltip' not in key:
                         keysplit = key.split('_')
                         if 'MissionAccoladeEntry_' in key:
                             if "eventPoints" in key:
-                                points += value
+                                points += int(value)
                                 #sql_rows['game']['EventPoints'] = value
                 elif "MissionBag" in line:
                     try:
@@ -141,13 +140,13 @@ class Logger(QObject):
                     except:
                         print(line)
                         continue
-                    key = parse_value(linedict['Attr']['@name'])
+                    key = linedict['Attr']['@name']
                     value = parse_value(linedict['Attr']['@value'])
                     if value != '' and 'tooltip' not in key:
                         keysplit = key.split('_')
                         if 'MissionBagPlayer_' in key:
-                            team_num = int(keysplit[1])
-                            hunter_num = int(keysplit[2])
+                            team_num = keysplit[1]
+                            hunter_num = keysplit[2]
                             if team_num not in sql_rows['hunter'].keys():
                                 sql_rows['hunter'][team_num] = {}
                             if hunter_num not in sql_rows['hunter'][team_num].keys():
@@ -155,14 +154,14 @@ class Logger(QObject):
                             category = '_'.join(keysplit[3:])
                             sql_rows['hunter'][team_num][hunter_num][category] = value
                         elif 'MissionBagTeam_' in key:
-                            team_num = int(keysplit[1])
+                            team_num = keysplit[1]
                             if team_num not in sql_rows['team'].keys():
                                 sql_rows['team'][team_num] = {'team_num':team_num}
                             if len(keysplit) > 2:
                                 category = '_'.join(keysplit[2:])
                                 sql_rows['team'][team_num][category] = value
                         elif 'MissionBagEntry_' in key:
-                            entry_num = int(keysplit[1])
+                            entry_num = keysplit[1]
                             if entry_num not in sql_rows['entry'].keys():
                                 sql_rows['entry'][entry_num] = {'entry_num':entry_num}
                             if len(keysplit) > 2:
@@ -176,11 +175,11 @@ class Logger(QObject):
                     except:
                         print(line)
                         continue
-                    key = parse_value(linedict['Attr']['@name'])
-                    value= parse_value(linedict['Attr']['@value'])
+                    key = linedict['Attr']['@name']
+                    value= linedict['Attr']['@value']
                     self.settings.setValue('HunterLevel',value)
 
-            sql_rows['game']['EventPoints'] = points
+            sql_rows['game']['EventPoints'] = str(points)
         return self.clean_json(sql_rows)
 
     def clean_json(self,sql_rows):
@@ -189,7 +188,7 @@ class Logger(QObject):
         hunters = sql_rows['hunter']
         teams_to_remove = []
         for teamnum in teams:
-            if int(teamnum) >= num_teams:
+            if int(teamnum) >= int(num_teams):
                 teams_to_remove.append(teamnum)
         for teamnum in teams_to_remove:
             sql_rows['team'].pop(teamnum)
@@ -204,7 +203,7 @@ class Logger(QObject):
                 team = hunters[teamnum]
                 for hunternum in team:
                     hunter = team[hunternum]
-                    if hunter['hunter_num'] >= numhunters:
+                    if hunter['hunter_num'] >= int(numhunters):
                         hunters_to_remove.append(hunternum)
                 for hunternum in hunters_to_remove:
                     hunters[teamnum].pop(hunternum)

@@ -19,7 +19,6 @@ def base_path():
     try:
     # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
-        print(base_path)
     except Exception:
         base_path = os.path.abspath(".")
 
@@ -42,7 +41,6 @@ class App(QMainWindow):
             os.path.join(self.app_data_path,'settings.ini'),
             QSettings.Format.IniFormat
         )
-        print(self.settings.fileName)
         self.log = log 
         self.connection = Connection.Connection(self)
         self.mainFrame = MainFrame(self)

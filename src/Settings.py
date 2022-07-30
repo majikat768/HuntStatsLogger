@@ -100,8 +100,7 @@ class Settings(GroupBox):
     def ImportJson(self):
         jsonfile, _ = QFileDialog.getOpenFileName(self,'Select json file',os.getcwd())
         timestamp = int(time.time())
-        jsonObj = json.load(open(jsonfile,'r'))
-        self.parent.parent.logger.write_json_to_sql(jsonObj,timestamp)
+        self.connection.write_json_to_sql(jsonfile,timestamp)
 
     def SelectHuntFolder(self):
         directory = QFileDialog.getExistingDirectory(self, "Select Hunt Installation Directory",self.huntDir)

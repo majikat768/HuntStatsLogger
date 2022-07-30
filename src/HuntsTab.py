@@ -243,22 +243,12 @@ class HuntsTab(GroupBox):
             huntersInfo.layout.setSpacing(32)
             huntersInfo.setLayout(huntersInfo.layout)
             hunters = [x for x in allhunters if x['team_num'] == team['team_num']]
-            if not isquickplay:
-                if team['ownteam']:
-                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.livedIcon),'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
-                else:
-                    self.teamTabs.addTab(teamInfoScrollArea,'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
-            else:
-                hunter = hunters[0]
-                if team['ownteam']:
-                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.livedIcon),'%s' % hunter['blood_line_name'])
-                else:
-                    self.teamTabs.addTab(teamInfoScrollArea,'%s' % hunter['blood_line_name'])
             
             got_bounty = False
             extracted_bounty = False
             had_wellspring = False
             team_extract = False
+            kills = 0
 
             for i in range(3):
                 hunterInfo = QWidget()
@@ -287,6 +277,7 @@ class HuntsTab(GroupBox):
                     hunter['killedbyme'] or \
                     hunter['killedteammate'] or \
                     hunter['killedbyteammate']:
+                        kills = 1
                         killinfo = QPushButton('kills')
                         killinfo.setObjectName('link')
                         hunterInfo.layout.addWidget(killinfo)
@@ -314,7 +305,7 @@ class HuntsTab(GroupBox):
                         hunterInfo.layout.addWidget(gamesLabel)
                     hunterInfo.layout.addStretch()
                 huntersInfo.layout.addWidget(hunterInfo)
-            huntersInfo.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding)
+            #huntersInfo.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding)
             huntersInfo.layout.addStretch()
             teamInfo.layout.addWidget(huntersInfo)
             teamInfo.layout.addStretch()
@@ -327,8 +318,23 @@ class HuntsTab(GroupBox):
                 teamSubInfo.layout.addWidget(QLabel('They extracted.'))
             teamInfo.layout.addStretch()
 
-            teamInfoScrollArea.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding)
-        self.teamTabs.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
+            if not isquickplay:
+                if team['ownteam']:
+                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.livedIcon),'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
+                elif kills:
+                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.deadIcon),'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
+                else:
+                    self.teamTabs.addTab(teamInfoScrollArea,'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
+            else:
+                hunter = hunters[0]
+                if team['ownteam']:
+                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.livedIcon),'%s' % hunter['blood_line_name'])
+                elif kills:
+                    self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.deadIcon),'Team %d (%d hunters)' % (team['team_num'], team['numplayers']))
+                else:
+                    self.teamTabs.addTab(teamInfoScrollArea,'%s' % hunter['blood_line_name'])
+            teamInfoScrollArea.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
+        #self.teamTabs.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
             
     def eventFilter(self, obj, e) -> bool:
         child = obj.parent().findChild(QWidget,'name')
@@ -349,12 +355,14 @@ class HuntsTab(GroupBox):
         self.popup = QMainWindow()
         self.popup.setStyleSheet('QWidget{border:1px solid red;}QLabel{border:0px;}')
         self.popup.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        self.popup.layout = QVBoxLayout()
+        self.popup.setLayout(self.popup.layout) 
+        self.popup.objectName = "popup"
         info = QWidget()
         self.popup.setCentralWidget(info)
         info.layout = QVBoxLayout()
         info.setLayout(info.layout)
 
-        info.layout.addWidget(QLabel())
         if data == 'kills':
             if hunter['downedme']:
                 info.layout.addWidget(QLabel('They downed you %d times.' % hunter['downedme']))
@@ -382,11 +390,13 @@ class HuntsTab(GroupBox):
             if hunter['hadWellspring']:
                 info.layout.addWidget(QLabel('they activated the wellspring.'))
         info.layout.addStretch()
+        self.popup.layout.addStretch()
         self.popup.show()
         self.setFocus()
 
     def TeamInfoBox(self):
         self.teamTabs = QTabWidget()
+        #self.teamTabs.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding) 
         teamInfoScrollArea = QScrollArea()
         teamInfoScrollArea.setWidgetResizable(True)
         #self.teamInfoScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -430,15 +440,15 @@ class HuntsTab(GroupBox):
             hunterInfo.layout.addStretch()
             huntersInfo.layout.addWidget(hunterInfo)
             hunterInfo.layout.addStretch()
-        huntersInfo.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Preferred)
+        #huntersInfo.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Preferred)
         huntersInfo.layout.addStretch()
         teamInfo.layout.addWidget(huntersInfo)
         teamInfo.layout.addStretch()
         teamSubInfo.layout.addWidget(QLabel('They extracted with the bounty.'))
         teamInfo.layout.addStretch()
 
-        teamInfoScrollArea.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
-        self.teamTabs.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
+        #teamInfoScrollArea.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
+        #self.teamTabs.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
         self.teamTabs.addTab(teamInfoScrollArea,QtGui.QIcon(self.livedIcon),'Team 0')
         return self.teamTabs
             

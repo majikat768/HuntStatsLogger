@@ -28,7 +28,6 @@ def create_tables(db,schemafile):
     connection = sqlite3.connect(db)
     cursor = connection.cursor()
     cursor.executescript(open(schemafile,'r').read())
-    print(cursor.fetchall())
     '''
     for title in ['game','entry','hunter','team']:
         print(title)
@@ -123,6 +122,7 @@ class Connection(QObject):
         return n;
 
     def newest_file(self):
+        self.current_files = os.listdir(self.jsondir)
         f = os.path.join(
             self.jsondir,max(
                 self.current_files,
@@ -264,14 +264,15 @@ class Connection(QObject):
 
         for i in rows['team']:
             team = rows['team'][i]
-            if team['team_num'] < num_teams:
+            print(team['team_num'],num_teams)
+            if int(team['team_num']) < int(num_teams):
                 team['timestamp'] = timestamp
                 self.insert_row('team',team)
                 team.pop('timestamp')
 
         for i in rows['entry']:
             entry = rows['entry'][i]
-            if entry['entry_num'] < num_entries:
+            if int(entry['entry_num']) < int(num_entries):
                 entry['timestamp'] = timestamp
                 self.insert_row('entry',entry)
                 entry.pop('timestamp')
@@ -280,7 +281,7 @@ class Connection(QObject):
             team = rows['hunter'][i]
             for j in team:
                 hunter = team[j]
-                if hunter['team_num'] < num_teams and hunter['hunter_num'] < get_num_hunters(rows,hunter['team_num']):
+                if int(hunter['team_num']) < int(num_teams) and int(hunter['hunter_num']) < get_num_hunters(rows,hunter['team_num']):
                     hunter['timestamp'] = timestamp
                     self.insert_row('hunter',hunter)
                     hunter.pop('timestamp')
@@ -326,7 +327,6 @@ class Connection(QObject):
         return numteams
 
     def GetProfileId(self,name):
-        print('profile name ',name)
         connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         query = "select profileid from 'hunter' where blood_line_name is ?"

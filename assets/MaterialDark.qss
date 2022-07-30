@@ -462,3 +462,7 @@ QSlider::sub-page:vertical {
 #HunterTitle {
     font-size: 32px;
 }
+#popup {
+	padding:0px;
+	margin:0px;
+}

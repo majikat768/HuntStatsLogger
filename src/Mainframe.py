@@ -30,6 +30,7 @@ class MainFrame(QWidget):
 
     def initUI(self):
         self.hunterBox = Hunter.Hunter(self,QHBoxLayout(),'Hunter')
+        self.hunterBox.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Fixed)
         self.layout.addWidget(self.hunterBox)
 
         self.tabs = QTabWidget();
@@ -77,7 +78,6 @@ class MainFrame(QWidget):
     def HideBoxes(self):
         self.tabs.hide()
         self.parent.resize(self.parent.width(),self.parent.height()-10)
-        print(self.parent.height())
 
     def ShowBoxes(self):
         self.tabs.show()

@@ -77,7 +77,6 @@ class Hunter(GroupBox):
         deaths = sum([d[0] for d in deaths])
         assists = sum([a[0] for a in assists])
 
-        print(kills,deaths,assists)
         if int(deaths) == 0:
             kda = (kills + assists)
         else:
@@ -131,7 +130,6 @@ class Hunter(GroupBox):
     def UpdateMmrBox(self):
         self.connection.SetOwnMMR()
         mmr = int(self.settings.value('mmr',-1))
-        print('mmr',mmr)
         stars = MmrToStars(mmr)
         self.starQLabel.setPixmap(QtGui.QPixmap('./assets/icons/_%dstar.png' % stars))
         self.mmrQLabel.setText('MMR: %d' % mmr)
