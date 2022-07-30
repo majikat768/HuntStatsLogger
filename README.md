@@ -1,6 +1,9 @@
 # Hunt Stats Logger
 <p>
   <img src="screenshots/huntapp.png" width=30% height=30%>
+  <img src="screenshots/huntapp2.png" width=30% height=30%>
+  <img src="screenshots/huntapp3.png" width=30% height=30%>
+  <img src="screenshots/huntapp4.png" width=30% height=30%>
 </p>
 ![](screenshots/huntapp.png)
 <p>
