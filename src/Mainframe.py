@@ -1,3 +1,4 @@
+import sys
 from PyQt6.QtWidgets import (
     QTabWidget,
     QWidget,
@@ -6,9 +7,10 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QMainWindow,
-    QSizePolicy
+    QSizePolicy,
+    QWIDGETSIZE_MAX
 )
-from PyQt6.QtCore import QSettings, QPoint
+from PyQt6.QtCore import QPoint
 import HuntsTab, Settings, Hunter, HuntersTab, Chart
 
 killall = False
@@ -77,10 +79,14 @@ class MainFrame(QWidget):
 
     def HideBoxes(self):
         self.tabs.hide()
-        self.parent.resize(self.parent.width(),self.parent.height()-10)
+        self.parent.setMinimumHeight(self.layout.sizeHint().height())
+        self.parent.setMaximumHeight(self.layout.sizeHint().height())
 
     def ShowBoxes(self):
         self.tabs.show()
+        self.parent.setMinimumHeight(0)
+        self.parent.setMaximumHeight(QWIDGETSIZE_MAX)
+        self.parent.adjustSize()
 
     def ToggleBoxes(self):
         if self.tabs.isVisible():

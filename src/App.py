@@ -73,6 +73,7 @@ class App(QMainWindow):
     def StartLogger(self):
         if(self.log):
             validPath = self.logger.set_path(self.settings.value('huntDir',''))
+            print(self.settings.value('huntDir'))
             if validPath != 1:
                 return
             self.loggerThread = QThread(parent=self)

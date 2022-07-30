@@ -22,8 +22,6 @@ def diff(file1,file2):
 def data_eq(json1,json2):
     eq = json1['hunter'] == json2['hunter']
     if not eq:
-        print(str(json1['hunter']))
-        print(str(json2['hunter']))
         return False
     return True
 
@@ -55,7 +53,6 @@ class Logger(QObject):
         self.print('setting path to %s' % huntpath)
         suffix = 'user/profiles/default/attributes.xml' 
         self.xml_path = os.path.join(huntpath,suffix)
-        print(self.xml_path)
         if not os.path.exists(self.xml_path):
             self.print('attributes.xml not found.')
             self.print(self.xml_path)
@@ -89,16 +86,17 @@ class Logger(QObject):
                     prev_json = os.path.join(self.json_out_dir,max(json_files,key=lambda x : os.stat(os.path.join(self.json_out_dir,x)).st_mtime))
                     prev_data = json.load(open(prev_json,'r'))
 
+                    print('new',new_data)
+                    print('old',prev_data)
                     #new_data = json.load(open(json_outfile_wait,'r'))
                     if data_eq(new_data,prev_data):
                         print('identical file found')
-                        return
+                        
                     else:
                         self.print('writing new file')
                         with open(json_outfile,'w',encoding='utf-8') as outfile:
                             json.dump(new_data,outfile,indent=True)
 
-                time.sleep(1)
 
                 last_change = os.stat(self.xml_path).st_mtime
 
@@ -124,7 +122,6 @@ class Logger(QObject):
                     try:
                        linedict = xmltodict.parse(line)
                     except:
-                        print(line)
                         continue
                     key = linedict['Attr']['@name']
                     value= parse_value(linedict['Attr']['@value'])
@@ -138,7 +135,6 @@ class Logger(QObject):
                     try:
                         linedict = xmltodict.parse(line)
                     except:
-                        print(line)
                         continue
                     key = linedict['Attr']['@name']
                     value = parse_value(linedict['Attr']['@value'])
@@ -173,7 +169,6 @@ class Logger(QObject):
                     try:
                        linedict = xmltodict.parse(line)
                     except:
-                        print(line)
                         continue
                     key = linedict['Attr']['@name']
                     value= linedict['Attr']['@value']
