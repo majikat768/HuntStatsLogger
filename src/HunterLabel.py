@@ -11,6 +11,8 @@ class HunterLabel(QLabel):
     def __init__(self,name=''):
         super().__init__()
         self.name = name
+        if self.name == "" or self.name == None:
+            self.name = "Hunter X"
         self.fullname = name
         if len(self.name) > HunterLabel.maxLen:
             self.name = self.name[:HunterLabel.maxLen-3]+'...'

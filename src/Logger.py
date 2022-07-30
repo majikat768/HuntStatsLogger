@@ -86,8 +86,6 @@ class Logger(QObject):
                     prev_json = os.path.join(self.json_out_dir,max(json_files,key=lambda x : os.stat(os.path.join(self.json_out_dir,x)).st_mtime))
                     prev_data = json.load(open(prev_json,'r'))
 
-                    print('new',new_data)
-                    print('old',prev_data)
                     #new_data = json.load(open(json_outfile_wait,'r'))
                     if data_eq(new_data,prev_data):
                         print('identical file found')
