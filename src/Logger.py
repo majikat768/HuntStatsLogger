@@ -54,6 +54,7 @@ class Logger(QObject):
         if not os.path.exists(self.json_out_dir):
             os.makedirs(self.json_out_dir)
         self.settings = self.parent.settings
+        self.client = parent.client
 
     def set_path(self,huntpath):
         self.print('setting path to %s' % huntpath)
@@ -134,7 +135,9 @@ class Logger(QObject):
                 m = datetime.fromtimestamp(timestamp).strftime('%m')
                 d = datetime.fromtimestamp(timestamp).strftime('%d')
 
-                json_outfile = '/'.join([self.settings.value('aws_username','hunter'),y,m,d,'attributes_%s.json' % timestamp])
+                json_outfile = '/'.join([y,m,d,'attributes_%s.json' % timestamp])
+                if self.client.isLoggedIn():
+                    json_outfile = '/'.join([self.settings.value('aws_sub'),json_outfile])
                 os.makedirs(os.path.join(self.json_out_dir,os.path.dirname(json_outfile)),exist_ok=True)
                 json_files = os.listdir(self.json_out_dir)
 

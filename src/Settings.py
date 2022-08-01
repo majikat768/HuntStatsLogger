@@ -1,13 +1,11 @@
 from PyQt6.QtWidgets import QPushButton,QLineEdit,QFileDialog, QWidget, QVBoxLayout,QGridLayout,QComboBox, QLabel,QCheckBox,QMainWindow
 import time
-from PyQt6.QtCore import Qt,QSettings
+from PyQt6.QtCore import Qt
 import os
-import boto3
 from Connection import unix_to_datetime
 from GroupBox import GroupBox
 from HunterLabel import HunterLabel
 from Login import Login
-import Client
 
 client_id="5ek9jf37380g23qjbilbuh08hq"
 
@@ -17,6 +15,7 @@ class Settings(GroupBox):
         self.setStyleSheet('*{margin:4px;padding:4px;}')
         self.parent = parent
         self.settings = self.parent.settings
+        self.client = self.parent.client
         self.connection = parent.connection
         self.huntDir = ''
         self.layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -94,28 +93,14 @@ class Settings(GroupBox):
     def isLoggedIn(self):
         if self.settings.value('aws_access_token','') == '':
             return False
-        client = boto3.client("cognito-idp",region_name="us-west-2")
-        try:
-            Client.Client().refresh_token()
-            response = client.get_user(
-                AccessToken=self.settings.value('aws_access_token')
-            )
-            self.settings.setValue('aws_access_token',response['AuthenticationResult']['AccessToken'])
-            self.settings.setValue('aws_id_token',response['AuthenticationResult']['IdToken'])
-            return True
-        except client.exceptions.UserNotFoundException as msg:
-            print(msg)
-            return False
-        except client.exceptions.NotAuthorizedException as msg:
-            print(msg)
-            return False
+        return self.client.isLoggedIn()
 
     def showLoggedIn(self,response):
         self.settings.setValue('aws_access_token',response['AuthenticationResult']['AccessToken'])
         self.settings.setValue('aws_refresh_token',response['AuthenticationResult']['RefreshToken'])
         self.settings.setValue('aws_id_token',response['AuthenticationResult']['IdToken'])
         self.settings.setValue('aws_username',response['AuthenticationResult']['username'])
-        #self.LoggedIn.setText("Logged in as %s" % self.settings.value('aws_username'))
+        self.LoggedIn.setText("Logged in as %s" % self.settings.value('aws_username'))
         self.LoggedIn.show()
         self.logoutButton.show()
         self.loginButton.hide()

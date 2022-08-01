@@ -1,7 +1,5 @@
 from PyQt6.QtWidgets import QLineEdit,QLabel,QPushButton,QWidget,QVBoxLayout,QGridLayout,QTabWidget
-from PyQt6.QtCore import QThread
 import boto3
-import Client
 from GroupBox import GroupBox
 
 client_id="5ek9jf37380g23qjbilbuh08hq"
@@ -12,6 +10,7 @@ class Login(GroupBox):
         self.parent = parent
         self.settings = self.parent.settings
         self.connection = parent.connection
+        self.client = parent.client
 
         self.tabs = QTabWidget()
         self.tabs.addTab(self.initLoginTab(),"Login")
@@ -78,6 +77,7 @@ class Login(GroupBox):
 
     def setLoginStatus(self,text):
         self.loginStatus.setText(text)
+
     def setSignupStatus(self,text):
         self.signupStatus.setText(text)
 
@@ -85,36 +85,33 @@ class Login(GroupBox):
         user = self.loginUsernameInput.text()
         passwd = self.loginPasswordInput.text()
         if user == '' or passwd == '':  return
-        self.clientThread = QThread(parent=self)
-        self.client = Client.Client({'user':user,'passwd':passwd})
-        self.client.moveToThread(self.clientThread)
-        self.clientThread.started.connect(self.client.login)
-        self.client.finished.connect(self.clientThread.quit)
-        self.client.finished.connect(self.client.deleteLater)
-        self.client.finished.connect(self.client.deleteLater)
-        self.client.progress.connect(self.setLoginStatus)
-        self.client.success.connect(self.parent.showLoggedIn)
-        #self.client.success.connect(self.setLoginStatus)
-        self.clientThread.start()
-
+        try:
+            response = self.client.login(user,passwd)
+            if type(response) == dict and 'AuthenticationResult' in response:
+                self.settings.setValue('aws_access_token',response['AuthenticationResult']['AccessToken'])
+                self.settings.setValue('aws_id_token',response['AuthenticationResult']['IdToken'])
+                self.settings.setValue('aws_refresh_token',response['AuthenticationResult']['RefreshToken'])
+                self.settings.setValue('aws_username',response['AuthenticationResult']['username'])
+                self.parent.showLoggedIn(response)
+                self.window().close()
+        
+        except Exception as msg:
+            print('something happened')
+            print(msg)
 
     def submitSignup(self):
         user = self.signupUsernameInput.text()
         passwd = self.signupPasswordInput.text()
         email = self.signupEmailInput.text()
         if email == '' or user == '' or passwd == '':  return
-        self.clientThread = QThread(parent=self)
-        self.client = Client.Client({'user':user,'passwd':passwd,'email':email})
-        self.client.moveToThread(self.clientThread)
-        self.clientThread.started.connect(self.client.signup)
-        self.client.finished.connect(self.clientThread.quit)
-        self.client.finished.connect(self.client.deleteLater)
-        self.client.finished.connect(self.client.deleteLater)
-        self.client.progress.connect(self.setSignupStatus)
-        #self.client.progress.connect(self.setLoginStatus)
-        self.client.success.connect(self.VerifyWidget.show)
-        #self.client.success.connect(self.setLoginStatus)
-        self.clientThread.start()
+        response = self.client.signup(user,email,passwd)
+        print(response)
+        if type(response) != dict:
+            print('exception!')
+        else:
+            self.VerifyWidget.show()
+
+        
 
     def verify(self):
         client = boto3.client("cognito-idp",region_name="us-west-2")

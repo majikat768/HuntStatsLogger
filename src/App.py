@@ -3,8 +3,7 @@ import os,sys
 from Mainframe import MainFrame
 from PyQt6.QtCore import QThread,QSettings,QStandardPaths
 from PyQt6.QtWidgets import QMainWindow
-import Connection, Logger
-import boto3
+import Connection, Logger, Client
 
 '''
 detects changes to the Hunt Showdown 'attributes.xml' file.
@@ -43,6 +42,7 @@ class App(QMainWindow):
             os.path.join(self.app_data_path,'settings.ini'),
             QSettings.Format.IniFormat
         )
+        self.client = Client.Client(self)
         self.log = log 
         self.connection = Connection.Connection(self)
         self.mainFrame = MainFrame(self)

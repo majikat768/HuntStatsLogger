@@ -11,12 +11,33 @@ class Client(QObject):
     progress = pyqtSignal(object)
     success = pyqtSignal(object)
 
-    def __init__(self, args, parent=None):
+    def __init__(self,parent):
         super().__init__(parent)
-        self.args = args
+        self.parent = parent
+        self.settings = self.parent.settings
         print('client init')
 
+    def isLoggedIn(self):
+        if self.settings.value('aws_access_token','') == '':    return
+        client = boto3.client("cognito-idp",region_name="us-west-2")
+        try:
+            self.refresh_token()
+            response = client.get_user(
+                AccessToken=self.settings.value('aws_access_token')
+            )
+            print(response)
+            self.settings.setValue('aws_username',response["Username"])
+            for e in response["UserAttributes"]:
+                if e['Name'] == 'sub':
+                    self.settings.setValue('aws_sub',e['Value'])
+            return True
+        except Exception as msg:
+            print(msg)
+            return False
+
     def refresh_token(self):
+        if self.settings.value('aws_refresh_token','') == '':
+            return
         print('refreshing token')
         client = boto3.client("cognito-idp",region_name="us-west-2")
         try:
@@ -32,6 +53,8 @@ class Client(QObject):
         except client.exceptions.NotAuthorizedException as msg:
             print('refresh_token: not authorized\n%s' % msg)
         except client.exceptions.UserNotFoundException as msg:
+            print(msg)
+        except Exception as msg:
             print(msg)
 
     def signup(self):
@@ -96,27 +119,35 @@ class Client(QObject):
             except client.exceptions.NotAuthorizedException as msg2:
                 print('still not authorized\n%s' % msg2)
 
-    def login(self):
+    def signup(self,user,email,passwd):
+        client = boto3.client("cognito-idp",region_name="us-west-2")
+        try:
+            response=client.sign_up(
+                ClientId=client_id,
+                Username=user,
+                Password=passwd,
+                UserAttributes=[
+                    {"Name":"email","Value":email},
+                    {"Name":"preferred_username","Value":user}
+                ]
+            )
+            return response
+        except Exception as msg:
+            return msg  #botocore.errorfactory.InvalidParameterException
+
+    def login(self,user,passwd):
         self.progress.emit('logging in')
-        user = self.args['user']
-        passwd = self.args['passwd']
         client = boto3.client("cognito-idp",region_name="us-west-2")
 
-        try: 
-            response = client.initiate_auth(
-                ClientId=client_id,
-                AuthFlow="USER_PASSWORD_AUTH",
-                AuthParameters={
-                    "USERNAME":user,"PASSWORD":passwd
-                }
-            )
-            response['AuthenticationResult']['username'] = user
-            self.progress.emit('')
-            self.success.emit(response)
+        response = client.initiate_auth(
+            ClientId=client_id,
+            AuthFlow="USER_PASSWORD_AUTH",
+            AuthParameters={
+                "USERNAME":user,"PASSWORD":passwd
+            }
+        )
+        response['AuthenticationResult']['username'] = user
+        return response
 
-        except client.exceptions.InvalidParameterException as msg:
-            self.progress.emit("invalid parameter exception")
-        except client.exceptions.NotAuthorizedException as msg:
-            self.progress.emit("not authorized exception")
             #self.progress.emit(str(msg))
-        #self.finished.emit()
+        #self.finished.emit()125gg

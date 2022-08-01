@@ -19,6 +19,7 @@ class MainFrame(QWidget):
     def __init__(self, parent) -> None:
         super().__init__(parent)
         self.parent = parent
+        self.client = self.parent.client
         self.resource_path = self.parent.resource_path
         self.connection = parent.connection
         self.layout = QVBoxLayout()
