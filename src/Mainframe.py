@@ -58,7 +58,7 @@ class MainFrame(QWidget):
     def initSettingsWindow(self):
         settingsBox = Settings.Settings(self,QVBoxLayout())
 
-        settingsWindow = QMainWindow()
+        settingsWindow = QMainWindow(self)
         #settingsWindow.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         settingsWindow.setCentralWidget(settingsBox)
         #settingsWindow.setMenuBar(TitleBar.TitleBar(settingsWindow))

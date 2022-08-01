@@ -1,7 +1,10 @@
-from ast import PyCF_ALLOW_TOP_LEVEL_AWAIT
 from GroupBox import GroupBox
-from PyQt6.QtWidgets import QComboBox
+from PyQt6.QtWidgets import QComboBox,QSlider,QLabel
+from PyQt6.QtCore import Qt,QEvent
 import pyqtgraph
+
+def lerp(a,b,x):
+    return a + x * (b-a)
 
 class Chart(GroupBox):
     def __init__(self, parent, layout, title=''):
@@ -10,20 +13,77 @@ class Chart(GroupBox):
         self.parent = parent
         self.settings = self.parent.settings
         self.connection = self.parent.connection
+
         self.dataSelect = QComboBox()
         self.dataSelect.addItem("MMR")
         self.dataSelect.addItem("KDA")
         self.dataSelect.currentTextChanged.connect(self.update)
-        self.layout.addWidget(self.dataSelect)
-        self.layout.addWidget(self.plotWindow)
+
+        self.legend = pyqtgraph.LegendItem()
+        self.plot = self.plotWindow.addPlot(0,0)
+        vb = self.plotWindow.addViewBox(1,0)
+        self.legend = pyqtgraph.LegendItem()
+        self.legend.setParentItem(vb)
+        self.legend.anchor((0,0),(0,0))
+        self.plot.getViewBox().installEventFilter(self)
+        self.xZoom = QSlider(Qt.Orientation.Horizontal)
+        self.xZoom.setRange(0,90)
+        self.xZoom.valueChanged.connect(self.zoom)
+        self.yZoom = QSlider(Qt.Orientation.Vertical)
+        self.yZoom.setRange(0,90)
+        self.yZoom.valueChanged.connect(self.zoom)
+        self.yZoom.setValue(90)
+        self.xZoom.setValue(20)
+        self.layout.addWidget(self.dataSelect,0,0,1,4)
+        self.layout.addWidget(self.plotWindow,1,1,3,3)
+        self.layout.addWidget(self.xZoom,4,2,1,1)
+        self.layout.addWidget(QLabel('-'),4,1,1,1)
+        self.layout.addWidget(QLabel('+'),4,3,1,1)
+        self.layout.addWidget(self.yZoom,2,0,1,1)
+        self.layout.addWidget(QLabel('<center>+</center>'),1,0,1,1)
+        self.layout.addWidget(QLabel('<center>-</center>'),3,0,1,1)
+        self.layout.addWidget(QLabel(
+            'Showing last 50 games.\nUse x and y sliders to zoom out.\nDrag with mouse to pan across.'
+        ),5,0,1,3)
+        self.plot.setMouseEnabled(x=True,y=True)
 
         self.update()
 
+    def zoom(self):
+        #xRange = self.plot.getViewBox().viewRange()[0]
+        #yRange = self.plot.getViewBox().viewRange()[1]
+        xLimits = self.plot.getViewBox()._effectiveLimits()[0]
+        yLimits = self.plot.getViewBox()._effectiveLimits()[1]
+
+        xMid = (xLimits[0] + xLimits[1])/2
+        yMid = (yLimits[0] + yLimits[1])/2
+
+        xZoom = self.xZoom.value()/100
+        yZoom = self.yZoom.value()/100
+
+        xRange = (xLimits[1] - xLimits[0]) * (1-xZoom)
+        yRange = (yLimits[1] - yLimits[0]) * (1-yZoom)
+
+        xView = self.plot.getViewBox().viewRange()[0]
+        yView = self.plot.getViewBox().viewRange()[1]
+        xMid = (xView[1] + xView[0]) / 2
+        yMid = (yView[1] + yView[0]) / 2
+        self.plot.setXRange(xMid - xRange/2, xMid + xRange/2)
+        self.plot.setYRange(yMid - yRange/2, yMid + yRange/2)
+
     def update(self):
+        #self.plotWindow.clear()
+        self.plot.clear()
+        self.legend.clear()
+        #vb = self.plotWindow.addViewBox(1,0)
+        #self.legend = pyqtgraph.LegendItem()
+        #self.legend.setParentItem(vb)
+        #self.legend.anchor((0,0),(0,0))
         if self.dataSelect.currentText() == 'MMR':
             self.initMmrGraph()
         elif self.dataSelect.currentText() == 'KDA':
             self.initKdaGraph()
+        self.legend.getViewBox().setMaximumHeight(self.legend.boundingRect().height())
 
     def calcKda(self,kills,deaths,assists,hunts,gameType='all'):
         allKills = {}
@@ -71,7 +131,6 @@ class Chart(GroupBox):
 
 
     def initKdaGraph(self):
-        self.plotWindow.clear()
         kills = self.connection.execute_query("select timestamp, downedbyme, killedbyme from hunter where downedbyme > 0 or killedbyme > 0")
         deaths = self.connection.execute_query("select timestamp, downedme, killedme from hunter where downedme > 0 or killedme > 0")
         assists = self.connection.execute_query("select timestamp, amount from 'entry' where category is 'accolade_players_killed_assist'")
@@ -81,31 +140,24 @@ class Chart(GroupBox):
         qpKdas = self.calcKda(kills,deaths,assists,hunts,1)
         bhKdas = self.calcKda(kills,deaths,assists,hunts,0)
         
+        #self.plot = self.plotWindow.addPlot(0,0)
+        kdaP = self.plot.plot(kdas['x'],kdas['y'],pen='#ffffff44',symbol='t1',symbolPen=None,symbolBrush='#ff0000')
+        qpKdaP = self.plot.plot(qpKdas['x'],qpKdas['y'],pen='#ffffff44',symbol='t1',symbolPen=None,symbolBrush='#ffff00')
+        bhKdaP = self.plot.plot(bhKdas['x'],bhKdas['y'],pen='#ffffff44',symbol='t1',symbolPen=None,symbolBrush='#0088ff')
+        self.legend.addItem(kdaP, name='KDA')
+        self.legend.addItem(bhKdaP, name='Bounty KDA')
+        self.legend.addItem(qpKdaP, name='QP KDA')
 
-        vb = self.plotWindow.addViewBox(1,0)
-        legend = pyqtgraph.LegendItem()
-        legend.setParentItem(vb)
-        legend.anchor((0,0),(0,0))
-
-        plot = self.plotWindow.addPlot(0,0)
-        kdaP = plot.plot(kdas['x'],kdas['y'],pen='#ffffff44',symbol='t1',symbolPen=None,symbolBrush='#ff0000')
-        qpKdaP = plot.plot(qpKdas['x'],qpKdas['y'],pen='#ffffff44',symbol='t1',symbolPen=None,symbolBrush='#ffff00')
-        bhKdaP = plot.plot(bhKdas['x'],bhKdas['y'],pen='#ffffff44',symbol='t1',symbolPen=None,symbolBrush='#0088ff')
-        plot.setXRange(0,len(kdas['x']))
-        plot.setYRange(0,max(kdas['y'])+0.5)
-        legend.addItem(kdaP, name='KDA')
-        legend.addItem(bhKdaP, name='Bounty KDA')
-        legend.addItem(qpKdaP, name='QP KDA')
-
-        plot.showGrid(x = True, y = True, alpha = 0.4)
-        plot.setMouseEnabled(x=False)
-        plot.getViewBox().setLimits(xMin=0,xMax=len(kdas['x']),yMin=0,yMax=max(kdas['y'])*2)
-        vb.setMaximumHeight(legend.boundingRect().height())
-        plot.setLabel('left','KDA')
-        plot.setLabel('bottom','Hunts')
+        self.plot.showGrid(x = True, y = True, alpha = 0.4)
+        self.plot.getViewBox().setLimits(xMin=0,xMax=len(kdas['x']),yMin=0,yMax=max(kdas['y'])*2)
+        self.plot.setXRange(len(kdas['x'])-50,len(kdas['x']))
+        self.plot.setYRange(0,max(kdas['y'])+0.5)
+        self.xZoom.setValue(100-(50/len(kdas['x'])*100))
+        self.yZoom.setValue(100-(max(kdas['y'])+0.5)/(max(kdas['y'])*2)*100)
+        self.plot.setLabel('left','KDA')
+        self.plot.setLabel('bottom','Hunts')
 
     def initMmrGraph(self):
-        self.plotWindow.clear()
         mmrs = self.connection.execute_query("select timestamp,mmr from 'hunter' where blood_line_name is '%s'" % self.settings.value('hunterName',''))
         gameTypes = self.connection.execute_query("select timestamp,MissionBagIsQuickPlay from 'game'")
         mmrs = {i[0]:i[1] for i in mmrs}
@@ -117,6 +169,8 @@ class Chart(GroupBox):
         #plot.setLabel('bottom','Hunts')
         i = 0
         for t in mmrs:
+            if t is None:   continue
+            if t not in gameTypes:  continue
             mmr = mmrs[t]
             qp = gameTypes[t]
             points['x'].append(i)
@@ -131,31 +185,26 @@ class Chart(GroupBox):
         if len(points['x']) == 0:
             return
         
-        #qp = plot.plot(qpM[0],qpM[1],pen=None,symbolPen='#000000',symbolBrush="#ff0000",symbol='t1',name="quick play")
-        #bh = plot.plot(bhM[0],bhM[1],pen=None,symbolPen='#000000',symbolBrush="#00ffff",symbol='t1',name="bounty hunt")
-
-        vb = self.plotWindow.addViewBox(1,0)
-        legend = pyqtgraph.LegendItem()
-        legend.setParentItem(vb)
-        legend.anchor((0,0),(0,0))
-
-        plot = self.plotWindow.addPlot(0,0)
-        plot.plot(points['x'],points['y'],pen='#ffffff44', symbol=None)
-        qpP = plot.plot(qpM['x'],qpM['y'],pen=None, symbolPen=None,symbolBrush='#00ffff',symbol='o',name='Quick Play')
-        bhP = plot.plot(bhM['x'],bhM['y'],pen=None, symbolPen=None,symbolBrush='#ff0000',symbol='o', name='Bounty Hunt')
-        legend.addItem(bhP, name=bhP.opts['name'])
-        legend.addItem(qpP, name=qpP.opts['name'])
-        plot.showGrid(x = True, y = True, alpha = 0.1)
-        plot.setXRange(0,len(points['x']))
-        plot.setYRange(min(points['y']),max(points['y']))
-        plot.setMouseEnabled(x=False)
-        plot.getViewBox().setLimits(xMin=0,xMax=len(points['x']),yMin=0,yMax=5000)
-        if max(points['y']) - min(points['y']) < 100:
-            plot.setYRange(min(points['y'])-100,max(points['y'])+100)
+        self.plot.plot(points['x'],points['y'],pen='#ffffff44', symbol=None)
+        qpP = self.plot.plot(qpM['x'],qpM['y'],pen=None, symbolPen=None,symbolBrush='#00ffff',symbol='o',name='Quick Play')
+        bhP = self.plot.plot(bhM['x'],bhM['y'],pen=None, symbolPen=None,symbolBrush='#ff0000',symbol='o', name='Bounty Hunt')
+        self.legend.addItem(bhP, name=bhP.opts['name'])
+        self.legend.addItem(qpP, name=qpP.opts['name'])
+        self.plot.showGrid(x = True, y = True, alpha = 0.1)
+        self.plot.getViewBox().setLimits(xMin=0,xMax=len(points['x']),yMin=0,yMax=5000)
         for mmr in [0,2000,2300,2600,2750,3000,5000]:
             line = pyqtgraph.InfiniteLine(mmr,pen="#ffaaaa88",angle=0)
-            plot.addItem(line)
-            #plot.plot(range(len(points)),[mmr]*len(points),pen="#888888")
-        vb.setMaximumHeight(legend.boundingRect().height())
-        plot.setLabel('left','MMR')
-        plot.setLabel('bottom','Hunts')
+            self.plot.addItem(line)
+        self.plot.setXRange(len(points['x'])-50,len(points['x']))
+        self.xZoom.setValue(100-(50/len(points['x'])*100))
+        self.plot.setYRange(min(points['y'])-100,max(points['y'])+100)
+        self.yZoom.setValue(100-
+            ((((max(points['y'])+100) - (min(points['y'])-100)) / 5000) * 100)
+        )
+        self.plot.setLabel('left','MMR')
+        self.plot.setLabel('bottom','Hunts')
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.GraphicsSceneWheel:
+            return True
+        return super().eventFilter(obj, event)

@@ -3,7 +3,7 @@ import time
 import os
 import sqlite3
 from datetime import datetime
-from PyQt6.QtCore import QObject, pyqtSignal,QStandardPaths
+from PyQt6.QtCore import QObject, pyqtSignal
 
 #self.db = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation),'huntstats.db')
 killall = False
@@ -77,15 +77,18 @@ class Connection(QObject):
             os.makedirs(self.logdir)
 
         self.logfile = os.path.join(self.logdir,'log')
-        self.current_files = os.listdir(self.jsondir)
+        self.current_files = self.get_files()
 
+        '''
         # if file hasn't been written to database, write file.
         for file in self.current_files:
+            print(file)
             timestamp = file[file.index('attributes'):].split('_')[1].split('.')[0]
             exists = self.execute_query("select timestamp from 'game' where timestamp = '%s'" % timestamp)
             if exists == []:
                 print('writing %s to database' % timestamp)
                 self.write_json_to_sql(os.path.join(self.jsondir,file),log=False)
+        '''
 
     def execute_query(self, query):
         connection = sqlite3.connect(self.db)
@@ -100,11 +103,19 @@ class Connection(QObject):
         connection.close()
         return result
         
+    def get_files(self):
+        allfiles = []
+        for root, directories,files in os.walk(self.jsondir):
+            for file in files:
+                allfiles.append(os.path.join(root,file))
+        return allfiles
+
+
     def file_added(self):
-        current_files = os.listdir(self.jsondir)
+        current_files = self.get_files()
         if len(current_files) > len(self.current_files):
             self.current_files = current_files
-            print('file added %d' % len(self.current_files))
+            print('file added: %d' % len(self.current_files))
             return True
         return False
 
@@ -122,14 +133,14 @@ class Connection(QObject):
         return n;
 
     def newest_file(self):
-        self.current_files = os.listdir(self.jsondir)
-        f = os.path.join(
-            self.jsondir,max(
-                self.current_files,
-                key=lambda x : os.stat(os.path.join(self.jsondir,x)).st_mtime
-            )
-        )
-        return f
+        t = -1
+        prev = None
+        for root, directories,files in os.walk(self.jsondir):
+            for f in files:
+                if os.stat(os.path.join(root,f)).st_mtime > t:
+                    t = os.stat(os.path.join(root,f)).st_mtime
+                    prev = os.path.join(root,f)
+        return prev
 
     def run(self):
         global killall
@@ -137,8 +148,7 @@ class Connection(QObject):
             time.sleep(1)
             if(self.file_added()):
                 f = self.newest_file()
-                if f[-2:] != '.2':
-                    self.write_json_to_sql(f)
+                self.write_json_to_sql(f)
             if killall:
                 self.finished.emit()
                 break
@@ -215,7 +225,8 @@ class Connection(QObject):
             mmr = 0
         return 0 if mmr is None else mmr
 
-    def insert_row(self,table, row):
+    def insert_row(self,table, row,id):
+        row['id'] = id
         connection = sqlite3.connect(self.db)
         cursor = connection.cursor();
         
@@ -230,10 +241,11 @@ class Connection(QObject):
 
         except sqlite3.OperationalError as msg:
             self.print('operational error\n' + str(msg))
+            self.print(query)
             if 'has no column' in str(msg):
                 column = str(msg).split(' ')[-1]
                 row.pop(column)
-                self.insert_row(table,row)
+                self.insert_row(table,row,id)
         except sqlite3.IntegrityError as msg:
             self.print('integrity error\n%s'%str(msg))
         connection.commit()
@@ -248,45 +260,27 @@ class Connection(QObject):
             self.progress.emit(msg)
 
     def write_json_to_sql(self,file,log=True):
-        rows = json.load(open(file,'r'))
+        with open(file,'r') as f:
+            data = json.load(f)
         timestamp = file[file.index('attributes'):].split('_')[1].split('.')[0]
 
+        for team in data["teams"]:
+            for hunter in team["hunters"]:
+                hunter["timestamp"] = timestamp
+                self.insert_row("hunter",hunter,data['id'])
+            team.pop("hunters")
+            team["timestamp"] = timestamp
+            self.insert_row("team",team,data['id'])
+        data.pop("teams")
+        for entry in data["entries"]:
+            entry["timestamp"] = timestamp
+            self.insert_row("entry",entry,data['id'])
+        data["timestamp"] = timestamp
+        data.pop("entries")
+        self.insert_row("game",data,data['id'])
+
         if log:
-            self.print('writing rows to database from %s' % file,False)
-        num_teams = rows['game']['MissionBagNumTeams']
-        num_entries = rows['game']['MissionBagNumEntries']
-        
-        rows['game']['timestamp'] = timestamp
-        if 'MissionBagBoss_-1' in rows['game']:
-            rows['game'].pop('MissionBagBoss_-1')
-        self.insert_row('game',rows['game'])
-        rows['game'].pop('timestamp')
-
-        for i in rows['team']:
-            team = rows['team'][i]
-            print(team['team_num'],num_teams)
-            if int(team['team_num']) < int(num_teams):
-                team['timestamp'] = timestamp
-                self.insert_row('team',team)
-                team.pop('timestamp')
-
-        for i in rows['entry']:
-            entry = rows['entry'][i]
-            if int(entry['entry_num']) < int(num_entries):
-                entry['timestamp'] = timestamp
-                self.insert_row('entry',entry)
-                entry.pop('timestamp')
-
-        for i in rows['hunter']:
-            team = rows['hunter'][i]
-            for j in team:
-                hunter = team[j]
-                if int(hunter['team_num']) < int(num_teams) and int(hunter['hunter_num']) < get_num_hunters(rows,hunter['team_num']):
-                    hunter['timestamp'] = timestamp
-                    self.insert_row('hunter',hunter)
-                    hunter.pop('timestamp')
-        if log:
-            self.print('data written')
+            self.print('writing rows to database from %s' % file)
         self.GetTotalHuntCount()
 
 
@@ -333,7 +327,6 @@ class Connection(QObject):
         try:
             cursor.execute(query,(name,))
             id = cursor.fetchone()
-            print(id)
             id = id[0] if id != None else -1 
         except sqlite3.OperationalError as msg:
             self.print('Connection.GetProfileId()')
@@ -349,7 +342,6 @@ class Connection(QObject):
         try:
             cursor.execute(query)
             mmr = cursor.fetchone()
-            print('setting mmr',mmr)
             mmr = -1 if mmr is None else mmr[0]
         except sqlite3.OperationalError as msg:
             self.print('get own mmr error')

@@ -1,11 +1,15 @@
-from PyQt6.QtWidgets import QPushButton,QLineEdit,QFileDialog, QWidget, QVBoxLayout,QComboBox, QLabel,QCheckBox
+from PyQt6.QtWidgets import QPushButton,QLineEdit,QFileDialog, QWidget, QVBoxLayout,QGridLayout,QComboBox, QLabel,QCheckBox,QMainWindow
 import time
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt,QSettings
 import os
-import json
+import boto3
 from Connection import unix_to_datetime
 from GroupBox import GroupBox
 from HunterLabel import HunterLabel
+from Login import Login
+import Client
+
+client_id="5ek9jf37380g23qjbilbuh08hq"
 
 class Settings(GroupBox):
     def __init__(self, parent,layout):
@@ -15,10 +19,12 @@ class Settings(GroupBox):
         self.settings = self.parent.settings
         self.connection = parent.connection
         self.huntDir = ''
-        self.layout = layout
-        self.setLayout(self.layout)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.layout.setSpacing(0)
+
+        self.loginBox = self.initLoginBox()
+        self.layout.addWidget(self.loginBox)
+        self.layout.addWidget(QLabel())
 
         self.layout.addWidget(QLabel('Hunt Installation Directory:'))
         self.huntDirButton = QPushButton('Select Folder')
@@ -27,7 +33,6 @@ class Settings(GroupBox):
         self.layout.addWidget(self.huntDirQLabel)
         self.layout.addWidget(self.huntDirButton)
 
-        self.layout.addWidget(QLabel())
 
         self.layout.addWidget(QLabel('Steam username:'))
         self.nameInputButton = QPushButton('Update Steam Name')
@@ -49,6 +54,7 @@ class Settings(GroupBox):
         self.layout.addWidget(HeaderOnly)
         self.layout.addWidget(QLabel())
 
+
         self.layout.addWidget(QLabel('\ndev stuff:'))
         importJsonButton = QPushButton('Import a json file....')
         importJsonButton.clicked.connect(self.ImportJson)
@@ -60,6 +66,76 @@ class Settings(GroupBox):
 
         self.layout.addStretch()
 
+    def initLoginBox(self):
+        loginBox = QWidget()
+        loginBox.layout = QVBoxLayout()
+        loginBox.setLayout(loginBox.layout)
+
+        self.loginWindow = self.initLoginWindow()
+        self.loginButton = QPushButton("Login / Create Account")
+        self.loginButton.clicked.connect(self.loginWindow.show)
+        self.loginButton.clicked.connect(self.isLoggedIn)
+        self.LoggedIn = QLabel("Logged in as %s" % self.settings.value('aws_username'))
+        loginBox.layout.addWidget(self.LoggedIn)
+        self.logoutButton = QPushButton("Logout")
+        self.logoutButton.clicked.connect(self.logout)
+        loginBox.layout.addWidget(self.logoutButton)
+        loginBox.layout.addWidget(self.loginButton)
+        if self.isLoggedIn():
+            self.LoggedIn.show()
+            self.logoutButton.show()
+            self.loginButton.hide()
+        else:
+            self.LoggedIn.hide()
+            self.logoutButton.hide()
+            self.loginButton.show()
+        return loginBox
+
+    def isLoggedIn(self):
+        if self.settings.value('aws_access_token','') == '':
+            return False
+        client = boto3.client("cognito-idp",region_name="us-west-2")
+        try:
+            Client.Client().refresh_token()
+            response = client.get_user(
+                AccessToken=self.settings.value('aws_access_token')
+            )
+            self.settings.setValue('aws_access_token',response['AuthenticationResult']['AccessToken'])
+            self.settings.setValue('aws_id_token',response['AuthenticationResult']['IdToken'])
+            return True
+        except client.exceptions.UserNotFoundException as msg:
+            print(msg)
+            return False
+        except client.exceptions.NotAuthorizedException as msg:
+            print(msg)
+            return False
+
+    def showLoggedIn(self,response):
+        self.settings.setValue('aws_access_token',response['AuthenticationResult']['AccessToken'])
+        self.settings.setValue('aws_refresh_token',response['AuthenticationResult']['RefreshToken'])
+        self.settings.setValue('aws_id_token',response['AuthenticationResult']['IdToken'])
+        self.settings.setValue('aws_username',response['AuthenticationResult']['username'])
+        #self.LoggedIn.setText("Logged in as %s" % self.settings.value('aws_username'))
+        self.LoggedIn.show()
+        self.logoutButton.show()
+        self.loginButton.hide()
+
+    def logout(self):
+        self.settings.remove('aws_access_token')
+        self.settings.remove('aws_refresh_token')
+        self.settings.remove('aws_id_token')
+        self.settings.remove('aws_username')
+        self.LoggedIn.hide()
+        self.logoutButton.hide()
+        self.loginButton.show()
+
+
+    def initLoginWindow(self):
+        loginBox = Login(self,QGridLayout())
+
+        loginWindow = QMainWindow(self)
+        loginWindow.setCentralWidget(loginBox)
+        return loginWindow
 
     def HeaderToggle(self):
         self.parent.ToggleBoxes()

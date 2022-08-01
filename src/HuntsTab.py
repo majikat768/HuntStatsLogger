@@ -355,8 +355,8 @@ class HuntsTab(GroupBox):
         self.popup = QMainWindow()
         self.popup.setStyleSheet('QWidget{border:1px solid red;}QLabel{border:0px;}')
         self.popup.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
-        self.popup.layout = QVBoxLayout()
-        self.popup.setLayout(self.popup.layout) 
+        #self.popup.layout = QVBoxLayout()
+        #self.popup.setLayout(self.popup.layout) 
         self.popup.objectName = "popup"
         info = QWidget()
         self.popup.setCentralWidget(info)
@@ -390,7 +390,6 @@ class HuntsTab(GroupBox):
             if hunter['hadWellspring']:
                 info.layout.addWidget(QLabel('they activated the wellspring.'))
         info.layout.addStretch()
-        self.popup.layout.addStretch()
         self.popup.show()
         self.setFocus()
 

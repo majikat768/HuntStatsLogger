@@ -4,6 +4,7 @@ from Mainframe import MainFrame
 from PyQt6.QtCore import QThread,QSettings,QStandardPaths
 from PyQt6.QtWidgets import QMainWindow
 import Connection, Logger
+import boto3
 
 '''
 detects changes to the Hunt Showdown 'attributes.xml' file.
@@ -11,6 +12,7 @@ when change is found, backup new .xml file, also convert team and game data to j
 when change is found, parse .xml file and create json objects, write json to a file, and write objects to a sql database.
 '''
 
+client_id="5ek9jf37380g23qjbilbuh08hq"
 killall = True
 def unix_to_datetime(timestamp):
     return datetime.fromtimestamp(timestamp).strftime('%H:%M %m/%d/%y')
@@ -73,7 +75,6 @@ class App(QMainWindow):
     def StartLogger(self):
         if(self.log):
             validPath = self.logger.set_path(self.settings.value('huntDir',''))
-            print(self.settings.value('huntDir'))
             if validPath != 1:
                 return
             self.loggerThread = QThread(parent=self)

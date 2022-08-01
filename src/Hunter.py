@@ -12,8 +12,6 @@ class Hunter(GroupBox):
         self.parent = parent
         self.connection = parent.connection
         self.settings = self.parent.settings
-        self.layout = layout
-        self.setLayout(self.layout)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.layout.setSpacing(0)
         self.setStyleSheet('Hunter{padding:0px;margin:0px};QLabel{padding:0px;margin:0px;}')

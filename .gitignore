@@ -8,3 +8,4 @@ logs/
 .venv/
 settings.ini
 HuntStats.exe.lnk
+hsl_files/
