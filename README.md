@@ -22,6 +22,9 @@ App has to be running for hunts to be tracked.
 ### The app should populate with data from your last Hunt. It will update automatically after returning to the Game lobby after every subsequent Hunt (as long as the app is still running).
 #
 # How to run
+### source code isn't guaranteed to be stable right now.
+### recommended to download a release from the Releases page.
+#
 ## Easiest method, maybe:
 <ol>
 <li>Right click on <b>build.ps1</b>, and choose <b>Run with PowerShell</b>.
