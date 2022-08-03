@@ -20,6 +20,8 @@ App has to be running for hunts to be tracked.
 ### When running the app for the first time, click on Settings, Select Folder, and choose your Hunt install directory ( something like C:/Steam/steamapps/common/Hunt Showdown ) .
 ### Then enter your Steam username and click Update Steam Name.
 ### The app should populate with data from your last Hunt. It will update automatically after returning to the Game lobby after every subsequent Hunt (as long as the app is still running).
+### 
+### to enable automatic backups, create an account under Settings, and login.  if you've used the app before and are redownloading it, you can restore your games by logging in and selecting "sync files with server."
 #
 # How to run
 ### source code isn't guaranteed to be stable right now.
