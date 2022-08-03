@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QGroupBox
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QGroupBox,QWidget
+from PyQt6.QtCore import Qt,QObject
 
 class GroupBox(QGroupBox):
     def __init__(self,layout,title=''):
@@ -22,7 +22,3 @@ class GroupBox(QGroupBox):
             self.setStyleSheet('GroupBox{border-style:solid;}')
         else:
             self.setStyleSheet('GroupBox{border-style:none;}')
-
-    def setAlignment(self, a0: int) -> None:
-        return super().setAlignment(a0)
-        self.alignment = a0

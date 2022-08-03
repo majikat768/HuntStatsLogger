@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS game (
     MissionBagNumEntries integer,
     MissionBagNumTeams integer,
     EventPoints integer,
-    MissionBagTeamDetailsVersion integer
+    MissionBagTeamDetailsVersion integer,
+    HunterLevel integer
 );
 CREATE TABLE IF NOT EXISTS team (
     id text,

@@ -1,15 +1,12 @@
 from PyQt6.QtWidgets import QGroupBox, QVBoxLayout,QLabel, QScrollArea,QWidget,QGridLayout
-from PyQt6.QtCore import Qt
 from GroupBox import GroupBox
 from HunterLabel import HunterLabel
+from resources import *
+import Connection
 
 class HuntersTab(GroupBox):
-    def __init__(self, parent, layout, title=''):
+    def __init__(self, layout, title=''):
         super().__init__(layout, title)
-        self.parent = parent
-        self.connection = self.parent.connection
-        self.settings = self.parent.settings
-
         self.topHuntersBox = self.initTopHunters()
         self.layout.addWidget(self.topHuntersBox,1,0,1,2)
 
@@ -22,7 +19,7 @@ class HuntersTab(GroupBox):
         self.layout.setRowStretch(self.layout.rowCount(),1)
 
     def initTopKiller(self):
-        topKiller = self.parent.connection.GetTopKiller()
+        topKiller = Connection.GetTopKiller()
         topKillerBox = QGroupBox('Top Killer')
         topKillerBox.layout = QVBoxLayout()
         topKillerBox.setLayout(topKillerBox.layout) 
@@ -32,7 +29,7 @@ class HuntersTab(GroupBox):
         return topKillerBox
 
     def initTopKilled(self):
-        topKilled = self.parent.connection.GetTopKilled()
+        topKilled = Connection.GetTopKilled()
         topKilledBox = QGroupBox('Top Killed')
         topKilledBox.layout = QVBoxLayout()
         topKilledBox.setLayout(topKilledBox.layout) 
@@ -59,7 +56,7 @@ class HuntersTab(GroupBox):
         self.layout.addWidget(self.topHuntersBox,2,0,1,2)
 
     def initTopHunters(self):
-        topHunters = self.connection.TopNHunters(10)
+        topHunters = Connection.TopNHunters(10)
         topHuntersBox = QGroupBox('Frequent Hunters')
         topHuntersBox.layout = QVBoxLayout()
         topHuntersBox.setLayout(topHuntersBox.layout) 

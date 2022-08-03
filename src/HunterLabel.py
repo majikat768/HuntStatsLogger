@@ -1,7 +1,5 @@
 from PyQt6.QtWidgets import QLabel
-from PyQt6.QtCore import QSettings
-
-settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
+from resources import *
 
 class HunterLabel(QLabel):
     instanceList = []

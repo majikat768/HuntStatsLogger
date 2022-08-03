@@ -1,6 +1,6 @@
-import sys
 from PyQt6.QtWidgets import (
     QTabWidget,
+    QLabel,
     QWidget,
     QGridLayout,
     QVBoxLayout,
@@ -10,51 +10,86 @@ from PyQt6.QtWidgets import (
     QSizePolicy,
     QWIDGETSIZE_MAX
 )
-from PyQt6.QtCore import QPoint
 import HuntsTab, Settings, Hunter, HuntersTab, Chart
-
-killall = False
+from PyQt6.QtCore import Qt
+from resources import *
+import Logger, Connection
+import Client
 
 class MainFrame(QWidget):
-    def __init__(self, parent) -> None:
-        super().__init__(parent)
-        self.parent = parent
-        self.client = self.parent.client
-        self.resource_path = self.parent.resource_path
-        self.connection = parent.connection
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.settings = self.parent.settings
-        self.huntDir = self.settings.value('huntDir','')
-
+    def __init__(self) -> None:
+        super().__init__()
         self.initUI()
+        self.huntDir = settings.value('huntDir','')
 
-        self.mouseXY = QPoint()
+        if Client.isLoggedIn():
+            aws_sub = settings.value("aws_sub")
+            tokens = Client.getTokens()
+            local_files = getLocalFiles()
+            remote_files = Client.getRemoteFiles(aws_sub,tokens)
+            if len(local_files) != len(remote_files):
+                self.botoCall = Client.BotoCall()
+                Client.startThread(
+                    self,self.botoCall,started=[self.botoCall.syncFiles],progress=[],finished=[]
+                )
+        Connection.syncDb()
+        self.update()
+        self.logger = Logger.Logger()
+        self.connection = Connection.Connection()
+        StartConnection(self.connection,self)
+        StartLogger(self.logger,self)
+
+
+    def showLoggedIn(self):
+        if Client.isLoggedIn():
+            self.loggedInStatus.setText("Logged in as %s" % settings.value('aws_username'))
+            self.loggedInStatus.setStyleSheet("QLabel{color:#a9b7c6;}")
+        else:
+            self.loggedInStatus.setText("Not logged in.")
+            self.loggedInStatus.setStyleSheet("QLabel{color:#dd8888;}")
 
     def initUI(self):
-        self.hunterBox = Hunter.Hunter(self,QHBoxLayout(),'Hunter')
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.hunterBox = Hunter.Hunter(QHBoxLayout(),'Hunter')
         self.hunterBox.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Fixed)
-        self.layout.addWidget(self.hunterBox)
 
         self.tabs = QTabWidget();
-        self.layout.addWidget(self.tabs)
 
-        self.huntsTab = HuntsTab.HuntsTab(self,QGridLayout(),'Hunts')
+        self.huntsTab = HuntsTab.HuntsTab(QGridLayout(),'Hunts')
         self.tabs.addTab(self.huntsTab,'\t Hunts\t')
 
-        self.huntersTab = HuntersTab.HuntersTab(self, QGridLayout(),'Hunters')
+        self.huntersTab = HuntersTab.HuntersTab(QGridLayout(),'Hunters')
         self.tabs.addTab(self.huntersTab,'\tHunters\t')
 
-        self.chartTab = Chart.Chart(self,QGridLayout(),'Chart')
+        self.chartTab = Chart.Chart(QGridLayout(),'Chart')
         self.tabs.addTab(self.chartTab,'\tChart\t')
-
         self.settingsWindow = self.initSettingsWindow();
 
+
+        self.layout.addWidget(self.hunterBox)
+        self.layout.addWidget(self.tabs)
+        self.statusBox = QWidget()
+        self.statusBox.layout = QHBoxLayout() 
+        self.statusBox.setLayout(self.statusBox.layout) 
         self.settingsButton = QPushButton('Settings')
         self.settingsButton.clicked.connect(self.settingsWindow.show)
+        self.settingsButton.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Minimum)
+        self.statusBox.layout.addWidget(self.settingsButton)
 
-        self.layout.addWidget(self.settingsButton)
+        self.loggedInStatus = QLabel()
+        self.showLoggedIn()
+
+        self.loggedInStatus.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Minimum)
+        self.loggedInStatus.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.statusBox.layout.addWidget(self.loggedInStatus)
+        self.layout.addWidget(self.statusBox)
         self.layout.addStretch()
+        if not valid_xml_path(settings.value('huntDir','')):
+            self.hunterBox.hide()
+            self.tabs.hide()
+            self.settingsButton.setText(' Set Hunt Installation Drive ')
+
 
     def initSettingsWindow(self):
         settingsBox = Settings.Settings(self,QVBoxLayout())
@@ -64,13 +99,10 @@ class MainFrame(QWidget):
         settingsWindow.setCentralWidget(settingsBox)
         #settingsWindow.setMenuBar(TitleBar.TitleBar(settingsWindow))
         #settingsWindow.menuBar().setFixedHeight(48)
-        settingsWindow.setFixedSize(settingsWindow.sizeHint())
+        #settingsWindow.setFixedSize(settingsWindow.sizeHint())
         return settingsWindow;
 
         
-    def StartLogger(self):
-        self.parent.StartLogger()
-
     def update(self):
         print('mainframe: updating')
         self.hunterBox.update()
@@ -80,14 +112,14 @@ class MainFrame(QWidget):
 
     def HideBoxes(self):
         self.tabs.hide()
-        self.parent.setMinimumHeight(self.layout.sizeHint().height())
-        self.parent.setMaximumHeight(self.layout.sizeHint().height())
+        self.window().setMinimumHeight(self.layout.sizeHint().height())
+        self.window().setMaximumHeight(self.layout.sizeHint().height())
 
     def ShowBoxes(self):
         self.tabs.show()
-        self.parent.setMinimumHeight(0)
-        self.parent.setMaximumHeight(QWIDGETSIZE_MAX)
-        self.parent.adjustSize()
+        self.window().setMinimumHeight(0)
+        self.window().setMaximumHeight(QWIDGETSIZE_MAX)
+        self.window().adjustSize()
 
     def ToggleBoxes(self):
         if self.tabs.isVisible():

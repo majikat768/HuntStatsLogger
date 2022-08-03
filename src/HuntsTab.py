@@ -1,32 +1,30 @@
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QSizePolicy, QComboBox, QScrollArea, QWidget, QTabWidget, QLabel, QMainWindow, QPushButton
 import os
-from PyQt6.QtCore import QSettings, Qt, QEvent, QSize
+from PyQt6.QtCore import Qt, QEvent, QSize
 from PyQt6 import QtGui
 from Connection import MmrToStars, unix_to_datetime
 from GroupBox import GroupBox
 from HunterLabel import HunterLabel
+from resources import *
+import Connection
 
 class HuntsTab(GroupBox):
-    def __init__(self,parent,layout,title='') -> None:
+    def __init__(self,layout,title='') -> None:
         super().__init__(layout,title)
-        self.parent = parent
         self.popup = None
-        self.connection = parent.connection
-        self.settings = self.parent.settings
         self.layout.setSpacing(4)
-        self.deadIcon = self.parent.resource_path('assets/icons/death2.png')
-        self.livedIcon = self.parent.resource_path('assets/icons/lived2.png')
+        self.deadIcon = resource_path('assets/icons/death2.png')
+        self.livedIcon = resource_path('assets/icons/lived2.png')
         if self.layout.__class__.__name__ == 'QGridLayout':
             self.initGridLayout()
         elif self.layout.__class__.__name__ == 'QVBoxLayout':
             self.initVBoxLayout()
 
-
         #self.layout.setRowStretch(self.layout.rowCount(),1)
         self.setMouseTracking(True)
     
     def star_icon(self,stars):
-        return os.path.join(self.parent.resource_path('assets/icons'),'_%dstar.png' % stars)
+        return os.path.join(resource_path('assets/icons'),'_%dstar.png' % stars)
 
     def initGridLayout(self):
         self.layout.addWidget(self.MatchSelect(),0,0,1,4)
@@ -51,15 +49,23 @@ class HuntsTab(GroupBox):
         self.matchSelection.setIconSize(QSize(32,32))
         self.matchSelection.setStyleSheet('QComboBox{padding:8px;}')
         width = 0
-        for timestamp in self.connection.GetAllTimestamps():
+        timestamps = Connection.execute_query("select timestamp from 'game' order by timestamp desc")
+        if timestamps is None:  return
+        timestamps = [t[0] for t in timestamps]
+        for timestamp in timestamps:
+            dead = Connection.execute_query("select MissionBagIsHunterDead from 'game' where timestamp is %s" % timestamp)[0][0]
+            gamestyle = Connection.execute_query("select MissionBagIsQuickPlay from 'game' where timestamp is %s" % timestamp)[0][0]
+            nTeams = Connection.execute_query("select MissionBagNumTeams from 'game' where timestamp is %s" % timestamp)[0][0]
+            teamKills = Connection.execute_query("select sum(amount) from 'entry' where category is 'accolade_players_killed' and timestamp is %d" % timestamp)[0][0]
+            teamKills = 0 if teamKills is None else teamKills
             line = '\t%s - %s - %d teams - %d kills' % (
                     unix_to_datetime(timestamp),
-                    'Quick Play' if self.connection.IsQuickPlay(timestamp) else 'Bounty Hunt',
-                    self.connection.getNTeams(timestamp),
-                    self.connection.GetMatchKills(timestamp)
+                    'Quick Play' if gamestyle else 'Bounty Hunt',
+                    nTeams,
+                    teamKills
                 )
-            self.matchSelection.addItem(line,timestamp)
             width = max(width,len(line))
+            self.matchSelection.addItem(line,timestamp)
 
         self.matchSelection.activated.connect(self.updateHuntInfo)
         self.matchSelection.activated.connect(self.updateTeamInfo)
@@ -68,20 +74,28 @@ class HuntsTab(GroupBox):
     def updateMatchSelect(self):
         self.matchSelection.clear()
         width = 0
-        for timestamp in self.connection.GetAllTimestamps():
-            dead = not self.connection.Survived(timestamp)
-            line = '\t%s - %s - %d teams - %d kills' % (
-                    unix_to_datetime(timestamp),
-                    'Quick Play' if self.connection.IsQuickPlay(timestamp) else 'Bounty Hunt',
-                    self.connection.getNTeams(timestamp),
-                    self.connection.GetMatchKills(timestamp)
+        timestamps = Connection.execute_query("select timestamp from 'game' order by timestamp desc")
+        if timestamps != None:
+            timestamps = [t[0] for t in timestamps]
+            for timestamp in timestamps:
+                dead = Connection.execute_query("select MissionBagIsHunterDead from 'game' where timestamp is %s" % timestamp)[0][0]
+                print(dead)
+                gamestyle = Connection.execute_query("select MissionBagIsQuickPlay from 'game' where timestamp is %s" % timestamp)[0][0]
+                nTeams = Connection.execute_query("select MissionBagNumTeams from 'game' where timestamp is %s" % timestamp)[0][0]
+                teamKills = Connection.execute_query("select sum(amount) from 'entry' where category is 'accolade_players_killed' and timestamp is %d" % timestamp)[0][0]
+                teamKills = 0 if teamKills is None else teamKills
+                line = '\t%s - %s - %d teams - %d kills' % (
+                        unix_to_datetime(timestamp),
+                        'Quick Play' if gamestyle else 'Bounty Hunt',
+                        nTeams,
+                        teamKills
+                    )
+                width = max(width,len(line))
+                self.matchSelection.addItem(
+                    QtGui.QIcon(self.deadIcon if dead else self.livedIcon),
+                    line,
+                    timestamp
                 )
-            width = max(width,len(line))
-            self.matchSelection.addItem(
-                QtGui.QIcon(self.deadIcon if dead else self.livedIcon),
-                line,
-                timestamp
-            )
         self.matchSelection.adjustSize()
 
 
@@ -91,9 +105,13 @@ class HuntsTab(GroupBox):
         self.updateTeamInfo()
 
     def updateHuntInfo(self):
-        game = self.connection.GetMatchData(self.matchSelection.currentData())
+        if self.matchSelection.count() == 0:
+            return
+        timestamp = self.matchSelection.currentData()
+        print(timestamp)
+        game = Connection.GetHunt(timestamp)
         if len(game) == 0:  return
-        entries = self.connection.GetMatchEntries(self.matchSelection.currentData())
+        entries = Connection.GetEntries(timestamp)
         if len(entries) == 0:  return
         quickplay = game['MissionBagIsQuickPlay']
         rifts_closed = 0
@@ -115,6 +133,7 @@ class HuntsTab(GroupBox):
             5:0,
             6:0
         }
+
         monsters_killed = {}
         for entry in entries:
             if entry['entry_num'] < game['MissionBagNumEntries']:
@@ -151,9 +170,9 @@ class HuntsTab(GroupBox):
         self.huntersKilled.setText(
             'Hunter kills: %d<br> %s' % (hunterkills, '<br>'.join(["%dx <img src='%s'>" % (hunters_killed[m], self.star_icon(m)) for m in hunters_killed if hunters_killed[m] > 0]))
         )
-        self.killsAndAssists.setText('%d kills, %d assists' % (self.connection.GetMyKills(self.matchSelection.currentData()),assists))
+        self.killsAndAssists.setText('%d kills, %d assists' % (Connection.GetMyKills(self.matchSelection.currentData()),assists))
 
-        self.myDeaths.setText('downed %d times' % (self.connection.GetMyDeaths(self.matchSelection.currentData())))
+        self.myDeaths.setText('downed %d times' % (Connection.GetMyDeaths(self.matchSelection.currentData())))
         
         if monsterkills > 0:
             self.monstersKilled.setText(
@@ -186,16 +205,16 @@ class HuntsTab(GroupBox):
 
         self.mission = QLabel('Bounty Hunt')
         self.huntInfo.layout.addWidget(self.mission)
-        self.bounties = QLabel('Assassin and Scrapbeak')
+        self.bounties = QLabel()
         self.huntInfo.layout.addWidget(self.bounties)
-        self.teams = QLabel('Teams: 12')
-        self.eventPoints = QLabel('Serpent Moon Points: 36')
+        self.teams = QLabel('Teams: 0')
+        self.eventPoints = QLabel('Serpent Moon Points: 0')
         self.eventPoints.setObjectName('SerpentMoon')
         self.huntInfo.layout.addWidget(self.teams)
         self.huntInfo.layout.addWidget(self.eventPoints)
         self.huntInfo.layout.addWidget(QLabel())
 
-        self.cluesFound = QLabel('Found 3 of the clues for butcher\t')
+        self.cluesFound = QLabel()
         self.huntInfo.layout.addWidget(self.cluesFound)
         self.huntInfo.layout.addWidget(QLabel())
         self.huntersKilled = QLabel('Team killed 0 hunters')
@@ -219,10 +238,14 @@ class HuntsTab(GroupBox):
         return self.huntInfoScrollArea
 
     def updateTeamInfo(self):
+        if self.matchSelection.count() == 0:
+            return
         self.teamTabs.clear()
-        teams = self.connection.GetMatchTeams(self.matchSelection.currentData())
-        isquickplay = self.connection.IsQuickPlay(self.matchSelection.currentData())
-        allhunters = self.connection.GetAllHunterData(self.matchSelection.currentData())
+        timestamp = self.matchSelection.currentData()
+        teams = Connection.GetTeams(timestamp)
+        allhunters = Connection.GetHunters(timestamp)
+        isquickplay = Connection.execute_query("select MissionBagIsQuickPlay from 'game' where timestamp is %s" % timestamp)[0][0]
+
         for team in teams:
             teamInfoScrollArea = QScrollArea()
             teamInfoScrollArea.setWidgetResizable(True)
@@ -257,13 +280,13 @@ class HuntsTab(GroupBox):
                     hunterInfo.layout = QVBoxLayout()
                     hunterInfo.setLayout(hunterInfo.layout)
                     name = HunterLabel(hunter['blood_line_name'])
-                    if name.name == self.settings.value('hunterName'):
+                    if name.name == settings.value('hunterName'):
                         hunterInfo.setStyleSheet('QLabel{color:#cccc67}')
                     name.setObjectName('name')
                     mmr = QLabel('%d' % hunter['mmr'])
                     stars = QLabel()
                     profileid = hunter['profileid']
-                    n_games = self.connection.NumTimesSeen(profileid)
+                    n_games = Connection.execute_query("select count(*) from 'hunter' where profileid is %d" % profileid)[0][0]
                     stars.setPixmap(QtGui.QPixmap(self.star_icon(MmrToStars(hunter['mmr']))))
                     hunterInfo.layout.addWidget(name)
                     hunterInfo.layout.addWidget(mmr)
@@ -342,7 +365,8 @@ class HuntsTab(GroupBox):
         if e.type() == QEvent.Type.Enter:
             if child:
                 name = child.fullname
-                hunter = self.connection.GetHunterData(name,self.matchSelection.currentData())
+                ts = self.matchSelection.currentData()
+                hunter = Connection.GetHunter(name,ts)
                 self.ShowWindow(hunter,dataType)
                 self.popup.move(e.globalPosition().x()+self.popup.size().width()/4,e.globalPosition().y()-self.popup.size().height()/4)
                 self.setFocus()

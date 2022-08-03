@@ -1,17 +1,14 @@
 from PyQt6.QtWidgets import QLineEdit,QLabel,QPushButton,QWidget,QVBoxLayout,QGridLayout,QTabWidget
 import boto3
 from GroupBox import GroupBox
-
-client_id="5ek9jf37380g23qjbilbuh08hq"
+from resources import *
+import Client
 
 class Login(GroupBox):
     def __init__(self, parent, layout):
         super().__init__(layout)
-        self.parent = parent
-        self.settings = self.parent.settings
-        self.connection = parent.connection
-        self.client = parent.client
-
+        self.setParent(parent)
+        self.settingsWidget = self.parent()
         self.tabs = QTabWidget()
         self.tabs.addTab(self.initLoginTab(),"Login")
         self.tabs.addTab(self.initSignupTab(),"Sign Up")
@@ -29,7 +26,6 @@ class Login(GroupBox):
         self.loginTab.layout.addWidget(self.loginPasswordInput,1,1)
 
         self.loginButton = QPushButton("Login")
-        #self.loginButton.clicked.connect(lambda : self.setLoginStatus("logging in"))
         self.loginButton.clicked.connect(self.submitLogin)
         self.loginTab.layout.addWidget(self.loginButton,2,1,1,1)
 
@@ -52,16 +48,15 @@ class Login(GroupBox):
         self.signupTab.layout.addWidget(self.signupEmailInput,1,1)
         self.signupTab.layout.addWidget(self.signupPasswordInput,2,1)
 
-        signupButton = QPushButton("Sign Up")
-        signupButton.clicked.connect(self.submitSignup)
-        self.signupTab.layout.addWidget(signupButton,3,1,1,1)
+        self.signupButton = QPushButton("Sign Up")
+        self.signupButton.clicked.connect(self.submitSignup)
+        self.signupTab.layout.addWidget(self.signupButton,3,1,1,1)
         self.signupStatus = QLabel()
         self.signupTab.layout.addWidget(self.signupStatus,4,0,1,2)
 
         self.VerifyWidget = QWidget()
         self.VerifyWidget.layout = QVBoxLayout() 
         self.VerifyWidget.setLayout(self.VerifyWidget.layout) 
-        self.VerifyWidget.layout.addWidget(QLabel("Check your email for verification code"))
         self.verifyInput = QLineEdit()
         verifyButton = QPushButton("Verify")
         verifyButton.clicked.connect(self.verify)
@@ -69,55 +64,91 @@ class Login(GroupBox):
         self.VerifyWidget.layout.addWidget(verifyButton)
         self.VerifyWidget.hide()
 
-        self.signupTab.layout.addWidget(self.VerifyWidget,4,0,1,2)
+        self.signupTab.layout.addWidget(self.VerifyWidget,5,0,1,2)
 
         self.signupTab.layout.setRowStretch(self.layout.rowCount(),1)
 
         return self.signupTab
 
-    def setLoginStatus(self,text):
-        self.loginStatus.setText(text)
+    def setLoginStatus(self,response):
+        if type(response) == dict:
+            if 'login' in response and response['login'] == True:
+                res = response["AuthenticationResult"]
+                settings.setValue("aws_access_token",res["AccessToken"])
+                settings.setValue("aws_id_token",res["IdToken"])
+                settings.setValue("aws_refresh_token",res["RefreshToken"])
+                settings.setValue("aws_username",response["username"])
+                Client.set_id()
+                self.loginStatus.setText('')
+                self.loginButton.setDisabled(False)
+                self.settingsWidget.showLoggedIn()
+                self.window().close()
 
-    def setSignupStatus(self,text):
-        self.signupStatus.setText(text)
+                self.botocall = Client.BotoCall()
+        else:
+            self.loginStatus.setText("Something went wrong.")
+            self.loginButton.setDisabled(False)
+
+
+    def setSignupStatus(self,response):
+        print('response',response)
+        if response == "signup_success":
+            self.signupStatus.setText("Check your email for a confirmation code.")
+            self.VerifyWidget.show()
+        elif response == "verification_success":
+            self.signupStatus.setText("You may now sign in.")
+            self.VerifyWidget.hide()
+            self.signupButton.setDisabled(False)
+        elif type(response) == boto3.client('cognito-idp',region_name="us-west-2").exceptions.UsernameExistsException:
+            self.signupStatus.setText("Username already exists")
+            self.signupButton.setDisabled(False)
+        elif type(response) == boto3.client('cognito-idp',region_name="us-west-2").exceptions.InvalidParameterException:
+            self.signupStatus.setText("Invalid username or password")
+            self.signupButton.setDisabled(False)
+        else:
+            self.signupStatus.setText(str(response))
+            self.signupButton.setDisabled(False)
+
+
 
     def submitLogin(self):
         user = self.loginUsernameInput.text()
+        log('logging in as %s' % user)
         passwd = self.loginPasswordInput.text()
         if user == '' or passwd == '':  return
-        try:
-            response = self.client.login(user,passwd)
-            if type(response) == dict and 'AuthenticationResult' in response:
-                self.settings.setValue('aws_access_token',response['AuthenticationResult']['AccessToken'])
-                self.settings.setValue('aws_id_token',response['AuthenticationResult']['IdToken'])
-                self.settings.setValue('aws_refresh_token',response['AuthenticationResult']['RefreshToken'])
-                self.settings.setValue('aws_username',response['AuthenticationResult']['username'])
-                self.parent.showLoggedIn(response)
-                self.window().close()
-        
-        except Exception as msg:
-            print('something happened')
-            print(msg)
+
+        self.botocall = Client.BotoCall({'user':user,'passwd':passwd})
+        Client.startThread(self,self.botocall,started=[self.botocall.login],progress=[self.setLoginStatus])
+        self.loginStatus.setText("Logging in....")
+        self.loginButton.setDisabled(True)
 
     def submitSignup(self):
         user = self.signupUsernameInput.text()
         passwd = self.signupPasswordInput.text()
         email = self.signupEmailInput.text()
         if email == '' or user == '' or passwd == '':  return
-        response = self.client.signup(user,email,passwd)
-        print(response)
-        if type(response) != dict:
-            print('exception!')
-        else:
-            self.VerifyWidget.show()
 
-        
+        self.botocall = Client.BotoCall({'user':user,'email':email,'passwd':passwd})
+        Client.startThread(
+            self, self.botocall,
+            started=[self.botocall.signup],
+            progress=[self.setSignupStatus]
+        )
+        self.signupStatus.setText("Creating user....")
+        self.signupButton.setDisabled(True)
+
 
     def verify(self):
-        client = boto3.client("cognito-idp",region_name="us-west-2")
-        response = client.confirm_sign_up(
-            ClientId=client_id,
-            Username=self.signupUsernameInput.text(),
-            ConfirmationCode=self.verifyInput.text()
+        user = self.signupUsernameInput.text()
+        code = self.verifyInput.text()
+        if user == '' or code == '':    return
+
+        self.botocall = Client.BotoCall({'user':user,'code':code})
+        Client.startThread(
+            self, self.botocall,
+            started=[self.botocall.verify],
+            progress=[self.setSignupStatus]
         )
+
+        self.signupStatus.setText("verifying email....")
         self.VerifyWidget.hide()

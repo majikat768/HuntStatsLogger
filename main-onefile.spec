@@ -8,7 +8,7 @@ a = Analysis(
     ['./src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('./assets', 'assets/'), ('./src/App.py', '.'), ('./src/Connection.py', '.'), ('./src/GroupBox.py', '.'), ('./src/Hunter.py', '.'), ('./src/HuntsTab.py', '.'), ('./src/HuntersTab.py', '.'), ('./src/Logger.py', '.'), ('./src/Mainframe.py', '.'), ('./src/Settings.py', '.'), ('./src/TitleBar.py', '.'), ('./src/HunterLabel.py', '.'), ('./src/Chart.py','.'), ('./schema.sql','.'), ('./src/Login.py','.'),('./src/Client.py','.')],
+    datas=[('./assets', 'assets/'), ('./src/', '.')],
     hiddenimports=['xmltodict','json','sqlite3','PyQt6','pyqtgraph','pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt6','pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt6','pyqtgraph.console.template_pyside2','pyqtgraph.imageview.ImageViewTemplate_pyside2','pyqtgraph.imageview.ImageViewTemplate_pyqt6','boto3'],
     hookspath=[],
     hooksconfig={},
