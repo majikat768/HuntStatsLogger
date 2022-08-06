@@ -1,12 +1,15 @@
-from PyQt6.QtWidgets import QGroupBox, QVBoxLayout,QLabel, QScrollArea,QWidget,QGridLayout
-from GroupBox import GroupBox
-from HunterLabel import HunterLabel
+from PyQt6.QtWidgets import QTabWidget,QGroupBox,QVBoxLayout,QWidget,QGridLayout,QComboBox,QLabel,QScrollArea,QHBoxLayout,QStyle,QSizePolicy
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon,QPixmap
 from resources import *
-import Connection
+from viewer import DbHandler 
 
-class HuntersTab(GroupBox):
-    def __init__(self, layout, title=''):
-        super().__init__(layout, title)
+class HuntersTab(QGroupBox):
+    def __init__(self,parent):
+        super().__init__(parent)
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
         self.topHuntersBox = self.initTopHunters()
         self.layout.addWidget(self.topHuntersBox,1,0,1,2)
 
@@ -17,24 +20,25 @@ class HuntersTab(GroupBox):
         self.layout.addWidget(self.topKilledBox,0,1)
 
         self.layout.setRowStretch(self.layout.rowCount(),1)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Ignored)
 
     def initTopKiller(self):
-        topKiller = Connection.GetTopKiller()
+        topKiller = DbHandler.GetTopKiller()
         topKillerBox = QGroupBox('Top Killer')
         topKillerBox.layout = QVBoxLayout()
         topKillerBox.setLayout(topKillerBox.layout) 
         if len(topKiller) > 0:
-            topKillerBox.layout.addWidget(HunterLabel(topKiller['blood_line_name']))
+            topKillerBox.layout.addWidget(QLabel(topKiller['blood_line_name']))
             topKillerBox.layout.addWidget(QLabel('Has killed you %d times' % topKiller['kills']))
         return topKillerBox
 
     def initTopKilled(self):
-        topKilled = Connection.GetTopKilled()
+        topKilled = DbHandler.GetTopKilled()
         topKilledBox = QGroupBox('Top Killed')
         topKilledBox.layout = QVBoxLayout()
         topKilledBox.setLayout(topKilledBox.layout) 
         if len(topKilled) > 0:
-            topKilledBox.layout.addWidget(HunterLabel(topKilled['blood_line_name']))
+            topKilledBox.layout.addWidget(QLabel(topKilled['blood_line_name']))
             topKilledBox.layout.addWidget(QLabel('Have killed them %d times' % topKilled['kills']))
         return topKilledBox
 
@@ -47,16 +51,16 @@ class HuntersTab(GroupBox):
         self.topHuntersBox = self.initTopHunters()
         self.topHuntersBox.setStyleSheet('QGroupBox{padding-top:24px;border:0px;}QGroupBox:title{margin-top:4px;}')
         self.topKillerBox = self.initTopKiller()
-        self.topKillerBox.setStyleSheet('QGroupBox{padding-top:24px;border:0px;}QGroupBox:title{margin-top:4px;}')
+        #self.topKillerBox.setStyleSheet('QGroupBox{padding-top:24px;border:0px;}QGroupBox:title{margin-top:4px;}')
         self.topKilledBox = self.initTopKilled()
-        self.topKilledBox.setStyleSheet('QGroupBox{padding-top:24px;border:0px;}QGroupBox:title{margin-top:4px;}')
+        #self.topKilledBox.setStyleSheet('QGroupBox{padding-top:24px;border:0px;}QGroupBox:title{margin-top:4px;}')
         self.layout.addWidget(self.topKilledBox,0,0)
         self.layout.addWidget(self.topKillerBox,0,1)
         self.layout.addWidget(QLabel(),1,1)
         self.layout.addWidget(self.topHuntersBox,2,0,1,2)
 
     def initTopHunters(self):
-        topHunters = Connection.TopNHunters(10)
+        topHunters = DbHandler.TopNHunters(10)
         topHuntersBox = QGroupBox('Frequent Hunters')
         topHuntersBox.layout = QVBoxLayout()
         topHuntersBox.setLayout(topHuntersBox.layout) 
@@ -71,8 +75,12 @@ class HuntersTab(GroupBox):
             hunterWidget = QWidget()
             hunterWidget.layout = QGridLayout()
             hunterWidget.setLayout(hunterWidget.layout)
-            hunterWidget.layout.addWidget(HunterLabel('\'%s\'' % hunter['blood_line_name']),0,0)
-            hunterWidget.layout.addWidget(QLabel('Seen in %d hunts' % hunter['count']),1,0)
+            stars = QLabel()
+            stars.setPixmap(star_pixmap(mmr_to_stars(hunter['mmr'])))
+            hunterWidget.layout.addWidget(QLabel('\'%s\'' % hunter['blood_line_name']),0,0)
+            hunterWidget.layout.addWidget(stars,1,0)
+            hunterWidget.layout.addWidget(QLabel('%d' % hunter['mmr']),2,0)
+            hunterWidget.layout.addWidget(QLabel('Seen in %d hunts' % hunter['count']),3,0)
             row = 0
             if hunter['downedbyme'] > 0 or hunter['killedbyme'] > 0:
                 hunterWidget.layout.addWidget(QLabel('Killed them %d times' % (hunter['downedbyme']+hunter['killedbyme'])),row,1)

@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS game (
-    id text primary key,
-    timestamp integer,
+    timestamp integer primary key,
     MissionBagBoss_0 integer,
     MissionBagBoss_1 integer,
     MissionBagBoss_2 integer,
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS game (
     HunterLevel integer
 );
 CREATE TABLE IF NOT EXISTS team (
-    id text,
     timestamp integer,
     team_num integer,
     handicap integer,
@@ -27,12 +25,11 @@ CREATE TABLE IF NOT EXISTS team (
     numplayers integer,
     ownteam integer,
     primary key (
-        id,
+        timestamp,
         team_num
 )
 );
 CREATE TABLE IF NOT EXISTS hunter (
-    id text,
     timestamp integer,
     team_num integer,
     hunter_num integer,
@@ -59,13 +56,12 @@ CREATE TABLE IF NOT EXISTS hunter (
     skillbased integer,
     teamextraction integer,
     primary key (
-        id,
+        timestamp,
         team_num,
         hunter_num
     )
 );
 CREATE TABLE IF NOT EXISTS entry (
-    id text,
     timestamp integer,
     entry_num integer,
     amount integer,
@@ -80,7 +76,6 @@ CREATE TABLE IF NOT EXISTS entry (
     uiName text,
     uiName2 text,
     primary key (
-        id,
         timestamp,
         entry_num
     )

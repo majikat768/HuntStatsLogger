@@ -4,37 +4,41 @@ from resources import *
 class HunterLabel(QLabel):
     instanceList = []
     HideUsers = False
-    maxLen = 16
+    maxLen = 24 
 
     def __init__(self,name=''):
         super().__init__()
         self.name = name
-        if self.name == "" or self.name == None:
-            self.name = "Hunter X"
         self.fullname = name
         if len(self.name) > HunterLabel.maxLen:
             self.name = self.name[:HunterLabel.maxLen-3]+'...'
 
         super().setText(self.name)
         self.setToolTip(self.fullname)
-        if(HunterLabel.HideUsers and self.name != settings.value('hunterName','')):
+        if(HunterLabel.HideUsers and self.name != settings.value('steam_name','')):
             self.HideUsername()
         HunterLabel.instanceList.append(self)
     
     def setText(self, a0: str) -> None:
         self.name = a0
         super().setText(self.name)
-        if(HunterLabel.HideUsers and self.name != settings.value('hunterName','')):
+        if(HunterLabel.HideUsers and self.name != settings.value('steam_name','')):
             self.HideUsername()
-    
+        if self.name == settings.value('steam_name'):
+            super().setStyleSheet('QLabel{color:#cccc67;}')
+
     def HideUsername(self):
-        if self.name != settings.value('hunterName',''):
+        if self.name != settings.value('steam_name',''):
             super().setText('Hunter')
             super().setStyleSheet('QLabel{font-style:italic;}')
+        if self.name == settings.value('steam_name'):
+            super().setStyleSheet('QLabel{color:#cccc67;}')
 
     def ShowUsername(self):
         super().setText(self.name)
         super().setStyleSheet('QLabel{font-style:none;}')
+        if self.name == settings.value('steam_name'):
+            super().setStyleSheet('QLabel{color:#cccc67;}')
 
     def ToggleNames():
         toremove = []

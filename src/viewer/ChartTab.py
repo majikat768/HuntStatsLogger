@@ -1,16 +1,18 @@
-from GroupBox import GroupBox
-from PyQt6.QtWidgets import QComboBox,QSlider,QLabel
+from PyQt6.QtWidgets import QComboBox,QSlider,QLabel,QGroupBox,QGridLayout
 from PyQt6.QtCore import Qt,QEvent
 import pyqtgraph
 from resources import *
-import Connection
+from viewer import DbHandler
 
 def lerp(a,b,x):
     return a + x * (b-a)
 
-class Chart(GroupBox):
-    def __init__(self, layout, title=''):
-        super().__init__(layout, title)
+class ChartTab(QGroupBox):
+    def __init__(self, parent): 
+        super().__init__(parent)
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
         self.plotWindow = pyqtgraph.GraphicsLayoutWidget()
 
         self.dataSelect = QComboBox()
@@ -135,10 +137,10 @@ class Chart(GroupBox):
 
 
     def initKdaGraph(self):
-        kills = Connection.execute_query("select timestamp, downedbyme, killedbyme from hunter where downedbyme > 0 or killedbyme > 0")
-        deaths = Connection.execute_query("select timestamp, downedme, killedme from hunter where downedme > 0 or killedme > 0")
-        assists = Connection.execute_query("select timestamp, amount from 'entry' where category is 'accolade_players_killed_assist'")
-        hunts = Connection.execute_query("select timestamp,MissionBagIsQuickPlay from 'game'")
+        kills = DbHandler.execute_query("select timestamp, downedbyme, killedbyme from hunter where downedbyme > 0 or killedbyme > 0")
+        deaths = DbHandler.execute_query("select timestamp, downedme, killedme from hunter where downedme > 0 or killedme > 0")
+        assists = DbHandler.execute_query("select timestamp, amount from 'entry' where category is 'accolade_players_killed_assist'")
+        hunts = DbHandler.execute_query("select timestamp,MissionBagIsQuickPlay from 'game'")
 
         kdas = self.calcKda(kills,deaths,assists,hunts)
         qpKdas = self.calcKda(kills,deaths,assists,hunts,1)
@@ -162,8 +164,8 @@ class Chart(GroupBox):
         self.plot.setLabel('bottom','Hunts')
 
     def initMmrGraph(self):
-        mmrs = Connection.execute_query("select timestamp,mmr from 'hunter' where blood_line_name is '%s'" % settings.value('hunterName',''))
-        gameTypes = Connection.execute_query("select timestamp,MissionBagIsQuickPlay from 'game'")
+        mmrs = DbHandler.execute_query("select timestamp,mmr from 'hunter' where blood_line_name is '%s'" % settings.value('steam_name',''))
+        gameTypes = DbHandler.execute_query("select timestamp,MissionBagIsQuickPlay from 'game'")
         if mmrs is None or gameTypes is None:   return
         mmrs = {i[0]:i[1] for i in mmrs}
         gameTypes = {i[0]:i[1] for i in gameTypes}

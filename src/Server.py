@@ -3,7 +3,6 @@ import boto3
 from PyQt6.QtCore import QObject,pyqtSignal,QThread
 from resources import *
 
-
 def set_id():
     log('setting aws user id')
     if settings.value('aws_access_token','') == '':    return False
@@ -44,7 +43,7 @@ def getTokens():
     except Exception as msg:
         log(msg)
 
-def getRemoteFiles(sub,tokens):
+def getRemoteObjects(sub,tokens):
     try:
         [accessKey,secretKey,sessionToken] = tokens
         s3 = boto3.resource('s3',
@@ -52,17 +51,18 @@ def getRemoteFiles(sub,tokens):
             aws_secret_access_key=secretKey,
             aws_session_token=sessionToken
         )
-        files = []
+        objects = []
         for x in s3.Bucket('huntstatslogger').objects.filter(Prefix='json/%s' % sub):
-            files.append(x)
-        return files
+            objects.append(x)
+        return objects
     except Exception as e:
         log(e)
         try:
-            refresh_token()
-            return getRemoteFiles(sub)
+            tkns = refresh_token()
+            return getRemoteObjects(sub,tkns)
         except Exception as msg:
             log(msg)
+            return []
 
 def refresh_token():
     if settings.value('aws_refresh_token','') == '':
@@ -87,44 +87,70 @@ def refresh_token():
 def isLoggedIn():
     return settings.value('aws_access_token','') != ''
 
-def startThread(parent, instance, started=[],finished=[],progress=[]):
+def startThread(parent, instance, started=[],finished=[]):
     botoThread = QThread(parent=parent)
     instance.moveToThread(botoThread)
     for s in started:
         botoThread.started.connect(s)
     for f in finished:
         instance.finished.connect(f)
-    for p in progress:
-        instance.progress.connect(p)
     botoThread.finished.connect(botoThread.quit)
     botoThread.finished.connect(instance.deleteLater)
     botoThread.finished.connect(botoThread.deleteLater)
 
     botoThread.start()
 
-def getFromS3(obj,outputFile,tokens=None):
-    log('downloading %s to %s' % (obj.key,outputFile))
-    os.makedirs(os.path.dirname(outputFile),exist_ok=True)
-    try:
-        #[accessKey, secretKey, sessionToken] = tokens
-        output=obj.get()['Body']
-        dat = json.loads(output.read().decode('utf-8'))
-        dat = clean_json(translateJson(dat))
-        with open(outputFile,'w') as f:
-            json.dump(dat,f)
-
-    except Exception as msg:
-        log(msg)
-
-def sendToS3(filename,tokens=None):
+def getFromS3(key,file,tokens=None):
     if settings.value('aws_id_token','') == '':
         refresh_token()
         if settings.value('aws_id_token','') == '':
             return
-    key = str(filename)
-    key = key.replace('hunterX',settings.value("aws_sub","hunterX"))
-    key =key.replace(app_data_path+'\\','').replace('\\','/')
-    log('sending %s to s3, key %s ' % (filename, key))
+
+    try:
+        if tokens == None:
+            tokens = getTokens()
+        [accessKey,secretKey,sessionToken] = tokens
+        
+        session = boto3.Session(
+            aws_access_key_id=accessKey,
+            aws_secret_access_key=secretKey,
+            aws_session_token=sessionToken
+        )
+        s3 = session.client('s3')
+        obj = s3.get_object(
+            Bucket='huntstatslogger',
+            Key=key
+        )
+        data = json.loads(obj["Body"].read().decode('utf-8'))
+        data = clean_data(translateJson(data,os.path.basename(file)))
+        if not os.path.exists(os.path.dirname(file)):
+            os.makedirs(os.path.dirname(file),exist_ok=True)
+        with open(file,'w') as f:
+            json.dump(data,f)
+
+
+        log('got from s3')
+        return True
+    except Exception as msg1:
+        log(msg1)
+        try:
+            refresh_token()
+            log('token updated')
+            return getFromS3(key,file,getTokens())
+        except Exception as msg2:
+            log(msg2)
+            return False
+
+
+def sendToS3(file,key,tokens=None):
+    if not settings.value("aws_sub"):   return
+    if settings.value('aws_id_token','') == '':
+        refresh_token()
+        if settings.value('aws_id_token','') == '':
+            return
+
+    log('sending %s to s3, key %s ' % (file, key))
+
     try:
         if tokens == None:
             tokens = getTokens()
@@ -137,58 +163,72 @@ def sendToS3(filename,tokens=None):
         )
         s3 = session.client('s3')
         s3.put_object(
-            Body=open(filename,'r').read(),
+            Body=open(file,'r').read(),
             Bucket='huntstatslogger',
             Key=key
         )
         log('sent to s3')
+        return True
     except FileNotFoundError as msg:
         log(msg)
+        return False
     except Exception as msg1:
         log('not authorized\n%s' % msg1)
         try:
             refresh_token()
             log('token updated')
-            sendToS3(filename,getTokens())
+            sendToS3(file,key,getTokens())
         except Exception as msg2:
             log('still not authorized\n%s' % msg2)
+            return False
 
+def ListRemoteFiles():
+    pass
 
-
-class BotoCall(QObject):
-    progress = pyqtSignal(object)
-    finished = pyqtSignal()
+class ServerThread(QObject):
+    finished = pyqtSignal(object)
 
     def __init__(self,args = None) -> None:
         super().__init__()
         self.args = args
 
-    def syncFiles(self,tkns=None,local=None,remote=None):
+    def syncFiles(self,tkns=None,localFiles=None,remoteFiles=None):
+        log("syncing files with server")
+        if not settings.value("aws_sub"):
+            log("not logged in.")
+            self.finished.emit("done")
+            return
         if tkns == None:
             tkns = getTokens()
-        if local == None:
-            local = getLocalFiles()
-        if remote == None:
-            remote = getRemoteFiles(settings.value("aws_sub",""),tkns)
-        log('syncing files')
-        localFileNames = [f.replace(app_data_path+'\\','') for f in local]
-        remoteFileNames = [ obj.key.replace('/','\\') for obj in remote]
-        to_upload = []
-        to_download = []
-        for f in localFileNames:
-            if f not in remoteFileNames:
-                to_upload.append(f)
-        for obj in remote:
-            if obj.key.replace('/','\\') not in localFileNames:
-                to_download.append(obj)
-        log('uploading %d files' % len(to_upload))
-        log('downloading %d files' % len(to_download))
+        if localFiles == None:
+            localFiles = getLocalFiles()
+        if remoteFiles == None:
+            remoteFiles = getRemoteObjects(settings.value("aws_sub",""),tkns)
 
-        for f in to_upload:
-            sendToS3(os.path.join(app_data_path,f),tkns)
-        for obj in to_download:
-            getFromS3(obj,os.path.join(app_data_path,obj.key),tkns)
-        self.finished.emit()
+        if len(localFiles) == len(remoteFiles):
+            log("nothing to do.")
+            self.finished.emit("done")
+            return
+
+        local = {
+            f.replace(app_data_path+'\\','').replace('\\','/') : f for f in localFiles
+        }
+
+        remote = {
+            o.key : os.path.join(app_data_path,o.key.replace('/','\\')) for o in remoteFiles 
+        }
+
+        to_get = [k for k in remote.keys() if k not in local.keys() ]
+        to_put = [k for k in local.keys() if k not in remote.keys() ]
+
+        log('uploading %d files' % len(to_put))
+        log('downloading %d files' % len(to_get))
+
+        for k in to_put:
+            sendToS3(local[k],k,tkns)
+        for k in to_get:
+            getFromS3(k,remote[k])
+        self.finished.emit("done")
 
     def login(self):
         user = self.args['user']
@@ -205,10 +245,9 @@ class BotoCall(QObject):
             )
             response['username'] = user
             response['login'] = True
-            self.progress.emit(response)
+            self.finished.emit(response)
         except Exception as msg:
-            self.progress.emit(msg)
-        self.finished.emit()
+            self.finished.emit(msg)
 
     def signup(self):
         user = self.args['user']
@@ -226,10 +265,10 @@ class BotoCall(QObject):
                 ]
             )
             log('signing up')
-            self.progress.emit("signup_success")
+            response['sign_up'] = 'success'
+            self.finished.emit(response)
         except Exception as msg:
-            self.progress.emit(msg)
-        self.finished.emit()
+            self.finished.emit(msg)
 
     def verify(self):
         user = self.args['user']
@@ -241,7 +280,7 @@ class BotoCall(QObject):
                 Username=user,
                 ConfirmationCode=code
             )
-            self.progress.emit("verification_success")
+            response['verify'] = 'success'
+            self.finished.emit(response)
         except Exception as msg:
-            self.progress.emit(msg)
-        self.finished.emit()
+            self.finished.emit(msg)

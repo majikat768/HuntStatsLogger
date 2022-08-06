@@ -1,36 +1,20 @@
-import sys
-import os
+import sys, os
+
+from util.StatusBar import StatusBar
+# Append parent directory to import path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QFontDatabase,QIcon
-from PyQt6.QtCore import QSettings
-import Logger, App, Connection
-from resources import *
-
-def killall():
-    Logger.killall = True
-    Connection.killall = True
-
-
-class nonApp():
-    def __init__(self):
-        self.app_data_path = os.path.join(os.getcwd(),'hsl_files')
-        self.settings = QSettings(
-            os.path.join(self.app_data_path,'settings.ini'),
-            QSettings.Format.IniFormat
-        )
+from PyQt6.QtGui import QFontDatabase
+from viewer.ViewerWindow import ViewerWindow
+from resources import resource_path
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
-    QFontDatabase.addApplicationFont(resource_path('assets/fonts/LibreBaskerville/LibreBaskerville-Regular.ttf'))
+    QFontDatabase.addApplicationFont(resource_path('./assets/fonts/LibreBaskerville/LibreBaskerville-Regular.ttf'))
     stylesheet = open(resource_path('./assets/MaterialDark.qss'),'r').read()
-
     app.setStyleSheet(stylesheet)
-    app.aboutToQuit.connect(killall)
 
-    ex2 = App.App()
-    ex2.setWindowIcon(QIcon(App.resource_path('assets/icons/death2.png')))
+    viewerWindow = ViewerWindow()
+
     app.exec()
-
-    Logger.killall = True
-    Connection.killall = True

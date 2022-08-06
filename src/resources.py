@@ -1,36 +1,32 @@
-import os,sys
 import hashlib
-import json
+from pprint import pprint
 from datetime import datetime
-from PyQt6.QtCore import QSettings, QThread
-
-killall = False
+import sys
+from PyQt6.QtCore import QThread
+from PyQt6.QtWidgets import QSizePolicy, QSpacerItem
+from PyQt6.QtGui import QPixmap
+import json
+import os
+from PyQt6.QtCore import QSettings
 
 app_data_path = os.path.join('.','hsl_files')
 if not os.path.exists(app_data_path):
-    os.makedirs(app_data_path)
-
-settings  = QSettings(
-            os.path.join(app_data_path,'settings.ini'),
-            QSettings.Format.IniFormat
-        )
-#settings = QSettings('./settings.ini',QSettings.Format.IniFormat)
-
+    os.makedirs(app_data_path,exist_ok=True)
 db = os.path.join(app_data_path,'huntstats.db')
+settings = QSettings(os.path.join(app_data_path,'settings.ini'),QSettings.Format.IniFormat)
+logfile = os.path.join(app_data_path,'logs','log.txt')
 jsondir = os.path.join(app_data_path,'json')
-if not os.path.exists(jsondir):
-    os.makedirs(jsondir)
 
-logdir = os.path.join(app_data_path,'logs')
-if not os.path.exists(logdir):
-    os.makedirs(logdir)
 
-logfile = os.path.join(logdir,'log.txt')
-
+#aws
 client_id="5ek9jf37380g23qjbilbuh08hq"
 identity_pool_id='af1647aa-3bf0-42ac-9a2d-9ed6558aadb7'
 user_pool_id='us-west-2_NEhNwG197'
 
+hSpacer16 = QSpacerItem(16,1,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+vSpacer16 = QSpacerItem(1,16,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+
+gameTypes = ["All Hunts", "Bounty Hunt", "Quick Play"] 
 def resource_path(relative_path):
     try:
     # PyInstaller creates a temp folder and stores path in _MEIPASS
@@ -40,53 +36,177 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-def getLocalFiles():
-    localfiles = []
-    for root,dirs,files in os.walk(jsondir):
-        for f in files:
-            localfiles.append(os.path.join(root,f))
-    return localfiles
+deadIcon = resource_path('assets/icons/death2.png')
+livedIcon = resource_path('assets/icons/lived2.png')
+noneIcon = resource_path('assets/icons/none.png')
+
+def star_pixmap(stars):
+    return QPixmap(star_path(stars))
+
+def star_path(stars):
+    return os.path.join(resource_path('assets/icons'),'_%dstar.png' % stars)
+
+def mmr_to_stars(mmr):
+    return 0 if mmr == -1 else 1 if mmr < 2000 else 2 if mmr < 2300 else 3 if mmr < 2600 else 4 if mmr < 2750 else 5 if mmr < 3000 else 6
 
 def unix_to_datetime(timestamp):
     return datetime.fromtimestamp(timestamp).strftime('%H:%M %m/%d/%y')
 
+def isLoggedIn():
+    return settings.value('aws_access_token','') != ''
+
+def StartLogger(logger,parent):
+    log('starting logger')
+    if not settings.value("hunt_dir"):
+        return
+    loggerThread = QThread(parent=parent)
+    logger.moveToThread(loggerThread)
+    loggerThread.started.connect(logger.run)
+    logger.finished.connect(loggerThread.quit)
+    logger.finished.connect(logger.deleteLater)
+    logger.finished.connect(loggerThread.deleteLater)
+    #logger.progress.connect(parent.update)
+    loggerThread.start()
+
 def log(msg):
-    print(msg)
-    with open(logfile,'a') as log:
-        log.write(str(msg))
-        log.write('\n')
+    print(str(msg))
+    if not os.path.exists(logfile):
+        os.makedirs(os.path.dirname(logfile),exist_ok=True)
+    with open(logfile,'a') as lf:
+        lf.write(str(msg))
+        lf.write('\n')
 
-def valid_xml_path(path):
-    suffix = 'user/profiles/default/attributes.xml' 
-    if not os.path.exists(os.path.join(path,suffix)):
-        return False
-    return True
+def translateJson(data,file):
+    timestamp = int(file.split("attributes_")[1].split(".json")[0])
+    if "teams" in data and "hunters" in data and "entries" in data and "game" in data:
+        newdata = {
+            "teams": {},
+            "hunters": {},
+            "entries": {},
+            "game": {"timestamp":timestamp} 
+        }
 
-def clean_json(json_obj):
-    num_teams = int(json_obj["game"]["MissionBagNumTeams"])
-    num_entries = int(json_obj["game"]["MissionBagNumEntries"])
+        teams = data["teams"]
+        hunters = data["hunters"]
+        entries = data["entries"]
+        game = data["game"]
+        for k in teams:
+            newdata["teams"][parse_value(k)] = {
+                parse_value(k2) : parse_value(teams[k][k2]) for k2 in teams[k] 
+            }
+            newdata["teams"][parse_value(k)]["timestamp"] = timestamp
+        for k in hunters:
+            newdata["hunters"][parse_value(k)] = {
+                parse_value(k2) : parse_value(hunters[k][k2]) for k2 in hunters[k] 
+            }
+            newdata["hunters"][parse_value(k)]["timestamp"] = timestamp
+        for k in entries:
+            newdata["entries"][parse_value(k)] = {
+                parse_value(k2) : parse_value(entries[k][k2]) for k2 in entries[k] 
+            }
+            newdata["entries"][parse_value(k)]["timestamp"] = timestamp
+        for k in game:
+            newdata["game"][parse_value(k)] = parse_value(game[k])
+        newdata["game"]["timestamp"] = timestamp
+        return newdata
+    elif "teams" in data and "entries" in data and "MissionBagBoss_0" in data:
+        hunters = {}
+        teams = {}
+        entries = {}
+        game = {}
+        for team in data["teams"]:
+            dathunters = team.pop("hunters")
+            for hunter in dathunters:
+                hunternum = str(hunter["hunter_num"])
+                teamnum = str(hunter["team_num"])
+                hunter_id = "_".join([hunternum,teamnum])
+                hunters[hunter_id] = hunter
+            teams[team["team_num"]] = team
+        data.pop("teams")
+        for entry in data["entries"]:
+            entries[entry["entry_num"]] = entry
+        data.pop("entries")
+        for key in data:
+            if key != "id":
+                game[key] = data[key]
+        newdata = {
+            "teams": {},
+            "hunters": {},
+            "entries": {},
+            "game": {} 
+        }
+        for k in teams:
+            newdata["teams"][parse_value(k)] = {
+                parse_value(k2) : parse_value(teams[k][k2]) for k2 in teams[k] 
+            }
+            newdata["teams"][parse_value(k)]["timestamp"] = timestamp
+        for k in hunters:
+            newdata["hunters"][parse_value(k)] = {
+                parse_value(k2) : parse_value(hunters[k][k2]) for k2 in hunters[k] 
+            }
+            newdata["hunters"][parse_value(k)]["timestamp"] = timestamp
+        for k in entries:
+            newdata["entries"][parse_value(k)] = {
+                parse_value(k2) : parse_value(entries[k][k2]) for k2 in entries[k] 
+            }
+            newdata["entries"][parse_value(k)]["timestamp"] = timestamp
+        for k in game:
+            newdata["game"][parse_value(k)] = parse_value(game[k])
+        newdata["game"]["timestamp"] = timestamp
+        return newdata
+    else:
+        return data
+
+def parse_value(val):
+    if type(val) is int or val.isnumeric():
+        return int(val)
+    elif val.lower() == 'true':
+        return 1
+    elif val.lower() == 'false':
+        return 0
+    else:
+        return val
+
+    
+def getLocalFiles():
+    if not settings.value("aws_sub"):   return
+    localfiles = []
+    for root,dirs,files in os.walk(os.path.join(jsondir,settings.value("aws_sub"))):
+        for f in files:
+            localfiles.append(os.path.join(root,f))
+    return localfiles
+
+def clean_data(data):
+    num_teams = int(data["game"]["MissionBagNumTeams"])
+    num_entries = int(data["game"]["MissionBagNumEntries"])
+
     teams = {}
-    for teamnum in json_obj["teams"]:
+    for teamnum in data["teams"]:
         if int(teamnum) < num_teams:
-            teams[teamnum] = json_obj["teams"][teamnum]
-    json_obj["teams"] = teams
+            if 'timestamp' in data["teams"][teamnum]:
+                data["teams"][teamnum].pop('timestamp')
+            teams[str(teamnum)] = data["teams"][teamnum]
+    data["teams"] = teams
 
     entries = {}
-    for entrynum in json_obj["entries"]:
+    for entrynum in data["entries"]:
         if int(entrynum) < int(num_entries):
-            entries[entrynum] = json_obj["entries"][entrynum]
-    json_obj["entries"] = entries
+            if 'timestamp' in data["entries"][entrynum]:
+                data["entries"][entrynum].pop('timestamp')
+            entries[str(entrynum)] = data["entries"][entrynum]
+    data["entries"] = entries
 
     hunters = {}
-    for key in json_obj["hunters"]:
-        teamnum = key.split('_')[0]
-        hunternum = key.split('_')[1]
-        hunter = json_obj["hunters"][key]
-        if int(teamnum) < num_teams and int(hunternum) < json_obj["teams"][teamnum]["numplayers"]:
-            hunters[key] = hunter
-    json_obj["hunters"] = hunters
+    for id in data["hunters"]:
+        teamnum = id.split('_')[0]
+        hunternum = id.split('_')[1]
+        if int(teamnum) < num_teams and int(hunternum) < teams[teamnum]["numplayers"]:
+            if 'timestamp' in data["hunters"][id]:
+                data["hunters"][id].pop('timestamp')
+            hunters[id] = data["hunters"][id]
+    data["hunters"] = hunters
 
-    return json_obj
+    return data
 
 def generate_checksum(data):
     common = {
@@ -118,59 +238,3 @@ def generate_checksum(data):
     checksum = hashlib.md5(json.dumps(common,sort_keys=True).encode('utf-8')).hexdigest()
     print(checksum)
     return checksum
-
-def translateJson(data):
-    print('translating json')
-    if "teams" in data and "hunters" in data and "entries" in data and "game" in data and "teams" in data and "id" in data:
-        return data
-
-    newdata = {
-        "teams":{},
-        "entries":{},
-        "hunters":{},
-        "game":{}
-    }
-    for team in data["teams"]:
-        teamnum = team["team_num"]
-        hunters = team["hunters"]
-        for hunter in hunters:
-            hunter_id = "_".join([str(hunter["team_num"]),str(hunter["hunter_num"])])
-            newdata["hunters"][hunter_id] = hunter
-        team.pop("hunters")
-        newdata["teams"][teamnum] = team
-    data.pop("teams")
-    
-    for entry in data["entries"]:
-        newdata["entries"][entry["entry_num"]] = entry
-    data.pop("entries")
-    newdata["id"] = data.pop("id")
-    newdata["game"] = data
-    return newdata
-
-
-def StartConnection(conn,parent):
-    print('starting connection')
-    connThread = QThread(parent=parent)
-    conn.moveToThread(connThread)
-    connThread.started.connect(conn.run)
-    conn.finished.connect(connThread.quit)
-    conn.finished.connect(conn.deleteLater)
-    conn.finished.connect(connThread.deleteLater)
-    conn.progress.connect(parent.update)
-    connThread.start()
-    print('runnin',connThread.isRunning())
-
-def StartLogger(logger,parent):
-    print('starting logger')
-    validPath = logger.set_path(settings.value('huntDir',''))
-    if validPath != 1:
-        log("not valid path.")
-        return
-    loggerThread = QThread(parent=parent)
-    logger.moveToThread(loggerThread)
-    loggerThread.started.connect(logger.run)
-    logger.finished.connect(loggerThread.quit)
-    logger.finished.connect(logger.deleteLater)
-    logger.finished.connect(loggerThread.deleteLater)
-    logger.progress.connect(parent.update)
-    loggerThread.start()
