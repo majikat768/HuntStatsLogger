@@ -90,7 +90,7 @@ class HeaderBar(QGroupBox):
                     (gameTypes.index(obj.text())+1) % len(gameTypes)
                     ]
             )
-            self.updateKdaBox(self,obj.text())
+            self.updateKdaBox(obj.text())
         return super().eventFilter(obj, e)
 
     def updateKdaBox(self,gameType):
