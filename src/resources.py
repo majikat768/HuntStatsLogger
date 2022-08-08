@@ -181,6 +181,8 @@ def clean_data(data):
     num_entries = int(data["game"]["MissionBagNumEntries"])
 
     teams = {}
+    if "team" in data:
+        data["teams"] = data.pop("team")
     for teamnum in data["teams"]:
         if int(teamnum) < num_teams:
             if 'timestamp' in data["teams"][teamnum]:
@@ -189,6 +191,8 @@ def clean_data(data):
     data["teams"] = teams
 
     entries = {}
+    if "entry" in data:
+        data["entries"] = data.pop("entry")
     for entrynum in data["entries"]:
         if int(entrynum) < int(num_entries):
             if 'timestamp' in data["entries"][entrynum]:
@@ -196,14 +200,33 @@ def clean_data(data):
             entries[str(entrynum)] = data["entries"][entrynum]
     data["entries"] = entries
 
+
     hunters = {}
-    for id in data["hunters"]:
-        teamnum = id.split('_')[0]
-        hunternum = id.split('_')[1]
-        if int(teamnum) < num_teams and int(hunternum) < teams[teamnum]["numplayers"]:
-            if 'timestamp' in data["hunters"][id]:
-                data["hunters"][id].pop('timestamp')
-            hunters[id] = data["hunters"][id]
+    if "hunter" in data:
+        data["hunters"] = data.pop("hunter")
+    for k in data["hunters"]:
+        hunter = data["hunters"][k]
+        if "0" in hunter.keys():
+            team = hunter
+            for n in team.keys():
+                hunter = team[n]
+                teamnum = hunter["team_num"]
+                hunternum = hunter["hunter_num"]
+                id = '_'.join([teamnum,hunternum])
+                if int(teamnum) < num_teams and int(hunternum) < teams[teamnum]["numplayers"]:
+                    if 'timestamp' in hunter:
+                        hunter.pop('timestamp')
+                    hunters[id] = hunter
+
+        else:
+            teamnum = str(hunter["team_num"])
+            hunternum = str(hunter["hunter_num"])
+            id = '_'.join([teamnum,hunternum])
+
+            if int(teamnum) < num_teams and int(hunternum) < teams[teamnum]["numplayers"]:
+                if 'timestamp' in hunter:
+                    hunter.pop('timestamp')
+                hunters[id] = hunter
     data["hunters"] = hunters
 
     return data

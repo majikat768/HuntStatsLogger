@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget,QPushButton,QTabWidget
+from PyQt6.QtWidgets import QWidget,QPushButton,QTabWidget,QVBoxLayout
 from PyQt6.QtCore import QThread
 from settings.SettingsWindow import SettingsWindow
 from viewer import DbHandler
@@ -24,16 +24,20 @@ class MainFrame(QWidget):
 
         self.headerBar = HeaderBar(self)
 
-        self.tabs = self.initTabs()
+        self.body = self.initTabs()
 
         self.settingsButton = self.SettingsButton()
 
         self.layout.addWidget(self.headerBar)
-        self.layout.addWidget(self.tabs)
+        self.layout.addWidget(self.body)
         self.layout.addWidget(self.settingsButton)
+        self.layout.addStretch()
 
     
     def initTabs(self):
+        body = QWidget(self)
+        body.layout = QVBoxLayout()
+        body.setLayout(body.layout)
         tabs = QTabWidget()
 
         self.huntsTab = HuntsTab(self)
@@ -42,7 +46,8 @@ class MainFrame(QWidget):
         tabs.addTab(self.huntsTab,"Hunts")
         tabs.addTab(self.huntersTab,"Hunters")
         tabs.addTab(self.chartTab,"Chart")
-        return tabs
+        body.layout.addWidget(tabs)
+        return body
 
     def SettingsButton(self):
         self.loggerWindow = SettingsWindow(self.parent())
@@ -52,8 +57,6 @@ class MainFrame(QWidget):
         settingsButton = QPushButton("Settings")
         settingsButton.clicked.connect(self.loggerWindow.show)
         settingsButton.clicked.connect(self.loggerWindow.activateWindow)
-        #footer.layout.addWidget(self.settingsButton)
-        #return footer
         return settingsButton
 
     def startDbHandler(self):

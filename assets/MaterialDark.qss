@@ -20,6 +20,9 @@ ViewerWindow * {
     font-size:16px;
 	background-color: #1e282c;
 }
+#popup {
+	border:1px solid red;
+}
 #link {
 	background-color: #0e0d23;
 	color:cyan;

@@ -36,3 +36,7 @@ class TextArea(QWidget):
 
     def addSpacerItem(self,height):
         self.layout.addSpacerItem(QSpacerItem(0,height,QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed))
+
+    def clear(self):
+        for key in self.lines:
+            self.lines[key].setText(None)

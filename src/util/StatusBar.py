@@ -12,11 +12,13 @@ class StatusBar(QStatusBar):
         self.toggleButton.clicked.connect(self.toggle)
 
         self.addPermanentWidget(self.toggleButton)
+
+        self.rolledUp = False
         #self.show()
 
     def toggle(self):
-        if self.parent().mainframe.isVisible():
-            self.origSize = self.window().size()
+        if not self.rolledUp:
+            self.rolledUp = True
             self.parent().mainframe.hide()
             self.window().setMinimumHeight(self.window().sizeHint().height())
             self.window().setMaximumHeight(self.window().sizeHint().height())
@@ -28,9 +30,11 @@ class StatusBar(QStatusBar):
 
             self.toggleButton.setText("roll down") 
         else:
+            self.rolledUp = False
             self.parent().mainframe.show()
             self.window().setMinimumHeight(self.parent().mainframe.sizeHint().height()/2)
-            self.window().setMaximumHeight(QApplication.primaryScreen().size().height())
+            self.window().setMaximumHeight(self.parent().mainframe.sizeHint().height()*2)
+            self.window().setBaseSize(self.parent().mainframe.sizeHint())
 
             #self.parent().mainframe.body.show()
             #self.parent().mainframe.settingsButton.show()

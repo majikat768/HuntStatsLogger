@@ -20,7 +20,6 @@ class HuntersTab(QGroupBox):
         self.layout.addWidget(self.topKilledBox,0,1)
 
         self.layout.setRowStretch(self.layout.rowCount(),1)
-        self.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Ignored)
 
     def initTopKiller(self):
         topKiller = DbHandler.GetTopKiller()

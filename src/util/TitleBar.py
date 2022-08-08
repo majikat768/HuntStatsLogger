@@ -30,7 +30,6 @@ class TitleBar(QMenuBar):
         self.title.setText(text)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        print(self.sizeHint())
         super().mousePressEvent(event)
         self.start = event.pos()
         self.mouseHold = True
@@ -43,19 +42,13 @@ class TitleBar(QMenuBar):
         super().mouseMoveEvent(event)
         if self.mouseHold:
             try:
-                diff = event.pos() - self.start
-                self.parent().move(self.parent().pos() + diff)
-                # if parent.pos() is outside of screen area.
-                # this can be negative but has a lower bound
-                '''
-                if self.parent().pos().x() < 0:
-                    self.window().setGeometry(0,0,self.window().size().width(),self.window().size().height())
-                if self.parent().pos().y() < 0:
-                    self.window().setGeometry(0,0,self.window().size().width(),self.window().size().height())
-                '''
-            except:
-                self.window().setGeometry(0,0,self.window().size().width(),self.window().size().height())
-                print("uh oh")
+                diff = event.globalPosition().toPoint() - self.start
+                self.parent().move(diff)
+            except Exception as msg:
+                print(event.globalPosition())
+                print(msg)
+                self.window().setGeometry(60,60,self.window().size().width(),self.window().size().height())
+                self.mouseHold = False
 
 def killThreads():
     #DbHandler.running = False

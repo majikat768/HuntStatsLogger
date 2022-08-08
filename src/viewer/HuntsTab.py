@@ -1,9 +1,9 @@
-from cmath import polar
 from PyQt6.QtWidgets import QTabWidget,QGroupBox,QVBoxLayout,QWidget,QGridLayout,QComboBox,QLabel,QScrollArea,QHBoxLayout,QPushButton,QMainWindow
 from PyQt6.QtCore import Qt,QSize, QEvent
 from PyQt6.QtGui import QIcon,QPixmap
 from util.HunterLabel import HunterLabel
 from resources import *
+from util.Popup import Popup
 from util.TextArea import TextArea
 from viewer import DbHandler 
 
@@ -70,7 +70,6 @@ class HuntsTab(QGroupBox):
 
     def TeamDetails(self):
         self.teamTabs = []
-        self.hunterAreas = {}
         for i in range(12):
             teamScrollArea = QScrollArea()
             teamScrollArea.setWidgetResizable(True)
@@ -79,11 +78,10 @@ class HuntsTab(QGroupBox):
             teamWidget.layout = QGridLayout()
             teamWidget.setLayout(teamWidget.layout)
 
-            self.hunterAreas[i] = []
-
             teamInfo = TextArea()
             teamInfo.setObjectName("TEAMINFO")
             teamInfo.addLine('mmr')
+            teamInfo.addLine('nHunters')
             teamInfo.addLine('bounty')
             for j in range(3):
                 hunterInfo = TextArea()
@@ -108,7 +106,6 @@ class HuntsTab(QGroupBox):
                 hunterInfo.addLine('ngames')
                 hunterInfo.setFixedWidth(hunterInfo.sizeHint().width())
                 hunterInfo.addStretch()
-                self.hunterAreas[i].append(hunterInfo)
                 teamWidget.layout.addWidget(hunterInfo,1,j,1,1)
 
             teamWidget.layout.addWidget(teamInfo,0,0,1,3)
@@ -135,160 +132,168 @@ class HuntsTab(QGroupBox):
         allHuntersData = DbHandler.GetHunters(ts)
         qp = gameData["MissionBagIsQuickPlay"]
 
-        for i in range(len(teamsData)):
+        for i in range(12):
             teamScrollArea = self.teamTabs[i]
             teamWidget = teamScrollArea.widget()
             teamArea = teamWidget.layout.itemAtPosition(0,0).widget()
-            hunterAreas = self.hunterAreas[i]
+            if i >= len(teamsData):
+                pass
+                #teamArea.clear()
+            if i < len(teamsData):
+                teamData = teamsData[i]
+                teamArea.get('mmr').setText("Team MMR: %d" % teamData['mmr'])
 
-            teamData = teamsData[i]
-            teamArea.get('mmr').setText("Team MMR: %d" % teamData['mmr'])
+                team_num = teamData["team_num"]
+                got_bounty = False
+                extracted_bounty = False
+                had_wellspring = False
+                team_extract = False
+                kills = 0
 
-            team_num = teamData["team_num"]
-            got_bounty = False
-            extracted_bounty = False
-            had_wellspring = False
-            team_extract = False
-            kills = 0
+                teamHuntersData = [ x for x in allHuntersData if int(x['team_num']) == int(team_num)]
+                teamArea.get('nHunters').setText('%d hunters' % len(teamHuntersData))
 
-            teamHuntersData = [ x for x in allHuntersData if int(x['team_num']) == int(team_num)]
+                huntersInfo = QWidget()
+                huntersInfo.layout = QHBoxLayout()
+                huntersInfo.setLayout(huntersInfo.layout)
 
-            huntersInfo = QWidget()
-            huntersInfo.layout = QHBoxLayout()
-            huntersInfo.setLayout(huntersInfo.layout)
+                for j in range(3):
+                    hunterArea = teamWidget.layout.itemAtPosition(1,j).widget()
+                    if j >= len(teamHuntersData):
+                        pass
+                        #hunterArea.clear()
+                    if j < len(teamHuntersData):
+                        hunterArea.show()
 
-            for j in range(3):
-                hunterArea = teamWidget.layout.itemAtPosition(1,j).widget()
-                if j < len(teamHuntersData):
-                    hunterArea.show()
+                        hunterData = teamHuntersData[j]
 
-                    hunterData = teamHuntersData[j]
+                        hunterArea.get('name').setText(hunterData['blood_line_name'])
+                        hunterArea.get('mmr').setText(str(hunterData['mmr']))
+                        hunterArea.get('stars').setPixmap(star_pixmap(mmr_to_stars(hunterData['mmr'])))
 
-                    hunterArea.get('name').setText(hunterData['blood_line_name'])
-                    if hunterData['blood_line_name'] == settings.value("steam_name"):
-                        hunterArea.get('name').setStyleSheet('QLabel{color:#cccc67}')
-                    hunterArea.get('mmr').setText(str(hunterData['mmr']))
-                    hunterArea.get('stars').setPixmap(star_pixmap(mmr_to_stars(hunterData['mmr'])))
-
-                    profileid = hunterData["profileid"]
-                    n_games = DbHandler.execute_query("select count(*) from 'hunter' where profileid is %d" % profileid)[0][0]
+                        profileid = hunterData["profileid"]
+                        n_games = DbHandler.execute_query("select count(*) from 'hunter' where profileid is %d" % profileid)[0][0]
 
 
-                    if hunterData['downedme'] or \
-                    hunterData['downedbyme'] or \
-                    hunterData['downedteammate'] or \
-                    hunterData['downedbyteammate'] or \
-                    hunterData['killedme'] or \
-                    hunterData['killedbyme'] or \
-                    hunterData['killedteammate'] or \
-                    hunterData['killedbyteammate']:
-                        hunterArea.get('kills').show()
-                        kills = 1
+                        if hunterData['downedme'] or \
+                        hunterData['downedbyme'] or \
+                        hunterData['downedteammate'] or \
+                        hunterData['downedbyteammate'] or \
+                        hunterData['killedme'] or \
+                        hunterData['killedbyme'] or \
+                        hunterData['killedteammate'] or \
+                        hunterData['killedbyteammate']:
+                            hunterArea.get('kills').show()
+                            kills = 1
+                        else:
+                            hunterArea.get('kills').hide()
+
+
+                        if hunterData['bountypickedup']:
+                            got_bounty = True
+                            if hunterData['bountyextracted']:
+                                extracted_bounty = True
+                            hunterArea.get('bounties').show()
+                        else:
+                            hunterArea.get('bounties').hide()
+
+                        if hunterData['hadWellspring']:
+                            had_wellspring = True
+
+                        if hunterData['teamextraction']:
+                            team_extract = True
+                        if n_games > 1:
+                            hunterArea.get('ngames').show()
+                            hunterArea.get('ngames').setText("%d games" % n_games)
+                        else:
+                            hunterArea.get('ngames').hide()
+
                     else:
-                        hunterArea.get('kills').hide()
-
-
-                    if hunterData['bountypickedup']:
-                        got_bounty = True
-                        if hunterData['bountyextracted']:
-                            extracted_bounty = True
-                        hunterArea.get('bounties').show()
+                        hunterArea.hide()
+                huntersInfo.layout.addStretch()
+                if got_bounty:
+                    teamArea.get('bounty').show()
+                    if extracted_bounty:
+                        teamArea.get('bounty').setText("Extracted with the bounty.")
                     else:
-                        hunterArea.get('bounties').hide()
+                        teamArea.get('bounty').setText("Held the bounty.")
+                elif team_extract and not extracted_bounty:
+                    teamArea.get('bounty').show()
+                    teamArea.get('bounty').setText("Extracted alive.")
+                elif had_wellspring:
+                    teamArea.get('bounty').setText("Activated the wellspring.")
+                else:
+                    teamArea.get('bounty').hide()
 
-                    if hunterData['hadWellspring']:
-                        had_wellspring = True
-
-                    if hunterData['teamextraction']:
-                        team_extract = True
-                    if n_games > 1:
-                        hunterArea.get('ngames').setText("%d games" % n_games)
+                if qp:
+                    if HunterLabel.HideUsers:
+                        name = '\tHunter %d\t' % team_num
                     else:
-                        hunterArea.get('ngames').setText('')
+                        name = '\t%s\t' % teamHuntersData[0]['blood_line_name']
+                else:
+                    name = "\tTeam %d\t" % team_num
+                if teamData['ownteam']:
+                    icon = livedIcon
+                elif kills:
+                    icon = deadIcon
+                else:
+                    icon = noneIcon 
+                idx = self.teamTabWidget.addTab(teamScrollArea,QIcon(icon),name)
+                if(teamData['ownteam']):
+                    self.teamTabWidget.tabBar().moveTab(idx,0)
+                elif kills:
+                    pass
+                    #self.teamTabWidget.tabBar().moveTab(idx,1)
 
-                else:
-                    hunterArea.hide()
-            huntersInfo.layout.addStretch()
-            if got_bounty:
-                if extracted_bounty:
-                    teamArea.get('bounty').setText("Extracted with the bounty.")
-                else:
-                    teamArea.get('bounty').setText("Held the bounty.")
-            if team_extract and not extracted_bounty:
-                teamArea.get('bounty').setText("Extracted alive.")
-            if had_wellspring:
-                teamArea.get('bounty').setText("Activated the wellspring.")
-
-            if qp:
-                if HunterLabel.HideUsers:
-                    name = '\tHunter %d\t' % team_num
-                else:
-                    name = '\t%s\t' % teamHuntersData[0]['blood_line_name']
-            else:
-                name = "\tTeam %d\t" % team_num
-            if teamData['ownteam']:
-                icon = livedIcon
-            elif kills:
-                icon = deadIcon
-            else:
-                icon = noneIcon 
-            self.teamTabWidget.addTab(teamScrollArea,QIcon(icon),name)
 
     def eventFilter(self, obj, e):
         child = obj.parent().findChild(QWidget,'blood_line_name')
-        dataType = obj.text()
+        data = obj.text()
         if e.type() == QEvent.Type.Enter:
             if child:
                 name = child.text()
                 ts = self.matchSelect.currentData()
                 hunter = DbHandler.GetHunter(name,ts)
-                self.ShowWindow(hunter,dataType)
-                self.popup.move(e.globalPosition().x()+self.popup.size().width()/4,e.globalPosition().y()-self.popup.size().height()/4)
-                self.setFocus()
+                info = QWidget()
+                info.layout = QVBoxLayout()
+                info.setLayout(info.layout)
+                name = hunter['blood_line_name']
+                if data == 'kills':
+                    if hunter['downedme']:
+                        info.layout.addWidget(QLabel('%s downed you %d times.' % (name, hunter['downedme'])))
+                    if hunter['downedbyme']:
+                        info.layout.addWidget(QLabel('you downed %s %d times.' % (name, hunter['downedbyme'])))
+                    if hunter['downedteammate']:
+                        info.layout.addWidget(QLabel('%s downed your teammate %d times.' % (name, hunter['downedteammate'])))
+                    if hunter['downedbyteammate']:
+                        info.layout.addWidget(QLabel('your teammate downed %s %d times.' % (name, hunter['downedbyteammate'])))
+                    if hunter['killedme']:
+                        info.layout.addWidget(QLabel('%s killed you.' % name))
+                    if hunter['killedbyme']:
+                        info.layout.addWidget(QLabel('you killed %s.' % name))
+                    if hunter['killedteammate']:
+                        info.layout.addWidget(QLabel('%s killed your teammate.' % name))
+                    if hunter['killedbyteammate']:
+                        info.layout.addWidget(QLabel('your teammate killed %s.' % name))
+                elif data == 'bounties':
+                    if hunter['bountypickedup']:
+                        if hunter['bountyextracted']:
+                            info.layout.addWidget(QLabel('%s extracted with the bounty.' % name))
+                        else:
+                            info.layout.addWidget(QLabel('%s picked up the bounty.' % name))
+                elif data == 'wellspring':
+                    if hunter['hadWellspring']:
+                        info.layout.addWidget(QLabel('%s activated the wellspring.' % name))
+        
+                self.popup = Popup(info,e.globalPosition())
+                self.popup.show()
+                self.raise_()
+                self.activateWindow()
         elif e.type() == QEvent.Type.Leave:
+            self.popup.close()
             self.popup = None
         return super().eventFilter(obj, e)
 
-    def ShowWindow(self,hunter,data):
-        if hunter == {}:    return
-        self.popup = QMainWindow()
-        self.popup.setStyleSheet('QWidget{border:1px solid red;}QLabel{border:0px;}*{font-size:18px;}')
-        self.popup.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
-        self.popup.objectName = "popup"
-        info = QWidget()
-        self.popup.setCentralWidget(info)
-        info.layout = QVBoxLayout()
-        info.setLayout(info.layout)
-        name = hunter['blood_line_name']
-        if data == 'kills':
-            if hunter['downedme']:
-                info.layout.addWidget(QLabel('%s downed you %d times.' % (name, hunter['downedme'])))
-            if hunter['downedbyme']:
-                info.layout.addWidget(QLabel('you downed %s %d times.' % (name, hunter['downedbyme'])))
-            if hunter['downedteammate']:
-                info.layout.addWidget(QLabel('%s downed your teammate %d times.' % (name, hunter['downedteammate'])))
-            if hunter['downedbyteammate']:
-                info.layout.addWidget(QLabel('your teammate downed %s %d times.' % (name, hunter['downedbyteammate'])))
-            if hunter['killedme']:
-                info.layout.addWidget(QLabel('%s killed you.' % name))
-            if hunter['killedbyme']:
-                info.layout.addWidget(QLabel('you killed %s.' % name))
-            if hunter['killedteammate']:
-                info.layout.addWidget(QLabel('%s killed your teammate.' % name))
-            if hunter['killedbyteammate']:
-                info.layout.addWidget(QLabel('your teammate killed %s.' % name))
-        elif data == 'bounties':
-            if hunter['bountypickedup']:
-                if hunter['bountyextracted']:
-                    info.layout.addWidget(QLabel('%s extracted with the bounty.' % name))
-                else:
-                    info.layout.addWidget(QLabel('%s picked up the bounty.' % name))
-        elif data == 'wellspring':
-            if hunter['hadWellspring']:
-                info.layout.addWidget(QLabel('%s activated the wellspring.' % name))
-        self.popup.show()
-        self.popup.setMaximumSize(self.popup.sizeHint())
-        self.setFocus()
 
     def updateHuntDetails(self):
         if self.matchSelect.count() == 0:

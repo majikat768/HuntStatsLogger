@@ -106,7 +106,7 @@ class HeaderBar(QGroupBox):
         )
         if kills is None or deaths is None or assists is None:  return
         if gameType != "All Hunts":
-            include = [i[0] for i in DbHandler.execute_query("select timestamp from 'game' where MissionBagIsQuickPlay is %d" % (0 if gameType == "Quick Play" else 1)) ]
+            include = [i[0] for i in DbHandler.execute_query("select timestamp from 'game' where MissionBagIsQuickPlay is %d" % (1 if gameType == "Quick Play" else 0)) ]
             kills = [k for k in kills if k[1] in include]
             deaths = [d for d in deaths if d[1] in include]
             assists = [a for a in assists if a[1] in include]

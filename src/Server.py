@@ -87,11 +87,13 @@ def refresh_token():
 def isLoggedIn():
     return settings.value('aws_access_token','') != ''
 
-def startThread(parent, instance, started=[],finished=[]):
+def startThread(parent, instance, started=[],progress=[],finished=[]):
     botoThread = QThread(parent=parent)
     instance.moveToThread(botoThread)
     for s in started:
         botoThread.started.connect(s)
+    for p in progress:
+        instance.progress.connect(p)
     for f in finished:
         instance.finished.connect(f)
     botoThread.finished.connect(botoThread.quit)
@@ -100,49 +102,42 @@ def startThread(parent, instance, started=[],finished=[]):
 
     botoThread.start()
 
-def getFromS3(key,file,tokens=None):
+def getFromS3(key,file,session=None):
     if settings.value('aws_id_token','') == '':
         refresh_token()
         if settings.value('aws_id_token','') == '':
             return
-
     try:
-        if tokens == None:
+        if session == None:
             tokens = getTokens()
-        [accessKey,secretKey,sessionToken] = tokens
-        
-        session = boto3.Session(
-            aws_access_key_id=accessKey,
-            aws_secret_access_key=secretKey,
-            aws_session_token=sessionToken
-        )
+            [accessKey,secretKey,sessionToken] = tokens
+            
+            session = boto3.Session(
+                aws_access_key_id=accessKey,
+                aws_secret_access_key=secretKey,
+                aws_session_token=sessionToken
+            )
         s3 = session.client('s3')
         obj = s3.get_object(
             Bucket='huntstatslogger',
             Key=key
         )
         data = json.loads(obj["Body"].read().decode('utf-8'))
-        data = clean_data(translateJson(data,os.path.basename(file)))
-        if not os.path.exists(os.path.dirname(file)):
-            os.makedirs(os.path.dirname(file),exist_ok=True)
-        with open(file,'w') as f:
-            json.dump(data,f)
+    except Exception as msg:
+        log("file couldn't be downloaded.\n%s" % str(msg))
+    try:
+        data = clean_data(data)
+    except:
+        data = data
+    if not os.path.exists(os.path.dirname(file)):
+        os.makedirs(os.path.dirname(file),exist_ok=True)
+    with open(file,'w') as f:
+        json.dump(data,f,indent=True)
+    log('got from s3')
+    return True
 
 
-        log('got from s3')
-        return True
-    except Exception as msg1:
-        log(msg1)
-        try:
-            refresh_token()
-            log('token updated')
-            return getFromS3(key,file,getTokens())
-        except Exception as msg2:
-            log(msg2)
-            return False
-
-
-def sendToS3(file,key,tokens=None):
+def sendToS3(file,key,session=None):
     if not settings.value("aws_sub"):   return
     if settings.value('aws_id_token','') == '':
         refresh_token()
@@ -152,15 +147,15 @@ def sendToS3(file,key,tokens=None):
     log('sending %s to s3, key %s ' % (file, key))
 
     try:
-        if tokens == None:
+        if session == None:
             tokens = getTokens()
-        [accessKey,secretKey,sessionToken] = tokens
-        
-        session = boto3.Session(
-            aws_access_key_id=accessKey,
-            aws_secret_access_key=secretKey,
-            aws_session_token=sessionToken
-        )
+            [accessKey,secretKey,sessionToken] = tokens
+            
+            session = boto3.Session(
+                aws_access_key_id=accessKey,
+                aws_secret_access_key=secretKey,
+                aws_session_token=sessionToken
+            )
         s3 = session.client('s3')
         s3.put_object(
             Body=open(file,'r').read(),
@@ -169,24 +164,16 @@ def sendToS3(file,key,tokens=None):
         )
         log('sent to s3')
         return True
-    except FileNotFoundError as msg:
-        log(msg)
-        return False
     except Exception as msg1:
-        log('not authorized\n%s' % msg1)
-        try:
-            refresh_token()
-            log('token updated')
-            sendToS3(file,key,getTokens())
-        except Exception as msg2:
-            log('still not authorized\n%s' % msg2)
-            return False
+        log('file not sent to server\n%s' % msg1)
+        return False
 
 def ListRemoteFiles():
     pass
 
 class ServerThread(QObject):
     finished = pyqtSignal(object)
+    progress = pyqtSignal(object)
 
     def __init__(self,args = None) -> None:
         super().__init__()
@@ -223,11 +210,30 @@ class ServerThread(QObject):
 
         log('uploading %d files' % len(to_put))
         log('downloading %d files' % len(to_get))
+        try:
+            tokens = getTokens()
+            [accessKey,secretKey,sessionToken] = tokens
+            
+            session = boto3.Session(
+                aws_access_key_id=accessKey,
+                aws_secret_access_key=secretKey,
+                aws_session_token=sessionToken
+            )
+        except Exception as msg:
+            print("couldn't start aws session\n%s" % str(msg))
+            return False
 
+        i = 1
         for k in to_put:
-            sendToS3(local[k],k,tkns)
+            self.progress.emit("uploading %d of %d..." % (i,len(to_put)))
+            sendToS3(local[k],k,session)
+            i += 1
+
+        i = 0
         for k in to_get:
-            getFromS3(k,remote[k])
+            self.progress.emit("downloading %d of %d..." % (i,len(to_get)))
+            getFromS3(k,remote[k],session)
+            i += 1
         self.finished.emit("done")
 
     def login(self):

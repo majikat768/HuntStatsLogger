@@ -26,7 +26,9 @@ class ViewerWindow(QMainWindow):
         #self.statusBar().setSizeGripEnabled(True)
         #self.statusBar().setStyleSheet("QSizeGrip{image: url(\"%s\")};" % resource_path("assets/icons/sizegrip.png").replace("\\","/"))
 
-
+        self.window().setMinimumHeight(self.mainframe.headerBar.sizeHint().height()//2)
+        self.window().setMaximumHeight(self.mainframe.sizeHint().height()*2)
+        self.window().setBaseSize(self.mainframe.sizeHint())
         self.show()
 
     def update(self):
