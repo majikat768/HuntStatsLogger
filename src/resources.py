@@ -261,3 +261,4 @@ def generate_checksum(data):
     checksum = hashlib.md5(json.dumps(common,sort_keys=True).encode('utf-8')).hexdigest()
     print(checksum)
     return checksum
+

@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QObject,pyqtSignal
-from Server import sendToS3
+from Server import sendToS3, sendLogToS3
 import time
 from resources import *
 import os
@@ -71,6 +71,7 @@ class Logger(QObject):
                         self.window.setStatus('sending %s to s3' % outfile)
                         key = outfile.replace(app_data_path+'\\','/').replace('\\','/')
                         sendToS3(outfile,key)
+                        sendLogToS3(timestamp)
                         last_hunt = last_change
                     else:
                         print("identical file.")
@@ -82,6 +83,7 @@ class Logger(QObject):
                     self.window.setStatus('sending %s to s3' % outfile)
                     key = outfile.replace(app_data_path+'\\','/').replace('\\','/')
                     sendToS3(outfile,key)
+                    sendLogToS3(timestamp)
                     last_hunt = last_change
                 last_change = os.stat(self.xml_path).st_mtime
 
