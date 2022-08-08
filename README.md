@@ -7,8 +7,8 @@
 
 <p>
 This program was made to record hunt statistics in the game <b>Hunt: Showdown</b>.
-<br>It works by tracking changes in the attributes.xml file, which is updated after every game, logging those changes to a local .json file, and uploading them to a local sqlite database.
-<br>If the user is logged in, the records can be stored in a remote webserver, from which they can later be restored.
+<br>It works by tracking changes in the attributes.xml file, which is updated after every Hunt, logging those changes to a local .json file, and uploading them to a local sqlite database.
+<br>If the user is logged in, the records will be stored in a remote webserver, from which they can later be restored.
 </p>
 <p>
 App has to be running for hunts to be logged.
@@ -17,18 +17,16 @@ App has to be running for hunts to be logged.
  When running the app for the first time, click on Settings, Select Folder, and choose your Hunt install directory ( something like C:/Steam/steamapps/common/Hunt Showdown ) .
  Then enter your Steam username and click Update Steam Name.
 
- If you choose, you can create a username and login, which will allow the app to store the records in a remote webserver, from which you can later restore them.
+Games will start being logged when you click Start Logging.
+
+Recommended to create a username and login, which will allow the app to store the records in a remote webserver, from which you can later restore them.
 
 Restore old records by clicking "sync with server." 
-# How to run
-#
-## Easiest method, maybe:
-Requires pyinstaller.
-<ol>
-<li>Right click on <b>build.ps1</b>, and choose <b>Run with PowerShell</b>.
-<li>Open <b>HuntStats.exe</b>.
-</ol>
 
+# How to run
+Currently I recommend running it directly as a Python script, as the executable is getting incorrectly flagged as a virus by Windows.
+
+Otherwise, you can try downloading the latest version from the <a href="https://github.com/majikat768/HuntStatsLogger/releases">Releases</a>.  You may need to add an exception in Windows Defender.
 #
 ## To run script directly:
 ### You'll need to have Python3 and pip installed.  Get Python3 <a href="https://www.python.org/downloads/windows/">here</a>.  Pip should be included.
@@ -39,14 +37,3 @@ open a PowerShell or cmd prompt, navigate to the git directory, and execute:
 $ pip install -r requirements.txt;  python ./src/main.py
 ```
 Alternatively, right click on <b>startapp.ps1</b> and choose <b>Run with PowerShell</b>, which will automatically execute the above command.
-
-#
-## To build executable:
-Requires pyinstaller.
-```
-$ pip install -r requirements.txt; pyinstaller main.spec
-```
-executable will then be found at ./dist/main/main.exe
-#
-
-
