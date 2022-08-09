@@ -169,6 +169,7 @@ class MainFrame(QWidget):
     def syncServer(self):
         if not isLoggedIn():    return
         self.stopLogger()
+        Server.refresh_token()
         self.serverThread = Server.ServerThread()
         Server.startThread(self,self.serverThread,started=[self.serverThread.syncFiles],progress=[self.updateSync],finished=[self.doneSyncing])
         self.syncServerButton.setDisabled(True)

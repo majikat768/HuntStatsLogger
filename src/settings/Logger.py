@@ -116,7 +116,9 @@ def build_json_from_xml():
             key = l['Attr']['@name']
             val = parse_value(l['Attr']['@value'])
             if "MissionBag" in line:
-                if val != "" and "tooltip" not in key:
+                if "tooltip" not in key:
+                    if val == "":
+                        val = -1
                     keysplit = key.split('_')
                     if 'MissionBagPlayer_' in key:
                         team_num = int(keysplit[1])

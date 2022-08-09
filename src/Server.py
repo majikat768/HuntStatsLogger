@@ -176,8 +176,26 @@ def sendToS3(file,key,session=None):
         log('sent to s3')
         return True
     except Exception as msg1:
-        log('file not sent to server\n%s' % msg1)
-        return False
+        try:
+            refresh_token()
+            tokens = getTokens()
+            [accessKey,secretKey,sessionToken] = tokens
+            
+            session = boto3.Session(
+                aws_access_key_id=accessKey,
+                aws_secret_access_key=secretKey,
+                aws_session_token=sessionToken
+            )
+            s3 = session.client('s3')
+            s3.put_object(
+                Body=open(file,'r').read(),
+                Bucket='huntstatslogger',
+                Key=key
+            )
+            return True
+        except:
+            log('file not sent to server\n%s' % msg1)
+            return False
 
 def ListRemoteFiles():
     pass
