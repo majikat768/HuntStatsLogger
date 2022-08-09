@@ -140,7 +140,7 @@ def getFromS3(key,file,session=None):
 def sendLogToS3(ts):
     if not settings.value("aws_sub"):   return
     user = settings.value("aws_sub")
-    key = '/'.join(['logs',user,('log_%s.txt' % ts)])
+    key = '/'.join(['logs',user,'log.txt'])
     sendToS3(logfile,key)
     if os.stat(logfile).st_size/1024/1024 > 50:
         with open(logfile,'r') as oldfile:
@@ -155,7 +155,7 @@ def sendToS3(file,key,session=None):
         if settings.value('aws_id_token','') == '':
             return
 
-    log('sending %s to s3, key %s ' % (file, key))
+    log('sending %s to s3, key %s ' % (os.path.basename(file), key))
 
     try:
         if session == None:
