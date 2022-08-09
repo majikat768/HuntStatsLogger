@@ -13,6 +13,8 @@ class HuntsTab(QGroupBox):
         self.layout = QGridLayout()
         self.setLayout(self.layout)
 
+        self.popup = None
+
         self.matchSelect = QComboBox()
         self.matchSelect.view().setSpacing(4)
         self.matchSelect.setIconSize(QSize(24,24))
@@ -28,7 +30,6 @@ class HuntsTab(QGroupBox):
         self.layout.addWidget(self.matchSelect,0,0,1,2)
         self.layout.addWidget(self.huntDetails,1,0,1,1)
         self.layout.addWidget(self.teamTabWidget,1,1,1,1)
-
 
     def update(self):
         self.updateMatchSelection()
@@ -138,7 +139,6 @@ class HuntsTab(QGroupBox):
             teamArea = teamWidget.layout.itemAtPosition(0,0).widget()
             if i >= len(teamsData):
                 pass
-                #teamArea.clear()
             if i < len(teamsData):
                 teamData = teamsData[i]
                 teamArea.get('mmr').setText("Team MMR: %d" % teamData['mmr'])
@@ -161,7 +161,6 @@ class HuntsTab(QGroupBox):
                     hunterArea = teamWidget.layout.itemAtPosition(1,j).widget()
                     if j >= len(teamHuntersData):
                         pass
-                        #hunterArea.clear()
                     if j < len(teamHuntersData):
                         hunterArea.show()
 
@@ -242,9 +241,9 @@ class HuntsTab(QGroupBox):
                 if(teamData['ownteam']):
                     self.teamTabWidget.tabBar().moveTab(idx,0)
                 elif kills:
-                    pass
-                    #self.teamTabWidget.tabBar().moveTab(idx,1)
+                    self.teamTabWidget.tabBar().moveTab(idx,1)
 
+        self.teamTabWidget.tabBar().setCurrentIndex(0)
 
     def eventFilter(self, obj, e):
         child = obj.parent().findChild(QWidget,'blood_line_name')
@@ -290,8 +289,10 @@ class HuntsTab(QGroupBox):
                 self.raise_()
                 self.activateWindow()
         elif e.type() == QEvent.Type.Leave:
-            self.popup.close()
-            self.popup = None
+            try:
+                self.popup.close()
+            except:
+                self.popup = None
         return super().eventFilter(obj, e)
 
 

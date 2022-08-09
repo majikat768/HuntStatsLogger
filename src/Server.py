@@ -231,7 +231,7 @@ class ServerThread(QObject):
                 aws_session_token=sessionToken
             )
         except Exception as msg:
-            print("couldn't start aws session\n%s" % str(msg))
+            log("couldn't start aws session\n%s" % str(msg))
             return False
 
         i = 1

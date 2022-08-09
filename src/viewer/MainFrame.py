@@ -14,10 +14,13 @@ class MainFrame(QWidget):
         self.layout = layout
         self.setLayout(self.layout)
 
-        self.initUI()
+        self.settingsWindow = SettingsWindow()
+        self.settingsWindow.viewerMainframe = self
 
         self.dbHandler = DbHandler.DbHandler()
         self.startDbHandler()
+
+        self.initUI()
         self.update()
 
     def initUI(self):
@@ -26,10 +29,10 @@ class MainFrame(QWidget):
 
         self.body = self.initTabs()
 
-        self.settingsButton = self.SettingsButton()
 
         self.layout.addWidget(self.headerBar)
         self.layout.addWidget(self.body)
+        self.settingsButton = self.SettingsButton()
         self.layout.addWidget(self.settingsButton)
         self.layout.addStretch()
 
@@ -50,14 +53,18 @@ class MainFrame(QWidget):
         return body
 
     def SettingsButton(self):
-        self.loggerWindow = SettingsWindow(self.parent())
-        self.loggerWindow.viewerWindow = self.parent()
-        self.loggerWindow.viewerMainframe = self
-        self.loggerWindow.hide() 
         settingsButton = QPushButton("Settings")
-        settingsButton.clicked.connect(self.loggerWindow.show)
-        settingsButton.clicked.connect(self.loggerWindow.activateWindow)
+        settingsButton.clicked.connect(self.toggleSettings)
         return settingsButton
+
+    def toggleSettings(self):
+        if self.settingsWindow == None:
+            self.settingsWindow = SettingsWindow()
+            self.settingsWindow.viewerMainframe = self
+        if not self.settingsWindow.isVisible():
+            self.settingsWindow.show()
+        else:
+            self.settingsWindow.raise_()
 
     def startDbHandler(self):
         log('starting db handler')
@@ -77,5 +84,5 @@ class MainFrame(QWidget):
         self.huntersTab.update() 
         self.chartTab.update()
         #self.setMaximumWidth(self.sizeHint().width())
-        self.window().setMaximumSize(self.sizeHint())
+        self.window().setMaximumSize(self.sizeHint().width()*2,self.sizeHint().height())
 

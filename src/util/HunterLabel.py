@@ -16,6 +16,7 @@ class HunterLabel(QLabel):
 
         super().setText(self.name)
         self.setToolTip(self.fullname)
+
         if(HunterLabel.HideUsers and self.name != settings.value('steam_name','')):
             self.HideUsername()
         HunterLabel.instanceList.append(self)

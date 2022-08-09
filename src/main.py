@@ -16,5 +16,6 @@ if __name__ == '__main__':
     app.setStyleSheet(stylesheet)
 
     viewerWindow = ViewerWindow()
+    viewerWindow.show()
 
     app.exec()

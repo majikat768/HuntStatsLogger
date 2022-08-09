@@ -5,6 +5,8 @@ from resources import *
 import os
 from datetime import datetime
 import xmltodict
+from util.MainWindow import MainWindow
+from util.StatusBar import StatusBar
 
 def file_changed(xml,ts):
     return os.stat(xml).st_mtime != ts
@@ -18,15 +20,12 @@ class Logger(QObject):
     def __init__(self,window):
         super().__init__()
         self.window = window
-        #self.statusBar = statusBar
         self.xml_path = settings.value("xml_path")
         if not os.path.exists(jsondir):
             os.makedirs(jsondir,exist_ok=True)
-        #self.running = False
-
 
     def run(self):
-        print('logger.run')
+        StatusBar.setStatus("Logger activated.")
         last_change = -1
         last_hunt = -1
 
@@ -37,8 +36,8 @@ class Logger(QObject):
                 continue
             if file_changed(self.xml_path,last_change):
                 timestamp = int(os.stat(self.xml_path).st_mtime)
-                log('file changed detected at %d' % timestamp)
-                self.window.setStatus('file changed detected at %d' % timestamp)
+                log('file change detected at %d' % timestamp)
+                StatusBar.setStatus('file change detected at %s' % datetime.fromtimestamp(timestamp).strftime('%H:%M'))
 
                 y = datetime.fromtimestamp(timestamp).strftime('%Y')
                 m = datetime.fromtimestamp(timestamp).strftime('%m')
@@ -64,23 +63,20 @@ class Logger(QObject):
 
                     if prev_data["id"] != id:
                         with open(outfile,'w') as f:
+                            log("writing new file to %s" % os.path.basename(f.name))
                             json.dump(new_data,f)
-                            log("1writing new file to %s" % f.name)
-                            #print(new_data)
-                            print(new_data['id'])
-                        self.window.setStatus('sending %s to s3' % outfile)
+                        StatusBar.setStatus('sending %s to s3' % os.path.basename(outfile))
                         key = outfile.replace(app_data_path+'\\','/').replace('\\','/')
                         sendToS3(outfile,key)
                         sendLogToS3(timestamp)
                         last_hunt = last_change
                     else:
-                        print("identical file.")
+                        log("identical file; continuing.")
                 else:
                     with open(outfile,'w') as f:
+                        log("writing new file to %s" % os.path.basename(f.name))
                         json.dump(new_data,f)
-                        log("2writing new file to %s" % f.name)
-                        print(id)
-                    self.window.setStatus('sending %s to s3' % outfile)
+                    StatusBar.setStatus('sending %s to s3' % os.path.basename(outfile))
                     key = outfile.replace(app_data_path+'\\','/').replace('\\','/')
                     sendToS3(outfile,key)
                     sendLogToS3(timestamp)
@@ -90,24 +86,22 @@ class Logger(QObject):
             time.sleep(1)
             elapsed = int(time.time() - last_hunt)/60
             if last_hunt == -1:
-                self.window.setStatus("waiting for new data%s"%("."*p))
+                StatusBar.setStatus("waiting for new data%s"%("."*p))
                 p = (p+1)%6
 
             else:
-                self.window.setStatus("%d minutes since last Hunt%s" % (elapsed, "."*p))
+                StatusBar.setStatus("%d minutes since last Hunt%s" % (elapsed, "."*p))
                 p = (p+1)%4
             if not running:
-                print('stopped logging')
-                self.finished.emit()
-                self.window.setStatus("Logger not active.")
+                log('stopped logging')
                 break
-
+        StatusBar.setStatus("Hunts are not being logged.", "#ff0000")
+        self.finished.emit()
 
 
 
 def build_json_from_xml():
     log('building json object')
-
     with open(settings.value("xml_path"),'r',encoding='utf-8') as xf:
         points = 0
         teams = {}

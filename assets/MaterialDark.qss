@@ -20,6 +20,9 @@ ViewerWindow * {
     font-size:16px;
 	background-color: #1e282c;
 }
+#statusbar {
+	color:#02cf7f;
+}
 #popup {
 	border:1px solid red;
 }

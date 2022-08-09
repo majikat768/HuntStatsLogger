@@ -2,8 +2,6 @@ from PyQt6.QtWidgets import QHBoxLayout, QPushButton,QMenuBar,QSizePolicy,QLabel
 from PyQt6.QtCore import Qt
 from PyQt6 import QtGui
 
-from viewer import DbHandler
-from settings import Logger
 
 class TitleBar(QMenuBar):
     def __init__(self, parent) -> None:

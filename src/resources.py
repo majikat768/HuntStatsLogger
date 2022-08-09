@@ -56,6 +56,8 @@ def isLoggedIn():
     return settings.value('aws_access_token','') != ''
 
 def StartLogger(logger,parent):
+    if logger == None:
+        return
     log('starting logger')
     if not settings.value("hunt_dir"):
         return
@@ -259,6 +261,5 @@ def generate_checksum(data):
         }
 
     checksum = hashlib.md5(json.dumps(common,sort_keys=True).encode('utf-8')).hexdigest()
-    print(checksum)
     return checksum
 

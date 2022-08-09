@@ -62,7 +62,11 @@ class DbHandler(QObject):
                 ts = f.split("attributes_")[1].split(".json")[0]
                 res = execute_query("select timestamp from 'game' where timestamp is %s" % ts)
                 if len(res) == 0:
-                    self.write_json_to_db(f)
+                    try:
+                        self.write_json_to_db(f)
+                    except Exception as e:
+                        print('key',e)
+                        print('continuing')
 
         log('done')
         self.finished.emit()

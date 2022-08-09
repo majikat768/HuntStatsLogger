@@ -6,6 +6,7 @@ from settings.LoginWindow import LoginWindow
 from resources import *
 import Server 
 from settings import Logger
+from util.StatusBar import StatusBar
 from viewer import DbHandler
 
 class MainFrame(QWidget):
@@ -61,7 +62,7 @@ class MainFrame(QWidget):
         self.main.layout.addWidget(tools)
 
         self.layout.addWidget(self.main)
-        self.setStatus("Logger not active.")
+        StatusBar.setStatus("Hunts are not being logged.", "#ff0000")
 
     def initLoggerGroup(self):
         loggerGroup = QGroupBox("Logger") 
@@ -157,9 +158,6 @@ class MainFrame(QWidget):
         HunterLabel.ToggleNames()
         self.parent().viewerMainframe.huntsTab.updateTeamDetails()
 
-    def setStatus(self,text):
-        self.parent().setStatus(text)
-
     def setUsername(self):
         name,_ = QInputDialog.getText(self,"Enter steam name", "Name:",QLineEdit.EchoMode.Normal,settings.value("steam_name"))
         if name != '':
@@ -216,7 +214,6 @@ class MainFrame(QWidget):
         self.loginButton.hide()
         self.logoutButton.show()
         self.loginLabel.setText("Logged in as %s" % settings.value("aws_username"))
-        self.setStatus("Ready.")
         self.syncServerButton.setDisabled(False)
 
     def addWidget(self,widget):
@@ -228,7 +225,6 @@ class MainFrame(QWidget):
         xml_path = os.path.join(hunt_dir,suffix)
         if not os.path.exists(xml_path):
             log("attributes.xml file not found.")
-            self.setStatus("attributes.xml not found.")
             return
         settings.setValue('xml_path',xml_path)
         settings.setValue('hunt_dir',hunt_dir)
@@ -242,17 +238,22 @@ class MainFrame(QWidget):
 
     def startLogger(self):
         self.logger = Logger.Logger(self)
+        self.startLoggerButton.setDisabled(True)
         Logger.running = True
         StartLogger(self.logger,self)
-        self.startLoggerButton.hide()
-        self.stopLoggerButton.show() 
         self.loggerLabel.setText("Logger active.")
         if settings.value("profileid","-1") == "-1":
             if settings.value("steam_name"):
                 settings.setValue('profileid',DbHandler.getProfileid(settings.value("steam_name")))
+        self.startLoggerButton.hide()
+        self.stopLoggerButton.show() 
+        self.stopLoggerButton.setDisabled(False)
         
     def stopLogger(self):
+        self.stopLoggerButton.setDisabled(True)
         Logger.running = False
+        StatusBar.setStatus("Hunts are not being logged.", "#ff0000")
+        self.loggerLabel.setText("Logger not active.")
         self.stopLoggerButton.hide() 
         self.startLoggerButton.show()
-        self.loggerLabel.setText("Logger not active.")
+        self.startLoggerButton.setDisabled(False)

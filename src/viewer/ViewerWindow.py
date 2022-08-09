@@ -1,42 +1,35 @@
-from PyQt6.QtWidgets import QMainWindow,QVBoxLayout
-from PyQt6.QtCore import Qt
-from util.TitleBar import TitleBar
+from PyQt6.QtWidgets import QVBoxLayout
+from util.StatusBar import StatusBar
 from viewer.MainFrame import MainFrame
 from resources import *
 from viewer.DbHandler import *
-from util.StatusBar import StatusBar
+from util.MainWindow import MainWindow
 
-class ViewerWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class ViewerWindow(MainWindow):
+    def __init__(self,parent=None):
+        super().__init__(parent)
 
-        self.setStatusBar(StatusBar())
         self.setObjectName("ViewerWindow")
-        self.setWindowFlags(Qt.WindowType.CustomizeWindowHint | Qt.WindowType.FramelessWindowHint)
 
         self.setMinimumWidth(512)
         self.mainframe = MainFrame(self,QVBoxLayout())
         self.setCentralWidget(self.mainframe)
-        self.titleBar = TitleBar(self)
-        self.setMenuBar(self.titleBar)
         self.titleBar.setText("Hunt Stats Viewer")
         self.setWindowTitle("Hunt Data Viewer")
 
-        #self.statusBar().setEnabled(True)
-        #self.statusBar().setSizeGripEnabled(True)
-        #self.statusBar().setStyleSheet("QSizeGrip{image: url(\"%s\")};" % resource_path("assets/icons/sizegrip.png").replace("\\","/"))
-
         self.window().setMinimumHeight(self.mainframe.headerBar.sizeHint().height()//2)
-        self.window().setMaximumHeight(self.mainframe.sizeHint().height()*2)
+        self.window().setMaximumHeight(self.mainframe.sizeHint().height())
         self.window().setBaseSize(self.mainframe.sizeHint())
-        self.show()
+        self.statusBar().keep.append(self.mainframe.headerBar)
+        StatusBar.setStatus("Hunts are not being logged.", "#ff0000")
 
     def update(self):
         self.mainframe.update();
         self.adjustSize()
 
-    def setStatus(self,text):
-        self.statusBar().showMessage(text)
-
     def toggle(self):
         self.mainframe.toggle()
+
+    def close(self) -> bool:
+        self.mainframe.settingsWindow.close()
+        return super().close()
