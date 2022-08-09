@@ -107,13 +107,14 @@ class DbHandler(QObject):
         query = "insert or ignore into %s (%s) values (%s)" % (table,','.join(cols), (','.join(['?']*len(cols))))
         try:
             cursor.execute(query,(vals))
+            log('row inserted')
         except Exception as msg:
             log('insert row')
             log(msg)
-            log('query:%s' % query)
             if 'has no column' in str(msg):
                 column = str(msg).split(' ')[-1]
                 row.pop(column)
+                log('\tcolumn removed')
                 self.insert_row(conn, table,row,timestamp)
             elif 'syntax error' in str(msg):
                 problem = str(msg).split("\"")[1]
@@ -121,6 +122,7 @@ class DbHandler(QObject):
                     if problem in key:
                         row.pop(key)
                         break
+                log('\tsyntax error repaired')
                 self.insert_row(conn, table,row,timestamp)
         conn.commit()
 
