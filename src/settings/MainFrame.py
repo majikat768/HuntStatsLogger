@@ -1,5 +1,5 @@
 import os
-from PyQt6.QtWidgets import QWidget,QFileDialog,QPushButton,QLabel,QHBoxLayout,QGroupBox,QVBoxLayout,QSizePolicy,QMainWindow, QInputDialog,QWIDGETSIZE_MAX,QLineEdit,QCheckBox
+from PyQt6.QtWidgets import QWidget,QFileDialog,QPushButton,QLabel,QHBoxLayout,QGroupBox,QVBoxLayout,QSizePolicy,QMainWindow, QInputDialog,QWIDGETSIZE_MAX,QLineEdit,QCheckBox,QGridLayout
 from PyQt6.QtCore import Qt
 from util.HunterLabel import HunterLabel
 from settings.LoginWindow import LoginWindow
@@ -67,28 +67,43 @@ class MainFrame(QWidget):
     def initLoggerGroup(self):
         loggerGroup = QGroupBox("Logger") 
         loggerGroup.setFlat(False)
-        loggerGroup.layout = QVBoxLayout()
+        loggerGroup.layout = QGridLayout()
         loggerGroup.setLayout(loggerGroup.layout)
 
         self.setSteamNameButton = QPushButton("Set Steam Name")
         self.setSteamNameButton.clicked.connect(self.setUsername)
         self.setSteamNameButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+            
+        self.steamNameLabel = QLabel(settings.value("steam_name",''))
+        self.steamNameLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        self.loggerLabel = QLabel("Logger not active.")
+        self.loggerLabel = QLabel("not logging")
+        self.loggerLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
+
         self.startLoggerButton = QPushButton("Start Logging")
         if not settings.value('xml_path'):
             self.startLoggerButton.setDisabled(True)
         self.startLoggerButton.setSizePolicy(QSizePolicy.Policy.Maximum,QSizePolicy.Policy.Maximum)
-        self.stopLoggerButton = QPushButton("Stop Logging")
         self.startLoggerButton.clicked.connect(self.startLogger)
+
+        self.stopLoggerButton = QPushButton("Stop Logging")
         self.stopLoggerButton.clicked.connect(self.stopLogger)
         self.stopLoggerButton.setSizePolicy(QSizePolicy.Policy.Maximum,QSizePolicy.Policy.Maximum)
         self.stopLoggerButton.hide()
 
-        loggerGroup.layout.addWidget(self.setSteamNameButton)
-        loggerGroup.layout.addWidget(self.loggerLabel)
-        loggerGroup.layout.addWidget(self.startLoggerButton)
-        loggerGroup.layout.addWidget(self.stopLoggerButton)
+        self.autoStartCheckBox = QCheckBox("Auto-start logger on launch")
+        self.autoStartCheckBox.stateChanged.connect(lambda x : settings.setValue("auto_start",x))
+
+        loggerGroup.layout.addWidget(self.setSteamNameButton,0,0)
+        loggerGroup.layout.addWidget(self.steamNameLabel,0,1)
+        loggerGroup.layout.addWidget(self.startLoggerButton,1,0)
+        loggerGroup.layout.addWidget(self.stopLoggerButton,1,0)
+        loggerGroup.layout.addWidget(self.loggerLabel,1,1)
+        loggerGroup.layout.addWidget(self.autoStartCheckBox,2,0,1,2)
+
+        if int(settings.value("auto_start",0)) > 0:
+            self.autoStartCheckBox.setChecked(True)
+            self.startLogger()
 
         return loggerGroup
     
@@ -164,14 +179,23 @@ class MainFrame(QWidget):
             settings.setValue("steam_name",name)
             log("steam name set to %s" % name)
             settings.setValue('profileid',DbHandler.getProfileid(name))
+            self.steamNameLabel.setText(settings.value("steam_name"))
             self.parent().viewerMainframe.update()
 
     def syncServer(self):
         if not isLoggedIn():    return
-        self.stopLogger()
+        restartLogger = False
+        if Logger.running:
+            self.stopLogger()
+            restartLogger = True
         Server.refresh_token()
         self.serverThread = Server.ServerThread()
-        Server.startThread(self,self.serverThread,started=[self.serverThread.syncFiles],progress=[self.updateSync],finished=[self.doneSyncing])
+        Server.startThread(
+            self,self.serverThread,
+            started = [self.serverThread.syncFiles],
+            progress = [self.updateSync],
+            finished = [self.doneSyncing, self.startLogger] if restartLogger else [self.doneSyncing]
+        )
         self.syncServerButton.setDisabled(True)
         self.syncServerButton.setText("Syncing files.....")
     
@@ -242,19 +266,20 @@ class MainFrame(QWidget):
         self.startLoggerButton.setDisabled(True)
         Logger.running = True
         StartLogger(self.logger,self)
-        self.loggerLabel.setText("Logger active.")
+        self.loggerLabel.setText("logging")
         if settings.value("profileid","-1") == "-1":
             if settings.value("steam_name"):
                 settings.setValue('profileid',DbHandler.getProfileid(settings.value("steam_name")))
         self.startLoggerButton.hide()
         self.stopLoggerButton.show() 
         self.stopLoggerButton.setDisabled(False)
+        StatusBar.setStatus("Logger activated")
         
     def stopLogger(self):
         self.stopLoggerButton.setDisabled(True)
         Logger.running = False
         StatusBar.setStatus("Hunts are not being logged.", "#ff0000")
-        self.loggerLabel.setText("Logger not active.")
+        self.loggerLabel.setText("not logging")
         self.stopLoggerButton.hide() 
         self.startLoggerButton.show()
         self.startLoggerButton.setDisabled(False)

@@ -37,7 +37,9 @@ class DbHandler(QObject):
             if self.file_added():
                 log('file added %d' % len(self.current_files))
                 f = newest_file()
+                log("writing file to db")
                 self.write_json_to_db(f)
+                log("done")
                 self.progress.emit("done")
                 if settings.value("profileid","-1") == "-1":
                     if settings.value("steam_name"):
@@ -55,6 +57,8 @@ class DbHandler(QObject):
             create_tables()
         files = get_files()
         i = 0
+        conn = sqlite3.connect(db)
+        log("writing files to db")
         for f in files:
             i += 1
             self.progress.emit("syncing file %d of %d" % (i, len(files)))
@@ -63,20 +67,19 @@ class DbHandler(QObject):
                 res = execute_query("select timestamp from 'game' where timestamp is %s" % ts)
                 if len(res) == 0:
                     try:
-                        self.write_json_to_db(f)
+                        self.write_json_to_db(f,conn)
                     except Exception as e:
                         print('key',e)
                         print('continuing')
+        conn.close()
 
         log('done')
         self.finished.emit()
 
-    def write_json_to_db(self,file):
-        log('writing file to db')
+    def write_json_to_db(self,file,conn=None):
         timestamp = file.split("attributes_")[1].split('json')[0]
         with open(file,'r') as f:
             data = json.load(f)
-        log('done')
 
         try:
             data = clean_data(data)
@@ -88,8 +91,10 @@ class DbHandler(QObject):
         entries = data.pop("entries")
         hunters = data.pop("hunters")
         game = data.pop("game")
-
-        conn = sqlite3.connect(db)
+        closeConn = False
+        if conn == None:
+            conn = sqlite3.connect(db)
+            closeConn = True
         for n in teams:
             self.insert_row(conn,"team",teams[n],timestamp)
         for n in entries:
@@ -97,7 +102,8 @@ class DbHandler(QObject):
         for n in hunters:
             self.insert_row(conn,"hunter",hunters[n],timestamp)
         self.insert_row(conn,"game",game,timestamp)
-        conn.close()
+        if closeConn:
+            conn.close()
 
     def insert_row(self,conn, table,row,timestamp):
         row["timestamp"] = timestamp
@@ -107,7 +113,6 @@ class DbHandler(QObject):
         query = "insert or ignore into %s (%s) values (%s)" % (table,','.join(cols), (','.join(['?']*len(cols))))
         try:
             cursor.execute(query,(vals))
-            log('row inserted')
         except Exception as msg:
             log('insert row')
             log(msg)
