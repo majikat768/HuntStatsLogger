@@ -149,6 +149,8 @@ def sendLogToS3(ts):
 
 
 def sendToS3(file,key,session=None):
+    if key[0] == '/':
+        key = key[1:]
     if not settings.value("aws_sub"):   return
     if settings.value('aws_id_token','') == '':
         refresh_token()
