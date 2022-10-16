@@ -123,127 +123,133 @@ class HuntsTab(QGroupBox):
         return teamTabsWidget
 
     def updateTeamDetails(self):
-        if self.matchSelect.count() == 0:
-            return
-        self.teamTabWidget.clear()
+        try:
+            if self.matchSelect.count() == 0:
+                return
+            self.teamTabWidget.clear()
 
-        ts = self.matchSelect.currentData()
-        gameData = DbHandler.GetHunt(ts)
-        teamsData = DbHandler.GetTeams(ts)
-        allHuntersData = DbHandler.GetHunters(ts)
-        qp = gameData["MissionBagIsQuickPlay"]
+            ts = self.matchSelect.currentData()
+            gameData = DbHandler.GetHunt(ts)
+            teamsData = DbHandler.GetTeams(ts)
+            allHuntersData = DbHandler.GetHunters(ts)
+            qp = gameData["MissionBagIsQuickPlay"]
 
-        for i in range(12):
-            teamScrollArea = self.teamTabs[i]
-            teamWidget = teamScrollArea.widget()
-            teamArea = teamWidget.layout.itemAtPosition(0,0).widget()
-            if i >= len(teamsData):
-                pass
-            if i < len(teamsData):
-                teamData = teamsData[i]
-                teamArea.get('mmr').setText("Team MMR: %d" % teamData['mmr'])
+            for i in range(12):
+                teamScrollArea = self.teamTabs[i]
+                teamWidget = teamScrollArea.widget()
+                teamArea = teamWidget.layout.itemAtPosition(0,0).widget()
+                if i >= len(teamsData):
+                    pass
+                if i < len(teamsData):
+                    teamData = teamsData[i]
+                    teamMmr = teamData['mmr'] if teamData['mmr'] != None else 0
+                    teamArea.get('mmr').setText("Team MMR: %d" % teamMmr)
 
-                team_num = teamData["team_num"]
-                got_bounty = False
-                extracted_bounty = False
-                had_wellspring = False
-                team_extract = False
-                kills = 0
+                    team_num = teamData["team_num"]
+                    got_bounty = False
+                    extracted_bounty = False
+                    had_wellspring = False
+                    team_extract = False
+                    kills = 0
 
-                teamHuntersData = [ x for x in allHuntersData if int(x['team_num']) == int(team_num)]
-                teamArea.get('nHunters').setText('%d hunters' % len(teamHuntersData))
+                    teamHuntersData = [ x for x in allHuntersData if int(x['team_num']) == int(team_num)]
+                    teamArea.get('nHunters').setText('%d hunters' % len(teamHuntersData))
 
-                huntersInfo = QWidget()
-                huntersInfo.layout = QHBoxLayout()
-                huntersInfo.setLayout(huntersInfo.layout)
+                    huntersInfo = QWidget()
+                    huntersInfo.layout = QHBoxLayout()
+                    huntersInfo.setLayout(huntersInfo.layout)
 
-                for j in range(3):
-                    hunterArea = teamWidget.layout.itemAtPosition(1,j).widget()
-                    if j >= len(teamHuntersData):
-                        pass
-                    if j < len(teamHuntersData):
-                        hunterArea.show()
+                    for j in range(3):
+                        hunterArea = teamWidget.layout.itemAtPosition(1,j).widget()
+                        if j >= len(teamHuntersData):
+                            pass
+                        if j < len(teamHuntersData):
+                            hunterArea.show()
 
-                        hunterData = teamHuntersData[j]
+                            hunterData = teamHuntersData[j]
 
-                        hunterArea.get('name').setText(hunterData['blood_line_name'])
-                        hunterArea.get('mmr').setText(str(hunterData['mmr']))
-                        hunterArea.get('stars').setPixmap(star_pixmap(mmr_to_stars(hunterData['mmr'])))
+                            hunterArea.get('name').setText(hunterData['blood_line_name'])
+                            hunterArea.get('mmr').setText(str(hunterData['mmr']))
+                            hunterArea.get('stars').setPixmap(star_pixmap(mmr_to_stars(hunterData['mmr'])))
 
-                        profileid = hunterData["profileid"]
-                        n_games = DbHandler.execute_query("select count(*) from 'hunter' where profileid is %d" % profileid)[0][0]
+                            profileid = hunterData["profileid"]
+                            n_games = DbHandler.execute_query("select count(*) from 'hunter' where profileid is %d" % profileid)[0][0]
 
 
-                        if hunterData['downedme'] or \
-                        hunterData['downedbyme'] or \
-                        hunterData['downedteammate'] or \
-                        hunterData['downedbyteammate'] or \
-                        hunterData['killedme'] or \
-                        hunterData['killedbyme'] or \
-                        hunterData['killedteammate'] or \
-                        hunterData['killedbyteammate']:
-                            hunterArea.get('kills').show()
-                            kills = 1
+                            if hunterData['downedme'] or \
+                            hunterData['downedbyme'] or \
+                            hunterData['downedteammate'] or \
+                            hunterData['downedbyteammate'] or \
+                            hunterData['killedme'] or \
+                            hunterData['killedbyme'] or \
+                            hunterData['killedteammate'] or \
+                            hunterData['killedbyteammate']:
+                                hunterArea.get('kills').show()
+                                kills = 1
+                            else:
+                                hunterArea.get('kills').hide()
+
+
+                            if hunterData['bountypickedup']:
+                                got_bounty = True
+                                if hunterData['bountyextracted']:
+                                    extracted_bounty = True
+                                hunterArea.get('bounties').show()
+                            else:
+                                hunterArea.get('bounties').hide()
+
+                            if hunterData['hadWellspring']:
+                                had_wellspring = True
+
+                            if hunterData['teamextraction']:
+                                team_extract = True
+                            if n_games > 1:
+                                hunterArea.get('ngames').show()
+                                hunterArea.get('ngames').setText("%d games" % n_games)
+                            else:
+                                hunterArea.get('ngames').hide()
+
                         else:
-                            hunterArea.get('kills').hide()
-
-
-                        if hunterData['bountypickedup']:
-                            got_bounty = True
-                            if hunterData['bountyextracted']:
-                                extracted_bounty = True
-                            hunterArea.get('bounties').show()
+                            hunterArea.hide()
+                    huntersInfo.layout.addStretch()
+                    if got_bounty:
+                        teamArea.get('bounty').show()
+                        if extracted_bounty:
+                            teamArea.get('bounty').setText("Extracted with the bounty.")
                         else:
-                            hunterArea.get('bounties').hide()
+                            teamArea.get('bounty').setText("Held the bounty.")
+                    elif team_extract and not extracted_bounty:
+                        teamArea.get('bounty').show()
+                        teamArea.get('bounty').setText("Extracted alive.")
+                    elif had_wellspring:
+                        teamArea.get('bounty').setText("Activated the wellspring.")
+                    else:
+                        teamArea.get('bounty').hide()
 
-                        if hunterData['hadWellspring']:
-                            had_wellspring = True
-
-                        if hunterData['teamextraction']:
-                            team_extract = True
-                        if n_games > 1:
-                            hunterArea.get('ngames').show()
-                            hunterArea.get('ngames').setText("%d games" % n_games)
+                    if qp:
+                        if HunterLabel.HideUsers:
+                            name = '\tHunter %d\t' % team_num
                         else:
-                            hunterArea.get('ngames').hide()
-
+                            name = '\t%s\t' % teamHuntersData[0]['blood_line_name']
                     else:
-                        hunterArea.hide()
-                huntersInfo.layout.addStretch()
-                if got_bounty:
-                    teamArea.get('bounty').show()
-                    if extracted_bounty:
-                        teamArea.get('bounty').setText("Extracted with the bounty.")
+                        name = "\t%d Hunters\t" % len(teamHuntersData)
+                    if teamData['ownteam']:
+                        icon = livedIcon
+                    elif kills:
+                        icon = deadIcon
                     else:
-                        teamArea.get('bounty').setText("Held the bounty.")
-                elif team_extract and not extracted_bounty:
-                    teamArea.get('bounty').show()
-                    teamArea.get('bounty').setText("Extracted alive.")
-                elif had_wellspring:
-                    teamArea.get('bounty').setText("Activated the wellspring.")
-                else:
-                    teamArea.get('bounty').hide()
-
-                if qp:
-                    if HunterLabel.HideUsers:
-                        name = '\tHunter %d\t' % team_num
+                        icon = noneIcon 
+                    idx = self.teamTabWidget.addTab(teamScrollArea,QIcon(icon),name)
+                    if(teamData['ownteam']):
+                        self.teamTabWidget.tabBar().moveTab(idx,0)
+                    elif kills:
+                        self.teamTabWidget.tabBar().moveTab(idx,1)
                     else:
-                        name = '\t%s\t' % teamHuntersData[0]['blood_line_name']
-                else:
-                    name = "\tTeam %d\t" % team_num
-                if teamData['ownteam']:
-                    icon = livedIcon
-                elif kills:
-                    icon = deadIcon
-                else:
-                    icon = noneIcon 
-                idx = self.teamTabWidget.addTab(teamScrollArea,QIcon(icon),name)
-                if(teamData['ownteam']):
-                    self.teamTabWidget.tabBar().moveTab(idx,0)
-                elif kills:
-                    self.teamTabWidget.tabBar().moveTab(idx,1)
+                        self.teamTabWidget.tabBar().moveTab(idx,len(teamsData))
 
-        self.teamTabWidget.tabBar().setCurrentIndex(0)
+            self.teamTabWidget.tabBar().setCurrentIndex(0)
+        except Exception as e:
+            print('updateTeamDetails',e)
 
     def eventFilter(self, obj, e):
         child = obj.parent().findChild(QWidget,'blood_line_name')
@@ -297,117 +303,124 @@ class HuntsTab(QGroupBox):
 
 
     def updateHuntDetails(self):
-        if self.matchSelect.count() == 0:
-            return
-        ts = self.matchSelect.currentData()
-        game = DbHandler.GetHunt(ts)
-        entries = DbHandler.GetEntries(ts)
-        qp = game['MissionBagIsQuickPlay']
-        bounties = GetMatchBounties(game)
-        eventPts = game['EventPoints']
-        eventPts = 0 if eventPts is None else eventPts
-        self.huntDetails.widget().get("gameType").setText("Quick Play" if qp else "Bounty Hunt")
-        self.huntDetails.widget().get("bosses").setText("%s %s " % ("Bounties:" if not qp else "", " and ".join(bounties)))
-        self.huntDetails.widget().get("teams").setText("%d %s" % (game['MissionBagNumTeams'], "hunters" if qp else "teams"))
-        self.huntDetails.widget().get("eventPts").setText("Serpent Moon Points:\n%d" % eventPts)
-        if qp:
-            rifts_closed = 0
-        else:
-            clues_found = {
-                'assassin': 0,
-                'spider': 0,
-                'butcher': 0,
-                'scrapbeak': 0
+        try:
+            if self.matchSelect.count() == 0:
+                return
+            ts = self.matchSelect.currentData()
+            game = DbHandler.GetHunt(ts)
+            entries = DbHandler.GetEntries(ts)
+            qp = game['MissionBagIsQuickPlay']
+            bounties = GetMatchBounties(game)
+            eventPts = game['EventPoints']
+            eventPts = 0 if eventPts is None else eventPts
+            self.huntDetails.widget().get("gameType").setText("Quick Play" if qp else "Bounty Hunt")
+            self.huntDetails.widget().get("bosses").setText("%s %s " % ("Bounties:" if not qp else "", " and ".join(bounties)))
+            self.huntDetails.widget().get("teams").setText("%d %s" % (game['MissionBagNumTeams'], "hunters" if qp else "teams"))
+            self.huntDetails.widget().get("eventPts").setText("Serpent Moon Points:\n%d" % eventPts)
+            if qp:
+                rifts_closed = 0
+            else:
+                clues_found = {
+                    'assassin': 0,
+                    'spider': 0,
+                    'butcher': 0,
+                    'scrapbeak': 0
+                }
+            hunters_killed = {
+                0:0,
+                1:0,
+                2:0,
+                3:0,
+                4:0,
+                5:0,
+                6:0
             }
-        hunters_killed = {
-            0:0,
-            1:0,
-            2:0,
-            3:0,
-            4:0,
-            5:0,
-            6:0
-        }
-        hunterkills = 0
-        monsters_killed = {}
-        monsterkills = 0
-        assists = 0
-        myKills = DbHandler.GetMyKills(ts)
-        for entry in entries:
-            if entry['entry_num'] < game['MissionBagNumEntries']:
-                cat = entry['category']
-                if 'wellsprings_found' in cat:
-                    rifts_closed += 1
-                if 'clues_found' in cat:
-                    clues_found[entry['descriptorName'].split(' ')[1]] += 1
-                if 'players_killed' in cat:
-                    if 'assist' in cat:
-                        assists += entry['amount']
-                    elif 'mm rating' in entry['descriptorName']:
-                        mm = int(entry['descriptorName'].split(' ')[4])
-                        hunters_killed[mm] = entry['amount']
-                        hunterkills += entry['amount']
-                if 'monsters_killed' in cat:
-                    monster = entry['descriptorName'].split(' ')[1]
-                    if monster not in monsters_killed.keys():
-                        monsters_killed[monster] = 0
-                    monsters_killed[monster] += entry['amount']
-                    monsterkills += entry['amount']
-        if qp:
-            self.huntDetails.widget().get("clues").setText('closed %d rifts.' % rifts_closed)
-        else:
-            text = []
-            for boss in clues_found:
-                if clues_found[boss] > 0:
-                    text.append('Found %d of the clues for %s.' % (clues_found[boss],boss.capitalize()))
-            self.huntDetails.widget().get("clues").setText(
-                '\n'.join(text)
-            )
- 
-        if qp:
-            self.huntDetails.widget().get("teamkills").setText(
-                'Hunter kills: %d<br> %s' % (hunterkills, '<br>'.join(["%dx <img src='%s'>" % (hunters_killed[m], star_path(m)) for m in hunters_killed if hunters_killed[m] > 0]))
-            )
-            self.huntDetails.widget().get("mykills").setText('%d assists.' % (assists))
-        else:
-            self.huntDetails.widget().get("teamkills").setText(
-                'Team kills: %d<br> %s' % (hunterkills, '<br>'.join(["%dx <img src='%s'>" % (hunters_killed[m], star_path(m)) for m in hunters_killed if hunters_killed[m] > 0]))
-            )
-            self.huntDetails.widget().get("mykills").setText('%d kills, %d assists' % (myKills,assists))
+            hunterkills = 0
+            monsters_killed = {}
+            monsterkills = 0
+            assists = 0
+            myKills = DbHandler.GetMyKills(ts)
+            for entry in entries:
+                print(entry)
+                if int(entry['entry_num']) < int(game['MissionBagNumEntries']):
+                    cat = entry['category']
+                    if 'wellsprings_found' in cat:
+                        rifts_closed += 1
+                    if 'clues_found' in cat:
+                        clues_found[entry['descriptorName'].split(' ')[1]] += 1
+                    if 'players_killed' in cat:
+                        if 'assist' in cat:
+                            assists += entry['amount']
+                        elif 'mm rating' in entry['descriptorName']:
+                            mm = int(entry['descriptorName'].split(' ')[4])
+                            hunters_killed[mm] = entry['amount']
+                            hunterkills += entry['amount']
+                    if 'monsters_killed' in cat:
+                        monster = entry['descriptorName'].split(' ')[1]
+                        if monster not in monsters_killed.keys():
+                            monsters_killed[monster] = 0
+                        monsters_killed[monster] += entry['amount']
+                        monsterkills += entry['amount']
+            if qp:
+                self.huntDetails.widget().get("clues").setText('closed %d rifts.' % rifts_closed)
+            else:
+                text = []
+                for boss in clues_found:
+                    if clues_found[boss] > 0:
+                        text.append('Found %d of the clues for %s.' % (clues_found[boss],boss.capitalize()))
+                self.huntDetails.widget().get("clues").setText(
+                    '\n'.join(text)
+                )
+    
+            if qp:
+                self.huntDetails.widget().get("teamkills").setText(
+                    'Hunter kills: %d<br> %s' % (hunterkills, '<br>'.join(["%dx <img src='%s'>" % (hunters_killed[m], star_path(m)) for m in hunters_killed if hunters_killed[m] > 0]))
+                )
+                self.huntDetails.widget().get("mykills").setText('%d assists.' % (assists))
+            else:
+                self.huntDetails.widget().get("teamkills").setText(
+                    'Team kills: %d<br> %s' % (hunterkills, '<br>'.join(["%dx <img src='%s'>" % (hunters_killed[m], star_path(m)) for m in hunters_killed if hunters_killed[m] > 0]))
+                )
+                self.huntDetails.widget().get("mykills").setText('%d kills, %d assists' % (myKills,assists))
 
-        self.huntDetails.widget().get("mydeaths").setText('downed %d times' % (DbHandler.GetMyDeaths(self.matchSelect.currentData())))
-        
-        if monsterkills > 0:
-            self.huntDetails.widget().get("monsterkills").setText(
-                'Monster kills: %d<br> %s' % (monsterkills, '<br>'.join(["%d %s" % (monsters_killed[m], m) for m in monsters_killed if monsters_killed[m] > 0]))
-            )
-        else:
-            self.huntDetails.widget().get("monsterkills").setText('')
-        self.huntDetails.setFixedWidth(self.huntDetails.sizeHint().width()*2)
+            self.huntDetails.widget().get("mydeaths").setText('downed %d times' % (DbHandler.GetMyDeaths(self.matchSelect.currentData())))
+            
+            if monsterkills > 0:
+                self.huntDetails.widget().get("monsterkills").setText(
+                    'Monster kills: %d<br> %s' % (monsterkills, '<br>'.join(["%d %s" % (monsters_killed[m], m) for m in monsters_killed if monsters_killed[m] > 0]))
+                )
+            else:
+                self.huntDetails.widget().get("monsterkills").setText('')
+            self.huntDetails.setFixedWidth(self.huntDetails.sizeHint().width()*2)
+        except Exception as e:
+            print('updateHuntDetails',e)
 
 
     def updateMatchSelection(self):
-        self.matchSelect.clear()
-        timestamps = DbHandler.execute_query("select timestamp from 'game' order by timestamp desc")
-        if timestamps is None:  return
-        timestamps = [t[0] for t in timestamps]
-        for ts in timestamps:
-            game = DbHandler.GetHunt(ts)
-            qp = game["MissionBagIsQuickPlay"]
-            nTeams = game["MissionBagNumTeams"]
+        try:
+            self.matchSelect.clear()
+            timestamps = DbHandler.execute_query("select timestamp from 'game' order by timestamp desc")
+            if timestamps is None:  return
+            timestamps = [t[0] for t in timestamps]
+            for ts in timestamps:
+                game = DbHandler.GetHunt(ts)
+                qp = game["MissionBagIsQuickPlay"]
+                nTeams = game["MissionBagNumTeams"]
 
-            dead = game["MissionBagIsHunterDead"]
-            teamKills = DbHandler.getTeamKills(ts)
-            line = ' %s - %s - %02d teams - %d kills' % (
-                unix_to_datetime(ts),
-                'Quick Play ' if qp else 'Bounty Hunt',
-                nTeams,
-                teamKills
-            );
-            self.matchSelect.addItem(
-                QIcon(deadIcon if dead else livedIcon),
-                line,ts
-            )
+                dead = game["MissionBagIsHunterDead"]
+                teamKills = DbHandler.getTeamKills(ts)
+                line = ' %s - %s - %02d teams - %d kills' % (
+                    unix_to_datetime(ts),
+                    'Quick Play ' if qp else 'Bounty Hunt',
+                    nTeams,
+                    teamKills
+                );
+                self.matchSelect.addItem(
+                    QIcon(deadIcon if dead else livedIcon),
+                    line,ts
+                )
+        except Exception as e:
+            print('updateMatchSelection',e)
 
 def GetMatchBounties(game):
     bounties = []

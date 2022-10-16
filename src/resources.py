@@ -50,7 +50,16 @@ def mmr_to_stars(mmr):
     return 0 if mmr == -1 else 1 if mmr < 2000 else 2 if mmr < 2300 else 3 if mmr < 2600 else 4 if mmr < 2750 else 5 if mmr < 3000 else 6
 
 def unix_to_datetime(timestamp):
-    return datetime.fromtimestamp(timestamp).strftime('%H:%M %m/%d/%y')
+    try:
+        dt = datetime.fromtimestamp(timestamp).strftime("%H:%M %m/%d/%y")
+    except:
+        try:
+            timestamp = timestamp // 1000
+            dt = datetime.fromtimestamp(timestamp).strftime("%H:%M %m/%d/%y")
+        except:
+            dt = "-1"
+    return dt
+
 
 def isLoggedIn():
     return settings.value('aws_access_token','') != ''
