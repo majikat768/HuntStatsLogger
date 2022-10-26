@@ -54,3 +54,8 @@ def min(a,b):
 
 deadIcon = resource_path('assets/icons/death2.png')
 livedIcon = resource_path('assets/icons/lived2.png')
+
+# steamworks ?
+STEAMWORKS_BINARIES_PATH: str = resource_path("assets/steam/")
+STEAMWORKS_SDK_PATH: str = os.path.join(STEAMWORKS_BINARIES_PATH, "steamworks_sdk.zip")
+HUNT_SHOWDOWN_APP_ID: int = 594650  # Hunt: Showdown App ID

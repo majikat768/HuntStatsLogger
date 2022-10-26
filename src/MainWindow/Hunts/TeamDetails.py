@@ -1,20 +1,47 @@
-from PyQt6.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QGridLayout, QLabel, QTabWidget
+from PyQt6.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QTabWidget, QStackedWidget, QListWidget, QSizePolicy
 from PyQt6.QtCore import Qt
 from resources import *
 from DbHandler import *
 
-class TeamDetails(QTabWidget):
+class TeamDetails(QWidget):
     def __init__(self):
         super().__init__()
-        self.tabs = QTabWidget()
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
+
+        self.stack = QStackedWidget()
+        self.teamList = QListWidget()
+        #self.teamList.setMaximumHeight(self.teamList.sizeHint().height()//4)
+        #self.teamList.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.teamList.currentRowChanged.connect(self.switch)
+        self.layout.addWidget(self.teamList)
+        self.layout.addWidget(self.stack)
+        #self.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.setObjectName("teamDetails")
+        
+
+    def switch(self,i):
+        self.stack.setCurrentIndex(i)
 
     def update(self,teams, hunters, hunt):
-        self.clear()
+        self.layout.removeWidget(self.stack)
+        self.layout.removeWidget(self.teamList)
+        self.stack = QStackedWidget()
+        self.teamList = QListWidget()
+        self.teamList.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.teamList.setMaximumHeight(self.teamList.sizeHint().height())
+        self.teamList.currentRowChanged.connect(self.switch)
+        self.layout.addWidget(self.teamList)
+        self.layout.addWidget(self.stack)
+        self.stack.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Fixed)
+        self.teamList.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Expanding)
+        self.layout.setAlignment(self.teamList,Qt.AlignmentFlag.AlignTop)
+        self.layout.setAlignment(self.stack,Qt.AlignmentFlag.AlignTop)
+        #self.clear()
         #print('teamdetails.update')
 
         isQp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
 
-        ownTab = None
         for i in range(len(teams)):
             hadKills = False
             team = teams[i]
@@ -84,10 +111,11 @@ class TeamDetails(QTabWidget):
                     hunterWidget.layout.addWidget(QLabel("%s activated the Wellspring." % name))
 
 
-
                 tab.layout.addWidget(hunterWidget,3,j)
                 if(sum(kills.values()) > 0):
                     hadKills = True
+
+                hunterWidget.layout.addStretch()
             if bountyextracted:
                 tab.layout.addWidget(QLabel("Extracted with the bounty."),2,0)
             tab.layout.setRowStretch(tab.layout.rowCount(),1)
@@ -95,16 +123,11 @@ class TeamDetails(QTabWidget):
             tabArea.setMinimumHeight(int(tab.sizeHint().height()))
 
             tabArea.setWidget(tab)
+            self.stack.addWidget(tab)
             if isQp:
-                self.addTab(tabArea,"%s" % name)
+                self.teamList.insertItem(i,'%s' % name)
             else:
-                self.addTab(tabArea,"Team %d" % i)
-            if hadKills:
-                self.tabBar().moveTab(self.indexOf(tabArea),0)
-        ownIdx = self.indexOf(ownTab)
-        self.tabBar().moveTab(ownIdx,0)
-        self.tabBar().setCurrentIndex(0)
-
+                self.teamList.insertItem(i,'Team %d' % i)
 
 def HuntersOnTeam(hunters, team):
     teamhunters = []

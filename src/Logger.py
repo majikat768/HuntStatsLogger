@@ -114,6 +114,7 @@ def generate_checksum(obj):
 def clean_data(obj):
     num_teams = int(obj['game']['MissionBagNumTeams'])
     num_entries = int(obj['game']['MissionBagNumEntries'])
+    num_accolades = int(obj['game']['MissionBagNumAccolades'])
 
     teams = {}
     for teamnum in obj["teams"]:
@@ -124,6 +125,11 @@ def clean_data(obj):
     for entrynum in obj['entries']:
         if int(entrynum) < num_entries:
             entries[str(entrynum)] = obj['entries'][entrynum]
+        
+    accolades = {}
+    for accoladenum in obj['accolades']:
+        if int(accoladenum) < num_accolades:
+            accolades[str(accoladenum)] = obj['accolades'][accoladenum]
     
     hunters = {}
     for id in obj['hunters']:
@@ -136,6 +142,7 @@ def clean_data(obj):
         "teams":teams,
         "hunters":hunters,
         "entries":entries,
+        "accolades":accolades,
         "game":obj['game']
     }
 
@@ -147,6 +154,8 @@ def clean_data(obj):
         new_obj['hunters'][hunternum]['game_id'] = checksum
     for entrynum in new_obj['entries']:
         new_obj['entries'][entrynum]['game_id'] = checksum
+    for accoladenum in new_obj['accolades']:
+        new_obj['accolades'][accoladenum]['game_id'] = checksum
     new_obj['game']['game_id'] = checksum
 
     return new_obj
@@ -158,6 +167,7 @@ def build_json_from_xml(ts):
         teams = {}
         hunters = {}
         entries = {}
+        accolades = {}
         game = {"timestamp":ts}
 
         for line in xf:
@@ -167,10 +177,10 @@ def build_json_from_xml(ts):
                 continue
             key = ln['Attr']['@name']
             val = ln['Attr']['@value']
+            keysplit = key.split("_")
             if "MissionBag" in line and "tooltip" not in key:
                 if val == "":
                     val = "-1"
-                keysplit = key.split("_")
                 if "MissionBagPlayer_" in key:
                     team_num = int(keysplit[1])
                     hunter_num = int(keysplit[2])
@@ -206,6 +216,16 @@ def build_json_from_xml(ts):
                         entries[entry_num][cat] = val
                 elif "Entry_" not in key:
                     game[key] = val
+            elif "MissionAccoladeEntry" in line and "header" not in key and "iconPath" not in key:
+                accolade_num = keysplit[1]
+                if accolade_num not in accolades:
+                    accolades[accolade_num] = {
+                        "accolade_num":accolade_num,
+                        "timestamp":ts
+                    }
+                if len(keysplit) > 2:
+                    cat = '_'.join(keysplit[2:])
+                    accolades[accolade_num][cat] = val
             elif "UnlockRank" in line:
                 settings.setValue("HunterLevel",val)
         
@@ -213,5 +233,6 @@ def build_json_from_xml(ts):
             "teams":teams,
             "hunters":hunters,
             "entries":entries,
+            "accolades":accolades,
             "game":game
         })

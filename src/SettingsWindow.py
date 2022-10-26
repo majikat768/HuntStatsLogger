@@ -16,11 +16,11 @@ class SettingsWindow(QMainWindow):
 
     def initUI(self):
 
-        self.huntFolderLabel = QLabel(settings.value("hunt_dir","<i>folder not set</i>"))
-        self.huntFolderButton = QPushButton("Select Hunt Installation Directory")
-        self.huntFolderButton.clicked.connect(self.SelectFolderDialog)
-        self.main.layout.addWidget(self.huntFolderButton,0,0)
-        self.main.layout.addWidget(self.huntFolderLabel,0,1)
+        self.steamFolderLabel = QLabel(settings.value("hunt_dir","<i>ex: C:/Steam</i>"))
+        self.steamFolderButton = QPushButton("Select Steam Installation Directory")
+        self.steamFolderButton.clicked.connect(self.SelectFolderDialog)
+        self.main.layout.addWidget(self.steamFolderButton,0,0)
+        self.main.layout.addWidget(self.steamFolderLabel,0,1)
 
         self.steamNameInput = QLineEdit(settings.value("steam_name","steam name not set"))
         self.steamNameInput.returnPressed.connect(self.ChangeSteamName)
@@ -52,14 +52,25 @@ class SettingsWindow(QMainWindow):
             self.steamNameInput.setDisabled(False)
     
     def SelectFolderDialog(self):
+        hunt = "steamapps/common/Hunt Showdown"
         suffix = "user/profiles/default/attributes.xml"
-        hunt_dir = QFileDialog.getExistingDirectory(self,"Select folder",settings.value('hunt_dir','.'))
+        steam_dir = QFileDialog.getExistingDirectory(self,"Select folder",settings.value('steam_dir','.'))
+        hunt_dir = os.path.join(steam_dir,hunt)
         xml_path = os.path.join(hunt_dir,suffix)
+        print(steam_dir)
+        print(hunt_dir)
+        print(xml_path)
         if not os.path.exists(xml_path):
             print('attributes.xml not found.')
             return
-        settings.setValue('xml_path',xml_path)
+        settings.setValue('steam_dir',steam_dir)
         settings.setValue('hunt_dir',hunt_dir)
-        self.huntFolderLabel.setText(hunt_dir)
+        settings.setValue('xml_path',xml_path)
+        self.steamFolderLabel.setText(settings.value("steam_dir"))
         if not self.parent().logger.running:
             self.parent().StartLogger()
+
+    def show(self):
+        self.steamFolderLabel.setText(settings.value("steam_dir"))
+        self.steamNameInput.setText(settings.value("steam_name"))
+        super().show()

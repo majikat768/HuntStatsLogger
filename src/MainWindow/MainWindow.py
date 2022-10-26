@@ -10,6 +10,7 @@ class MainWindow(QMainWindow):
         self.mainframe = MainFrame(self)
         self.setCentralWidget(self.mainframe)
         self.setStatusBar(QStatusBar())
+        self.statusBar().font().setPixelSize(16)
 
 
     def setStatus(self,msg):
@@ -18,5 +19,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, a0):
         if self.mainframe.settingsWindow:
             self.mainframe.settingsWindow.close()
+        if self.mainframe.mapWindow:
+            self.mainframe.mapWindow.close()
         self.mainframe.logger.running = False
         return super().closeEvent(a0)

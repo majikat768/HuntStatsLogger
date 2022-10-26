@@ -45,6 +45,8 @@ class Hunters(QWidget):
         for i in reversed(range(self.TopKilledBox.layout.count())):
             self.TopKilledBox.layout.itemAt(i).widget().setParent(None)
         topKilled = GetTopKilled()
+        if len(topKilled.keys()) < 1:
+            return
         name = topKilled['name']
         kills = topKilled['kills']
         self.TopKilledBox.layout.addWidget(QLabel('%s' % name))
@@ -54,6 +56,8 @@ class Hunters(QWidget):
         for i in reversed(range(self.TopKillerBox.layout.count())):
             self.TopKillerBox.layout.itemAt(i).widget().setParent(None)
         topKiller = GetTopKiller()
+        if len(topKiller.keys()) < 1:
+            return
         name = topKiller['name']
         kills = topKiller['kills']
         self.TopKillerBox.layout.addWidget(QLabel('%s' % name))

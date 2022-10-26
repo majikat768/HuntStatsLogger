@@ -8,6 +8,7 @@ def json_to_db(obj):
     hunters = obj['hunters']
     entries = obj['entries']
     game = obj['game']
+    accolades = obj['accolades']
 
     conn = sqlite3.connect(database)
     for teamnum in teams:
@@ -16,6 +17,8 @@ def json_to_db(obj):
         insert_row(conn, "hunters", hunters[hunternum])
     for entrynum in entries:
         insert_row(conn, "entries", entries[entrynum])
+    for accoladenum in accolades:
+        insert_row(conn, "accolades", accolades[accoladenum])
     insert_row(conn, "games", game)
     conn.close()
 
@@ -30,13 +33,21 @@ def insert_row(conn, table, row):
     except Exception as e:
         print('insert_row')
         print(e)
+        if 'syntax error' in str(e):
+            problem = str(e).split("\"")[1]
+            for key in row:
+                if problem in key:
+                    row.pop(key)
+                    break
+            print('\tsyntax error repaired')
+            insert_row(conn, table,row)
 
 
 def tables_exist():
     conn = sqlite3.connect(database)
     cursor = conn.cursor()
-    query = "select name from sqlite_master where type = 'table' and name = ? or name = ? or name = ? or name = ?"
-    tables = ('games','hunters','entries','teams',)
+    tables = ('games','hunters','entries','teams','accolades')
+    query = "select name from sqlite_master where type = 'table' and %s" % (" or ".join(["name = ?"] * len(tables)))
 
     try:
         cursor.execute(query,tables)
@@ -159,6 +170,17 @@ def GetHuntEntries(ts):
         print('dbhandler.getentries')
         print(e)
         return {}
+def GetHuntAccolades(ts):
+    vals = execute_query("select * from 'accolades' where timestamp is %s" % ts) 
+    cols = execute_query("pragma table_info('accolades')")
+    try:
+        return [ { cols[i][1] : entry[i] for i in range(len(cols)) } for entry in vals]
+
+    except Exception as e:
+        print('dbhandler.getaccolades')
+        print(e)
+        return {}
+
 
 def GetTeams(timestamp):
     tVals = execute_query("select * from 'teams' where timestamp is %s" % timestamp)

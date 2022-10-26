@@ -83,3 +83,24 @@ CREATE TABLE IF NOT EXISTS entries (
         entry_num
     )
 );
+CREATE TABLE IF NOT EXISTS accolades (
+    timestamp integer,
+    game_id text,
+    accolade_num integer,
+    bloodlineXp integer,
+    bounty integer,
+    category text,
+    eventPoints integer,
+    gems integer,
+    generatedGems integer,
+    gold integer,
+    hits integer,
+    hunterPoints integer,
+    hunterXp integer,
+    weighting integer,
+    xp integer,
+    primary key (
+        game_id,
+        accolade_num
+    )
+)

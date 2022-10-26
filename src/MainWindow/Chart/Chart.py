@@ -1,6 +1,6 @@
 from math import inf
-from PyQt6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QPushButton,QComboBox, QSizePolicy
-from PyQt6.QtCore import QEvent
+from PyQt6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QPushButton,QComboBox, QSizePolicy, QLabel
+from PyQt6.QtCore import QEvent, Qt
 import pyqtgraph
 from DbHandler import *
 from resources import *
@@ -36,6 +36,7 @@ class Chart(QWidget):
         self.legend.anchor((0,0),(0,0))
         self.graphWindow.addItem(self.legendVb,1,0)
         self.layout.addWidget(self.graphWindow)
+        self.layout.addWidget(QLabel("Use scroll wheel to zoom y axis; Shift+scroll to zoom x axis."))
 
 
     def update(self):
@@ -44,7 +45,7 @@ class Chart(QWidget):
         self.graph = self.graphWindow.addPlot(0,0)
         self.initMmrGraph()
         self.legend.getViewBox().setMaximumHeight(self.legend.boundingRect().height())
-        self.graph.showGrid(x=True, y=True, alpha=0.6)
+        self.graph.showGrid(x=True, y=True, alpha=0.4)
         self.graph.getViewBox().installEventFilter(self)
         #self.graph.setMouseEnabled(x=False)
 
@@ -52,8 +53,8 @@ class Chart(QWidget):
         data = []
         mmrs = GetAllMmrs(name=settings.value('steam_name'))
         i = 0
-        minMmr = inf;
-        maxMmr = -inf;
+        minMmr = 6001;
+        maxMmr = -1;
         for ts in mmrs.keys():
             mmr = mmrs[ts]['mmr']
             qp = mmrs[ts]['qp']
@@ -63,14 +64,14 @@ class Chart(QWidget):
                 minMmr = mmr
             data.append({'x':i,'y':mmr, 'qp':qp, 'ts':ts})
             i += 1
-        line = pyqtgraph.PlotDataItem(data)
+        line = pyqtgraph.PlotDataItem(data,pen="#ffffff88")
         qpPoints = pyqtgraph.ScatterPlotItem(
-            [{'x': pt['x'], 'y': pt['y']} for pt in data if pt['qp'] == 'true'],
-            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#00ffff",name="Quick Play"
+            [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'true'],
+            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#00ffff",name="Quick Play",tip="{data}<br>MMR: {y:.0f}".format
         )
         bhPoints = pyqtgraph.ScatterPlotItem(
-            [{'x': pt['x'], 'y': pt['y']} for pt in data if pt['qp'] == 'false'],
-            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#ff0000",name="Bounty Hunt"
+            [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'false'],
+            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="{data}<br>MMR: {y:.0f}".format
         )
 
         self.graph.addItem(line)
@@ -84,7 +85,7 @@ class Chart(QWidget):
 
         for s in stars:
             c = s/5000*255
-            line = pyqtgraph.InfiniteLine(pos=s, angle=0, pen=pyqtgraph.mkPen("#ff0000",width=2))
+            line = pyqtgraph.InfiniteLine(pos=s+1, angle=0, pen=pyqtgraph.mkPen("#ff000088",width=2))
             label = pyqtgraph.TextItem(text="%d+: %d stars"%(s,mmr_to_stars(s)), color="#ffffff")
             label.setParentItem(line)
             label.setPos(0,0)
@@ -92,15 +93,18 @@ class Chart(QWidget):
 
         self.legend.addItem(qpPoints,name=qpPoints.opts['name'])
         self.legend.addItem(bhPoints,name=bhPoints.opts['name'])
-        self.graph.setYRange(minMmr - 100, maxMmr + 100)
-        self.graph.setXRange(max(0,len(data)-20),min(20,len(data)))
+        self.graph.setYRange(minMmr - 400, maxMmr + 400)
+        self.graph.setXRange(max(-1,len(data)-20),len(data))
         self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=inf)
 
             
 
     def eventFilter(self,obj,event):
         if event.type() == QEvent.Type.GraphicsSceneWheel:
-            self.graph.setMouseEnabled(x=False)
+            if Qt.KeyboardModifier.ShiftModifier in event.modifiers():
+                self.graph.setMouseEnabled(y=False, x=True)
+            else:
+                self.graph.setMouseEnabled(y=True, x=False)
         elif event.type() == QEvent.Type.GrabMouse:
             self.graph.setMouseEnabled(x=True)
         return super().eventFilter(obj,event)

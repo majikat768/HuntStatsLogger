@@ -20,6 +20,7 @@ class HuntDetails(QScrollArea):
         self.nTeams.setWordWrap(True)
         self.clues = QLabel()
         self.clues.setWordWrap(True)
+        self.rewards = QLabel()
         self.teamKills = QLabel()
         self.yourKills = QLabel()
         self.yourAssists = QLabel()
@@ -29,41 +30,57 @@ class HuntDetails(QScrollArea):
         huntDetails.layout.addWidget(self.bounties)
         huntDetails.layout.addWidget(self.nTeams)
         huntDetails.layout.addWidget(self.clues)
-        huntDetails.layout.addWidget(QLabel())
+        huntDetails.layout.addWidget(self.rewards)
         huntDetails.layout.addWidget(self.teamKills)
-        huntDetails.layout.addWidget(QLabel())
         huntDetails.layout.addWidget(self.yourKills)
-        huntDetails.layout.addWidget(QLabel())
         huntDetails.layout.addWidget(self.yourDeaths)
-        huntDetails.layout.addWidget(QLabel())
         huntDetails.layout.addWidget(self.yourAssists)
-        huntDetails.layout.addWidget(QLabel())
         huntDetails.layout.addWidget(self.monsterKills)
         huntDetails.layout.addStretch()
         self.huntDetails = huntDetails
 
         self.setWidget(huntDetails)
 
-    def update(self, hunt,entries):
+    def update(self, hunt,entries, accolades):
         #print('huntdetails.update')
         qp = 1 if hunt['MissionBagIsQuickPlay'].lower() == 'true' else 0
         bounties = GetBounties(hunt)
+        rewards = calculateRewards(accolades,entries)
+        self.rewards.setText(
+            "<br>".join(["%s: %s" % (k, rewards[k]) for k in rewards if rewards[k] > 0])
+        )
         if not qp:
-            self.bounties.setText("Bounties: " + ' and '.join(bounties))
+            self.bounties.setText(" and ".join(bounties))
         else:
             self.bounties.setText('Quick Play')
 
         self.nTeams.setText("%d %s" % (hunt['MissionBagNumTeams'], "hunters" if qp else "teams"))
-        self.setFixedWidth(int(self.huntDetails.sizeHint().width()*1.1))
+        #self.setFixedWidth(int(self.huntDetails.sizeHint().width()*1.1))
 
         if qp:
             rifts_closed = 0
         else:
-            clues_found = {
-                'assassin':0,
-                'spider':0,
-                'butcher':0,
-                'scrapbeak':0
+            bosses = {
+                'assassin': {
+                    "clues": 0,
+                    "killed": 0,
+                    "banished": 0
+                },
+                'spider': {
+                    "clues": 0,
+                    "killed": 0,
+                    "banished": 0
+                },
+                'butcher': {
+                    "clues": 0,
+                    "killed": 0,
+                    "banished": 0
+                },
+                'scrapbeak': {
+                    "clues": 0,
+                    "killed": 0,
+                    "banished": 0
+                },
             }
         team_kills = {
             0:0,
@@ -96,20 +113,32 @@ class HuntDetails(QScrollArea):
         your_total_deaths = execute_query("select downedme+killedme,mmr from 'hunters' where timestamp is %d and (downedme > 0 or killedme > 0)" % hunt['timestamp'])
         for k in your_total_kills:
             mmr = mmr_to_stars(k[1])
-            your_kills[mmr] = k[0]
+            your_kills[mmr] += k[0]
         for d in your_total_deaths:
             mmr = mmr_to_stars(d[1])
-            your_deaths[mmr] = d[0]
+            your_deaths[mmr] += d[0]
 
         monsters_killed = {}
         assists = 0
+        for accolade in accolades:
+            cat = accolade['category']
+            if "killed_" in cat:
+                print(cat)
+                boss = cat.split("_")[2]
+                if boss in bosses:
+                    bosses[boss]["killed"] = 1
+            if "banished" in cat:
+                boss = cat.split("_")[2]
+                if boss in bosses:
+                    bosses[boss]["banished"] = 1
 
         for entry in entries:
             cat = entry['category']
             if 'wellsprings_found' in cat:
                 rifts_closed += 1
             if 'clues_found' in cat:
-                clues_found[entry['descriptorName'].split(' ')[1]] += 1
+                boss = entry['descriptorName'].split(' ')[1]
+                bosses[boss]['clues'] += 1
             if 'players_killed' in cat:
                 if 'assist' in cat:
                     assists += entry['amount']
@@ -125,9 +154,16 @@ class HuntDetails(QScrollArea):
             self.clues.setText('closed %d rifts.' % rifts_closed)
         else:
             text = []
-            for boss in clues_found:
-                if clues_found[boss] > 0:
-                    text.append("Found %d of the clues for %s." % (clues_found[boss],boss.capitalize()))
+            for name in bosses:
+                boss = bosses[name]
+                if sum(boss.values()) > 0:
+                    text.append("<br><b>%s</b>:<br>" % name.capitalize())
+                if boss['clues'] > 0:
+                    text.append("\tFound %d clues.<br>" % boss['clues'])
+                if boss['killed']:
+                    text.append("\tKilled.<br>")
+                if boss['banished']:
+                    text.append("\tBanished.<br>")
             self.clues.setText('\n'.join(text))
 
         if not qp:
@@ -170,3 +206,25 @@ class HuntDetails(QScrollArea):
                 '<br>'.join(["%d %s" % (monsters_killed[m], m) for m in monsters_killed if monsters_killed[m] > 0])
                 )
             )
+
+def calculateRewards(accolades, entries):
+    bounty = 0
+    gold = 0
+    bb = 0
+    xp = 0
+    eventPoints = 0
+
+    for acc in accolades:
+        bounty += acc['bounty']
+        xp += acc['xp']
+        bb += acc['generatedGems']
+        eventPoints += acc['eventPoints']
+
+    xp += 4*bounty
+    gold += bounty
+    return {
+        'Hunt Dollars':gold,
+        'Blood Bonds':bb,
+        'XP':xp,
+        'Event Points':eventPoints
+    }

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget,QHBoxLayout,QGridLayout,QVBoxLayout,QGroupBox, QLabel, QSizePolicy, QScrollArea, QTabWidget,QPushButton,QDialog, QComboBox
+from PyQt6.QtWidgets import QWidget,QHBoxLayout,QGridLayout,QVBoxLayout,QGroupBox, QLabel, QSizePolicy, QScrollArea, QTabWidget,QPushButton,QDialog, QComboBox, QStackedWidget, QListWidget
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
 from DbHandler import *
@@ -20,7 +20,7 @@ class Hunts(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.layout = QVBoxLayout()
+        self.layout = QGridLayout()
         self.setLayout(self.layout)
 
         self.SelectHuntBox = QGroupBox()
@@ -29,24 +29,34 @@ class Hunts(QWidget):
 
         self.initDetails()
         self.initHuntSelection()
-        self.layout.addWidget(self.HuntSelect)
-        self.layout.addWidget(self.details)
+        self.layout.addWidget(self.HuntSelect,0,0,1,4)
+        self.layout.addWidget(QLabel("Team details:"),1,1,1,1)
+        self.layout.addWidget(self.teamScrollArea,2,1,5,3)
+        self.layout.addWidget(QLabel("Teams:"),1,0,1,1)
+        self.layout.addWidget(self.teamList,2,0,1,1)
+        self.layout.addWidget(QLabel("Hunt details:"),3,0,1,1)
+        self.layout.addWidget(self.huntDetails,4,0,3,1)
+        #self.layout.addWidget(self.details,1,0,1,4)
         self.refreshButton = QPushButton(" reload ")
         self.refreshButton.clicked.connect(self.update)
         self.refreshButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.layout.addWidget(self.refreshButton)
+        self.layout.addWidget(self.refreshButton,1,self.layout.columnCount()-1,1,1)
+        self.layout.setRowStretch(self.layout.rowCount()-1,1)
 
 
     def updateDetails(self):
         ts = self.HuntSelect.currentData()
+        if(ts == None):
+            return
         hunt = GetHunt(ts)
         entries = GetHuntEntries(ts)
+        accolades = GetHuntAccolades(ts)
         teams = GetTeams(ts)
         hunters = GetHunters(ts)
         if hunt == {} or entries == {} or teams == {}:
             return
-        self.huntDetails.update(hunt,entries)
-        self.teamDetails.update(teams,hunters,hunt)
+        self.huntDetails.update(hunt,entries, accolades)
+        self.updateTeamDetails(teams,hunters,hunt)
 
     def update(self):
         #print('hunts.update')
@@ -76,28 +86,139 @@ class Hunts(QWidget):
             self.HuntSelect.addItem(QIcon(deadIcon if dead else livedIcon),ln,ts)
 
     def initDetails(self):
-        self.details = QWidget()
-        self.details.layout = QHBoxLayout()
-        self.details.setLayout(self.details.layout)
         self.huntDetails = HuntDetails()
-        self.details.layout.addWidget(self.huntDetails)
-        self.teamDetails = TeamDetails()
-        self.details.layout.addWidget(self.teamDetails)
+        self.teamDetails = self.initTeamDetails()
+        self.huntDetails.setFixedWidth(self.teamList.sizeHint().width())
 
     def initTeamDetails(self):
-        teamDetailsContainer = QTabWidget()
+        self.teamScrollArea = QScrollArea()
+        self.teamScrollArea.setWidgetResizable(True)
+        self.teamStack = QStackedWidget()
+        self.teamScrollArea.setObjectName("teamDetails")
+        self.teamStack.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        self.teamStack.setStyleSheet("*{border:0px;}")
+        self.teamScrollArea.setWidget(self.teamStack)
+        self.teamList = QListWidget()
+        self.teamList.currentRowChanged.connect(self.switchTeamWidget)
+        self.teamScrollArea.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
+        self.teamList.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Maximum)
+        self.teamList.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.teamList.setFixedWidth(self.teamList.sizeHint().width())
+        #self.teamScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        teamDetails = QWidget()
-        teamDetails.layout = QVBoxLayout()
-        teamDetails.setLayout(teamDetails.layout)
+    def updateTeamDetails(self, teams, hunters, hunt):
+        self.teamList.clear()
+        while self.teamStack.count() > 0:
+            self.teamStack.removeWidget(self.teamStack.currentWidget())
+
+        isQp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
+
+        for i in range(len(teams)):
+            hadKills = False
+            team = teams[i]
+            tabArea = QScrollArea()
+            tabArea.setWidgetResizable(True)
+            tabArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+            tab = QWidget()
+            tab.layout = QGridLayout()
+            tab.setLayout(tab.layout)
+
+            teamLabel = QLabel("Team %d<br>" % i)
+            teamMmr = team['mmr']
+            teamMmrLabel = QLabel("Team MMR: %d" % teamMmr)
+            nHunters = team['numplayers']
+            nHuntersLabel = QLabel("Hunters: %d" % nHunters)
+
+            tab.layout.addWidget(teamLabel,0,0)
+            tab.layout.addWidget(teamMmrLabel,1,0)
+            tab.layout.addWidget(nHuntersLabel,2,0)
+
+            teamhunters = HuntersOnTeam(hunters,team)
+            bountyextracted = 0
+
+            hunterNames = []
+            for j in range(len(teamhunters)):
+                hunter = teamhunters[j]
+                hunterWidget = QWidget()
+                hunterWidget.layout = QVBoxLayout()
+                hunterWidget.setLayout(hunterWidget.layout)
+                name = hunter['blood_line_name']
+                if isQp:
+                    teamLabel.setText("%s<br>" % name)
+                if name == settings.value("steam_name"):
+                    ownTab = tabArea
+                nameLabel = QLabel(hunter['blood_line_name'])
+                mmr = hunter['mmr']
+                hunterNames.append('  %s' % name)
+                mmrLabel = QLabel("%d" % mmr)
+                stars = "<img src='%s'>" % (star_path())*mmr_to_stars(mmr)
+                starsLabel = QLabel("%s" % stars)
+                bountypickedup = hunter['bountypickedup']
+                hadWellspring = hunter['hadWellspring'].lower() == 'true'
+                if hunter['bountyextracted']:
+                    bountyextracted = 1
+
+                kills = {
+                    '%s killed you': hunter['killedme'],
+                    '%s downed you': hunter['downedme'],
+                    'you killed %s': hunter['killedbyme'],
+                    'you downed %s': hunter['downedbyme'],
+                    '%s killed your teammate': hunter['killedteammate'],
+                    '%s downed your teammate': hunter['downedteammate'],
+                    'your teammate killed %s': hunter['killedbyteammate'],
+                    'your teammate downed %s': hunter['downedbyteammate']
+                }
+
+                killsLabel = QLabel(
+                    "%s" % (
+                        "<br>".join([
+                            "%s %d times." % (
+                                k % (name), kills[k]
+                            )
+                        for k in kills.keys() if kills[k] > 0])
+                    )
+                )
+                killsLabel.setWordWrap(True)
+
+                hunterWidget.layout.addWidget(nameLabel)
+                hunterWidget.layout.addWidget(mmrLabel)
+                hunterWidget.layout.addWidget(starsLabel)
+                hunterWidget.layout.addWidget(killsLabel)
+                if bountypickedup:
+                    hunterWidget.layout.addWidget(QLabel("%s carried the bounty." % name))
+                if hadWellspring:
+                    hunterWidget.layout.addWidget(QLabel("%s activated the Wellspring." % name))
 
 
-        teamDetails.layout.addWidget(QLabel("Team Details"))
-        teamDetails.layout.addStretch()
+                tab.layout.addWidget(hunterWidget,3,j)
+                if(sum(kills.values()) > 0):
+                    hadKills = True
 
-        teamDetailsContainer.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
-        teamDetailsContainer.addTab(teamDetails, "Team N")
-        teamDetailsContainer.addTab(teamDetails, "Team M")
-        teamDetailsContainer.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
-        self.teamDetails = teamDetailsContainer
+                hunterWidget.layout.addStretch()
+            if bountyextracted:
+                tab.layout.addWidget(QLabel("Extracted with the bounty."),2,0)
+            tab.layout.setRowStretch(tab.layout.rowCount(),1)
+            tab.layout.setColumnStretch(tab.layout.columnCount(),1)
+            tabArea.setMinimumHeight(int(tab.sizeHint().height()))
 
+            tabArea.setWidget(tab)
+            self.teamStack.addWidget(tab)
+
+            if isQp:
+                self.teamList.insertItem(i,'%s' % (name))
+            else:
+                self.teamList.insertItem(i,'Team %d\n%s' % (i,'\n'.join(hunterNames)))
+        self.teamList.setCurrentRow(0)
+        self.teamList.setFixedHeight(self.teamList.sizeHint().height())
+        self.teamScrollArea.setMinimumHeight(self.teamStack.sizeHint().height())
+
+    def switchTeamWidget(self,idx):
+        self.teamStack.setCurrentIndex(idx)
+
+def HuntersOnTeam(hunters, team):
+    teamhunters = []
+    for hunter in hunters:
+        if hunter['team_num'] == team['team_num']:
+            teamhunters.append(hunter)
+    return teamhunters
