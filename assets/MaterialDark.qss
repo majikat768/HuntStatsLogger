@@ -25,6 +25,14 @@ QGraphicsTextItem {
     font-size:16px;
 }
 
+#icon {
+	border:1px solid #44ffcc;
+	height:20px;
+}
+
+#TeamStack {
+	border: 0px;
+}
 #statusbar {
 	color:#02cf7f;
 }
@@ -101,7 +109,7 @@ QListWidget {
 	color:#02cf7f;
 }
 QStackedWidget {
-	border: 1px solid  white;
+	border: 1px solid white;
 }
 QPlainTextEdit {
 	selection-background-color:#007b50;

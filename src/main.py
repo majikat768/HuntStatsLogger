@@ -1,8 +1,6 @@
 import sys
 import ctypes
 import platform
-from InitDialog import InitDialog
-from SettingsWindow import SettingsWindow
 from resources import *
 
 from PyQt6.QtWidgets import QApplication
@@ -27,11 +25,11 @@ if __name__ == '__main__':
 
     '''
     if settings.value("xml_path","") == "":
-        d = InitDialog()
         d.exec()
     '''
 
     window = MainWindow()
+    window.setBaseSize(1024,768)
     window.show()
 
     if settings.value("xml_path","") == "":

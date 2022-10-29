@@ -41,6 +41,8 @@ class HuntDetails(QScrollArea):
 
         self.setWidget(huntDetails)
 
+        self.setBaseSize(self.sizeHint())
+
     def update(self, hunt,entries, accolades):
         #print('huntdetails.update')
         qp = 1 if hunt['MissionBagIsQuickPlay'].lower() == 'true' else 0
@@ -206,6 +208,9 @@ class HuntDetails(QScrollArea):
                 '<br>'.join(["%d %s" % (monsters_killed[m], m) for m in monsters_killed if monsters_killed[m] > 0])
                 )
             )
+
+        self.adjustSize()
+        self.window().adjustSize()
 
 def calculateRewards(accolades, entries):
     bounty = 0

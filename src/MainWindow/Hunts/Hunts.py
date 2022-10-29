@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import QWidget,QHBoxLayout,QGridLayout,QVBoxLayout,QGroupBox, QLabel, QSizePolicy, QScrollArea, QTabWidget,QPushButton,QDialog, QComboBox, QStackedWidget, QListWidget
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.QtGui import QIcon
 from DbHandler import *
 from MainWindow.Hunts.HuntDetails import HuntDetails
-from MainWindow.Hunts.TeamDetails import TeamDetails
+from Popup import Popup
 
 
 BountyNames = {
@@ -96,7 +96,8 @@ class Hunts(QWidget):
         self.teamStack = QStackedWidget()
         self.teamScrollArea.setObjectName("teamDetails")
         self.teamStack.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
-        self.teamStack.setStyleSheet("*{border:0px;}")
+        #self.teamStack.setStyleSheet("*{border:0px;}")
+        #self.teamStack.setObjectName("TeamStack")
         self.teamScrollArea.setWidget(self.teamStack)
         self.teamList = QListWidget()
         self.teamList.currentRowChanged.connect(self.switchTeamWidget)
@@ -159,32 +160,57 @@ class Hunts(QWidget):
                 if hunter['bountyextracted']:
                     bountyextracted = 1
 
-                kills = {
-                    '%s killed you': hunter['killedme'],
-                    '%s downed you': hunter['downedme'],
-                    'you killed %s': hunter['killedbyme'],
-                    'you downed %s': hunter['downedbyme'],
-                    '%s killed your teammate': hunter['killedteammate'],
-                    '%s downed your teammate': hunter['downedteammate'],
-                    'your teammate killed %s': hunter['killedbyteammate'],
-                    'your teammate downed %s': hunter['downedbyteammate']
-                }
+                kills = [
+                    hunter['killedme'],
+                    hunter['downedme'],
+                    hunter['killedbyme'],
+                    hunter['downedbyme'],
+                    hunter['killedteammate'],
+                    hunter['downedteammate'],
+                    hunter['killedbyteammate'],
+                    hunter['downedbyteammate']
+                ]
 
-                killsLabel = QLabel(
-                    "%s" % (
-                        "<br>".join([
-                            "%s %d times." % (
-                                k % (name), kills[k]
-                            )
-                        for k in kills.keys() if kills[k] > 0])
-                    )
-                )
-                killsLabel.setWordWrap(True)
 
                 hunterWidget.layout.addWidget(nameLabel)
                 hunterWidget.layout.addWidget(mmrLabel)
                 hunterWidget.layout.addWidget(starsLabel)
-                hunterWidget.layout.addWidget(killsLabel)
+                if hunter['killedme'] > 0 or hunter['downedme'] > 0:
+                    icon = get_icon(killedByIcon)
+                    icon.data = []
+                    if hunter['killedme'] > 0:
+                        icon.data.append('%s killed you %d times.' % (name,hunter['killedme'])),
+                    if hunter['downedme'] > 0:
+                        icon.data.append('%s downed you %d times.' % (name,hunter['downedme'])),
+                    icon.installEventFilter(self)
+                    hunterWidget.layout.addWidget(icon)
+                if hunter['killedbyme'] > 0 or hunter['downedbyme'] > 0:
+                    icon = get_icon(killedIcon)
+                    icon.data = []
+                    if hunter['killedbyme'] > 0:
+                        icon.data.append('You killed %s %d times.' % (name,hunter['killedbyme'])),
+                    if hunter['downedbyme'] > 0:
+                        icon.data.append('You downed %s %d times.' % (name,hunter['downedbyme'])),
+                    icon.installEventFilter(self)
+                    hunterWidget.layout.addWidget(icon)
+                if hunter['killedteammate'] > 0 or hunter['downedteammate'] > 0:
+                    icon = get_icon(killedTeammateIcon)
+                    icon.data = []
+                    if hunter['killedteammate'] > 0:
+                        icon.data.append('%s killed your teammates %d times.' % (name,hunter['killedteammate'])),
+                    if hunter['downedteammate'] > 0:
+                        icon.data.append('%s downed your teammates %d times.' % (name,hunter['downedteammate'])),
+                    icon.installEventFilter(self)
+                    hunterWidget.layout.addWidget(icon)
+                if hunter['killedbyteammate'] > 0 or hunter['downedbyteammate'] > 0:
+                    icon = get_icon(teammateKilledIcon)
+                    icon.data = []
+                    if hunter['killedbyteammate'] > 0:
+                        icon.data.append('Your teammates killed %s %d times.' % (name,hunter['killedbyteammate'])),
+                    if hunter['downedbyteammate'] > 0:
+                        icon.data.append('Your teammates downed %s %d times.' % (name,hunter['downedbyteammate'])),
+                    icon.installEventFilter(self)
+                    hunterWidget.layout.addWidget(icon)
                 if bountypickedup:
                     hunterWidget.layout.addWidget(QLabel("%s carried the bounty." % name))
                 if hadWellspring:
@@ -192,7 +218,7 @@ class Hunts(QWidget):
 
 
                 tab.layout.addWidget(hunterWidget,3,j)
-                if(sum(kills.values()) > 0):
+                if(sum(kills) > 0):
                     hadKills = True
 
                 hunterWidget.layout.addStretch()
@@ -215,6 +241,27 @@ class Hunts(QWidget):
 
     def switchTeamWidget(self,idx):
         self.teamStack.setCurrentIndex(idx)
+
+    def eventFilter(self, obj, event) -> bool:
+        if event.type() == QEvent.Type.Enter:
+            info = QWidget()
+            info.layout = QVBoxLayout()
+            info.setLayout(info.layout)
+            x = event.globalPosition().x()
+            y = event.globalPosition().y()
+            for d in obj.data:
+                info.layout.addWidget(QLabel(d))
+            self.popup = Popup(info,x,y)
+            #self.popup.keepAlive(True)
+            self.popup.show()
+            self.raise_()
+            self.activateWindow()
+        elif event.type() == QEvent.Type.Leave:
+            try:
+                self.popup.close()
+            except:
+                self.popup = None
+        return super().eventFilter(obj, event)
 
 def HuntersOnTeam(hunters, team):
     teamhunters = []

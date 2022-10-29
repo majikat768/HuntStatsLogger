@@ -55,7 +55,12 @@ class Logger(QObject):
                 outfile = os.path.join(json_dir,'/'.join([y,m,d,'attributes_%s.json' % ts]))
                 os.makedirs(os.path.dirname(outfile),exist_ok=True)
 
-                new_data = build_json_from_xml(ts)
+                try:
+                    new_data = build_json_from_xml(ts)
+                except Exception as e:
+                    print('building json error')
+                    print(e)
+                    continue
                 record_exists = execute_query("select * from 'games' where game_id is '%s'" % new_data['game']['game_id'])
                 if len(record_exists) > 0:
                     print('record exists')
@@ -112,53 +117,59 @@ def generate_checksum(obj):
     return checksum
 
 def clean_data(obj):
-    num_teams = int(obj['game']['MissionBagNumTeams'])
-    num_entries = int(obj['game']['MissionBagNumEntries'])
-    num_accolades = int(obj['game']['MissionBagNumAccolades'])
+    try:
+        num_teams = int(obj['game']['MissionBagNumTeams'])
+        num_entries = int(obj['game']['MissionBagNumEntries'])
+        num_accolades = int(obj['game']['MissionBagNumAccolades'])
 
-    teams = {}
-    for teamnum in obj["teams"]:
-        if int(teamnum) < num_teams:
-            teams[str(teamnum)] = obj['teams'][teamnum]
+        teams = {}
+        for teamnum in obj["teams"]:
+            if int(teamnum) < num_teams:
+                teams[str(teamnum)] = obj['teams'][teamnum]
 
-    entries = {}
-    for entrynum in obj['entries']:
-        if int(entrynum) < num_entries:
-            entries[str(entrynum)] = obj['entries'][entrynum]
+        entries = {}
+        for entrynum in obj['entries']:
+            if int(entrynum) < num_entries:
+                entries[str(entrynum)] = obj['entries'][entrynum]
+            
+        accolades = {}
+        for accoladenum in obj['accolades']:
+            if int(accoladenum) < num_accolades:
+                accolades[str(accoladenum)] = obj['accolades'][accoladenum]
         
-    accolades = {}
-    for accoladenum in obj['accolades']:
-        if int(accoladenum) < num_accolades:
-            accolades[str(accoladenum)] = obj['accolades'][accoladenum]
-    
-    hunters = {}
-    for id in obj['hunters']:
-        teamnum = id.split('_')[0]
-        hunternum = id.split('_')[1]
-        if int(teamnum) < num_teams and int(hunternum) < int(teams[teamnum]["numplayers"]):
-            hunters[id] = obj['hunters'][id]
+        hunters = {}
+        for id in obj['hunters']:
+            teamnum = id.split('_')[0]
+            hunternum = id.split('_')[1]
+            if int(teamnum) < num_teams and int(hunternum) < int(teams[teamnum]["numplayers"]):
+                hunters[id] = obj['hunters'][id]
 
-    new_obj = {
-        "teams":teams,
-        "hunters":hunters,
-        "entries":entries,
-        "accolades":accolades,
-        "game":obj['game']
-    }
+        new_obj = {
+            "teams":teams,
+            "hunters":hunters,
+            "entries":entries,
+            "accolades":accolades,
+            "game":obj['game']
+        }
 
-    checksum = generate_checksum(new_obj)
+        checksum = generate_checksum(new_obj)
 
-    for teamnum in new_obj['teams']:
-        new_obj['teams'][teamnum]['game_id'] = checksum
-    for hunternum in new_obj['hunters']:
-        new_obj['hunters'][hunternum]['game_id'] = checksum
-    for entrynum in new_obj['entries']:
-        new_obj['entries'][entrynum]['game_id'] = checksum
-    for accoladenum in new_obj['accolades']:
-        new_obj['accolades'][accoladenum]['game_id'] = checksum
-    new_obj['game']['game_id'] = checksum
+        for teamnum in new_obj['teams']:
+            new_obj['teams'][teamnum]['game_id'] = checksum
+        for hunternum in new_obj['hunters']:
+            new_obj['hunters'][hunternum]['game_id'] = checksum
+        for entrynum in new_obj['entries']:
+            new_obj['entries'][entrynum]['game_id'] = checksum
+        for accoladenum in new_obj['accolades']:
+            new_obj['accolades'][accoladenum]['game_id'] = checksum
+        new_obj['game']['game_id'] = checksum
 
-    return new_obj
+        return new_obj
+    except Exception as e:
+        print('clean_data')
+        print(e)
+        print(obj)
+        return obj
 
 
 def build_json_from_xml(ts):

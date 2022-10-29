@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout,QHBoxLayout, QPushButton, QTabWidget
+from PyQt6.QtCore import QThread
 
 from MainWindow.Header import Header
 from MapWindow.MapWindow import MapWindow
@@ -35,7 +36,7 @@ class MainFrame(QWidget):
         self.buttons.layout = QHBoxLayout()
         self.buttons.setLayout(self.buttons.layout)
 
-        self.buttons.layout.addWidget(mapsButton)
+        #self.buttons.layout.addWidget(mapsButton)
         self.buttons.layout.addWidget(settingsButton)
 
         self.layout.addWidget(self.buttons)
@@ -71,6 +72,7 @@ class MainFrame(QWidget):
         self.huntsTab.update()
         self.huntersTab.update()
         self.chartTab.update()
+        self.window().adjustSize()
 
 
     def StartLogger(self):
@@ -101,22 +103,3 @@ class MainFrame(QWidget):
 
     def setStatus(self,msg):
         self.window().setStatus(msg)
-
-def steamworks_init():
-    from steamworks import STEAMWORKS
-    try:
-        steamworks = STEAMWORKS()
-        steamworks.initialize()
-        hunt_dir = steamworks.Apps.GetAppInstallDir(HUNT_SHOWDOWN_APP_ID)
-        settings.setValue("hunt_dir",hunt_dir)
-        xml_path = os.path.join(hunt_dir,"user","profiles","default","attributes.xml")
-        settings.setValue("xml_path",xml_path)
-
-        steam_name = steamworks.Friends.GetPlayerName()
-        settings.setValue("steam_name",steam_name.decode("utf-8"))
-
-        steamworks.unload()
-        sys.exit()
-    except Exception as e:
-        print(e)
-        return

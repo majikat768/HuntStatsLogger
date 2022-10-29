@@ -1,4 +1,6 @@
-from PyQt6.QtCore import QSettings, QStandardPaths, QThread
+from PyQt6.QtCore import QSettings, QStandardPaths
+from PyQt6.QtWidgets import QLabel, QSizePolicy
+from PyQt6.QtGui import QIcon
 
 from datetime import datetime
 import os, sys
@@ -52,10 +54,16 @@ def max(a,b):
 def min(a,b):
     return a if a < b else b
 
-deadIcon = resource_path('assets/icons/death2.png')
+deadIcon = resource_path('assets/icons/death.png')
 livedIcon = resource_path('assets/icons/lived2.png')
+killedByIcon = resource_path('assets/icons/killedby.png')
+killedIcon = resource_path('assets/icons/killed.png')
+teammateKilledIcon = resource_path('assets/icons/teammatekilled.png')
+killedTeammateIcon = resource_path('assets/icons/killedteammate.png')
 
-# steamworks ?
-STEAMWORKS_BINARIES_PATH: str = resource_path("assets/steam/")
-STEAMWORKS_SDK_PATH: str = os.path.join(STEAMWORKS_BINARIES_PATH, "steamworks_sdk.zip")
-HUNT_SHOWDOWN_APP_ID: int = 594650  # Hunt: Showdown App ID
+def get_icon(path):
+    i = QLabel("<img src='%s'>" % path)
+    i.setObjectName("icon")
+    #i.setStyleSheet("QLabel{border:1px solid white;}")
+    i.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+    return i
