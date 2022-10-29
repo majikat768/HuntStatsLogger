@@ -1,8 +1,6 @@
 import sys
 import ctypes
 import platform
-from InitDialog import InitDialog
-from SettingsWindow import SettingsWindow
 from resources import *
 
 from PyQt6.QtWidgets import QApplication
@@ -24,12 +22,6 @@ if __name__ == '__main__':
 
     QFontDatabase.addApplicationFont(resource_path('./assets/fonts/LibreBaskerville/LibreBaskerville-Regular.ttf'))
     QFontDatabase.addApplicationFont(resource_path('./assets/fonts/Ubuntu/Ubuntu-R.ttf'))
-
-    '''
-    if settings.value("xml_path","") == "":
-        d = InitDialog()
-        d.exec()
-    '''
 
     window = MainWindow()
     window.show()

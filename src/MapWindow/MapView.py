@@ -1,12 +1,15 @@
 from random import random
 import sys
+from turtle import screensize
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QApplication
 from PIL import Image
 import os
 import json
 from PyQt6.QtCore import QEvent, Qt
 from PyQt6.QtGui import QMouseEvent, QColor, QPixmap
+from MapWindow.Grid import Grid
 from MapWindow.Marker import Border, Label, Marker
+from MapWindow.Ruler import Ruler
 from resources import resource_path
 
 maps = {
@@ -30,8 +33,10 @@ class MapView(QGraphicsView):
         self.scene = None
         self.current = list(maps.keys())[0]
 
-        self.zoom = 0
+        self.zoom = 1
         self.factor = 1
+
+        self.ruler = Ruler()
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -39,11 +44,15 @@ class MapView(QGraphicsView):
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setMap(self.current)
 
+        self.rulerMode = False
+
     def initScene(self,w,h):
         self.scene = QGraphicsScene(0,0,w,h)
-        #self.setFixedSize(w,h)
+        #self.setBaseSize(w,h)
+        self.setFixedSize(w,h)
         self.setScene(self.scene)
         self.scene.installEventFilter(self)
+        self.scene.addItem(self.ruler)
     
     def setMap(self,map):
         self.current = map
@@ -71,6 +80,8 @@ class MapView(QGraphicsView):
         self.InitBeetleSpawns(self.current)
         self.InitCompoundLabels(self.current)
         self.InitCompoundEdges(self.current)
+        self.grid = Grid(int(self.size().width()),8)
+        self.scene.addItem(self.grid)
 
     def ToggleSpawnPoints(self):
         for spawn in self.spawns:
@@ -95,12 +106,17 @@ class MapView(QGraphicsView):
         self.show()
         self.update()
 
+    def toggleRuler(self):
+        self.defaultZoom()
+        self.rulerMode = not self.rulerMode
+        self.window().statusBar.showMessage("Click a starting point")
+
     def InitSpawnPoints(self,map):
-        print('init.spawns')
+        #print('init.spawns')
         with open(spawn_points_file,'r') as f:
             self.spawn_points_json = json.loads(f.read())
-        brush = QColor("#ff0000ff")
-        pen = QColor("#ffffff")
+        brush = QColor("#ffffff00")
+        pen = QColor("#000000")
         pts = self.spawn_points_json[map]
         self.spawns = []
         for pt in pts:
@@ -114,10 +130,11 @@ class MapView(QGraphicsView):
             #self.scene.addItem(spawn.textBox)
 
     def InitBeetleSpawns(self,map):
-        print('init.beetles')
+        #print('init.beetles')
         with open(beetle_spawns_file,'r') as f:
             self.beetle_spawns_json = json.loads(f.read())
-        brush = QColor("#ffff0000")
+        pbrush = QColor("#ffff0000")
+        rbrush = QColor("#ff0000ff")
         pen = QColor("#ffffff")
         lst = self.beetle_spawns_json[map]
         self.beetles = []
@@ -125,7 +142,10 @@ class MapView(QGraphicsView):
             for pt in lst[type]:
                 x = pt['x']/100 * self.size().width()
                 y = pt['y']/100 * self.size().height()
-                dot = Marker(x=x,y=y,size=16,brushColor=brush,penColor=pen)
+                if type == "Permanent":
+                    dot = Marker(x=x,y=y,size=16,brushColor=pbrush,penColor=pen)
+                else:
+                    dot = Marker(x=x,y=y,size=16,brushColor=rbrush,penColor=pen)
                 self.beetles.append(dot)
         for beetle in self.beetles:
             self.scene.addItem(beetle)
@@ -133,7 +153,7 @@ class MapView(QGraphicsView):
         self.update()
 
     def InitCompoundEdges(self,map):
-        print('init.edges')
+        #print('init.edges')
         with open(compounds_file,'r') as f:
             self.compound_verts_json = json.loads(f.read())
         self.compound_borders = []
@@ -152,7 +172,7 @@ class MapView(QGraphicsView):
             self.scene.addItem(border)
 
     def InitCompoundLabels(self,map):
-        print('init.labels')
+        #print('init.labels')
         with open(compounds_file,'r') as f:
             self.compound_names_json = json.loads(f.read())
         compounds = self.compound_names_json[map]
@@ -171,20 +191,18 @@ class MapView(QGraphicsView):
 
     def eventFilter(self, obj,event):
         if obj == self.scene:
-            if event.type() == QEvent.Type.GraphicsSceneWheel:
+            if event.type() == QEvent.Type.GraphicsSceneWheel and not self.rulerMode:
                 if event.delta() > 0:
-                    self.factor = 1.25
-                    self.zoom += 1
+                    if self.zoom < 4:
+                        self.factor = 1.25
+                        self.zoom *= self.factor
+                        self.scale(self.factor,self.factor)
                 else:
-                    self.factor = 0.8
-                    self.zoom -= 1
-                if self.zoom > 5:
-                    self.zoom = 5
-                    self.factor = 1
-                elif self.zoom < -1:
-                    self.zoom = -1 
-                    self.factor = 1
-                self.scale(self.factor,self.factor)
+                    if self.zoom > 0.8:
+                        self.factor = 0.8
+                        self.zoom *= self.factor
+                        self.scale(self.factor,self.factor)
+                print(self.zoom)
             if event.type() == QEvent.Type.Enter:
                 self.setCursor(Qt.CursorShape.ArrowCursor)
                 QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
@@ -195,7 +213,27 @@ class MapView(QGraphicsView):
             print("event",obj)
         return True
     
+    def defaultZoom(self):
+        while self.zoom > 1:
+            self.factor = 0.8
+            self.zoom *= self.factor
+            self.scale(self.factor,self.factor)
+        while self.zoom < 1:
+            self.factor = 1.25
+            self.zoom *= self.factor
+            self.scale(self.factor,self.factor)
+
+
     def mousePressEvent(self, event: QMouseEvent) -> None:
+        if self.rulerMode:
+            if self.ruler.line.p1().x() < 0 or self.ruler.line.p1().y() < 0:
+                x = event.pos().x() / self.zoom
+                y = event.pos().y() / self.zoom
+                self.ruler.setStart(x,y)
+            else:
+                self.ruler.setStart(-1,-1)
+            self.window().statusBar.showMessage("Distance: 0 meters")
+
         items = self.items(event.pos())
         for item in items:
             if type(item) == Marker:
@@ -205,5 +243,14 @@ class MapView(QGraphicsView):
         return super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        self.window().statusBar.showMessage("(%s %s)" % (int(event.position().x()),int(event.position().y())))
+        if self.rulerMode:
+            if self.ruler.line.p1().x() > 0 or self.ruler.line.p1().y() > 0:
+                x = event.pos().x() / self.zoom
+                y = event.pos().y() / self.zoom
+                self.ruler.moveEnd(x,y)
+                self.update()
+                self.scene.update()
+                self.window().statusBar.showMessage("Distance: %d meters" % self.ruler.length())
+        else:
+            self.window().statusBar.showMessage("(%s %s)" % (int(event.position().x()),int(event.position().y())))
         return super().mouseMoveEvent(event)

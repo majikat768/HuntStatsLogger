@@ -3,7 +3,6 @@ from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
 from DbHandler import *
 from MainWindow.Hunts.HuntDetails import HuntDetails
-from MainWindow.Hunts.TeamDetails import TeamDetails
 
 
 BountyNames = {
@@ -156,6 +155,7 @@ class Hunts(QWidget):
                 starsLabel = QLabel("%s" % stars)
                 bountypickedup = hunter['bountypickedup']
                 hadWellspring = hunter['hadWellspring'].lower() == 'true'
+                soulSurvivor = hunter['issoulsurvivor'].lower() == 'true'
                 if hunter['bountyextracted']:
                     bountyextracted = 1
 
@@ -189,6 +189,8 @@ class Hunts(QWidget):
                     hunterWidget.layout.addWidget(QLabel("%s carried the bounty." % name))
                 if hadWellspring:
                     hunterWidget.layout.addWidget(QLabel("%s activated the Wellspring." % name))
+                if soulSurvivor:
+                    hunterWidget.layout.addWidget(QLabel("%s was the soul survivor." % name))
 
 
                 tab.layout.addWidget(hunterWidget,3,j)
