@@ -57,21 +57,21 @@ class Logger(QObject):
 
                 try:
                     new_data = build_json_from_xml(ts)
+                    record_exists = execute_query("select * from 'games' where game_id is '%s'" % new_data['game']['game_id'])
+                    if len(record_exists) > 0:
+                        print('record exists')
+                    else:
+                        self.mainframe.setStatus("writing new record to json file....")
+                        with open(outfile,'w') as f:
+                            json.dump(new_data,f)
+                        self.mainframe.setStatus("writing new record to database....")
+                        json_to_db(new_data)
+                        last_hunt = last_change
+                        self.progress.emit()
                 except Exception as e:
                     print('building json error')
                     print(e)
                     continue
-                record_exists = execute_query("select * from 'games' where game_id is '%s'" % new_data['game']['game_id'])
-                if len(record_exists) > 0:
-                    print('record exists')
-                else:
-                    self.mainframe.setStatus("writing new record to json file....")
-                    with open(outfile,'w') as f:
-                        json.dump(new_data,f)
-                    self.mainframe.setStatus("writing new record to database....")
-                    json_to_db(new_data)
-                    last_hunt = last_change
-                    self.progress.emit()
 
             if last_hunt > 0:
                 elapsed = (time.time() - last_hunt)//60
