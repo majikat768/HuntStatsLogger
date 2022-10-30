@@ -42,6 +42,7 @@ class HuntDetails(QScrollArea):
         self.setWidget(huntDetails)
 
         self.setBaseSize(self.sizeHint())
+        self.setMinimumHeight(int(self.sizeHint().height()*1.1))
 
     def update(self, hunt,entries, accolades):
         #print('huntdetails.update')

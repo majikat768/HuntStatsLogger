@@ -80,6 +80,7 @@ QGraphicsTextItem {
 }
 #teamDetails {
 	margin-left:16px;
+	border:0px;
 }
 
 QMainWindow {
@@ -102,7 +103,7 @@ QTextEdit {
 	color: #a9b7c6;
 }
 QListWidgetItem {
-	border: 1px solid white;
+	border: 0px solid white;
 }
 QListWidget {
 	background: transparent;

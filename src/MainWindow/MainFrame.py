@@ -36,7 +36,7 @@ class MainFrame(QWidget):
         self.buttons.layout = QHBoxLayout()
         self.buttons.setLayout(self.buttons.layout)
 
-        #self.buttons.layout.addWidget(mapsButton)
+        self.buttons.layout.addWidget(mapsButton)
         self.buttons.layout.addWidget(settingsButton)
 
         self.layout.addWidget(self.buttons)

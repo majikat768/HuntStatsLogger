@@ -96,8 +96,8 @@ class Hunts(QWidget):
         self.teamStack = QStackedWidget()
         self.teamScrollArea.setObjectName("teamDetails")
         self.teamStack.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
-        #self.teamStack.setStyleSheet("*{border:0px;}")
-        #self.teamStack.setObjectName("TeamStack")
+        #self.teamStack.setStyleSheet("QStackedWidget{border:0px;}")
+        self.teamStack.setObjectName("TeamStack")
         self.teamScrollArea.setWidget(self.teamStack)
         self.teamList = QListWidget()
         self.teamList.currentRowChanged.connect(self.switchTeamWidget)
@@ -234,10 +234,11 @@ class Hunts(QWidget):
             if isQp:
                 self.teamList.insertItem(i,'%s' % (name))
             else:
-                self.teamList.insertItem(i,'Team %d\n%s' % (i,'\n'.join(hunterNames)))
+                self.teamList.insertItem(i,'Team %d - %s hunters' % (i,len(teamhunters)))
         self.teamList.setCurrentRow(0)
         self.teamList.setFixedHeight(self.teamList.sizeHint().height())
-        self.teamScrollArea.setMinimumHeight(self.teamStack.sizeHint().height())
+        self.teamScrollArea.setMinimumHeight(int(self.teamStack.sizeHint().height()*1.1))
+        self.teamScrollArea.setMinimumWidth(int(self.teamStack.sizeHint().width()*1.1))
 
     def switchTeamWidget(self,idx):
         self.teamStack.setCurrentIndex(idx)
