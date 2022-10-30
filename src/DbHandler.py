@@ -181,6 +181,60 @@ def GetHuntAccolades(ts):
         print(e)
         return {}
 
+def GetKillsByMatch():
+        kData = execute_query("select downedbyme + killedbyme as kills, 'games'.MissionBagIsQuickPlay, 'games'.timestamp from 'hunters' join 'games' on 'hunters'.game_id = 'games'.game_id")
+        cols = ["kills","isQp","ts"]
+        data = []
+        try:
+            for k in kData:
+                data.append({cols[i] : k[i] for i in range(len(cols))})
+        except Exception as e:
+            print('dbhandler.getkillsbymatch')
+            print(e)
+
+        res = {}
+        for d in data:
+            ts = d['ts']
+            if ts not in res:
+                res[ts] = {"isQp":d['isQp'],"kills": 0}
+            res[ts]["kills"] += d["kills"]
+        return res
+
+def GetDeathsByMatch():
+        dData = execute_query("select downedme + killedme, 'games'.MissionBagIsQuickPlay, 'games'.timestamp from 'hunters' join 'games' on 'hunters'.game_id = 'games'.game_id")
+        cols = ["deaths","isQp","ts"]
+        data = []
+        try:
+            for d in dData:
+                data.append({cols[i] : d[i] for i in range(len(cols))})
+        except Exception as e:
+            print('dbhandler.getdeathsbymatch')
+            print(e)
+        res = {}
+        for d in data:
+            ts = d['ts']
+            if ts not in res:
+                res[ts] = {"isQp":d['isQp'],"deaths": 0}
+            res[ts]["deaths"] += d["deaths"]
+        return res
+
+def GetAssistsByMatch():
+        aData = execute_query("select amount, isQp, ts from (select 'entries'.amount, MissionBagIsQuickPlay as isQp, 'games'.timestamp as ts from 'entries' join 'games' on 'games'.game_id = 'entries'.game_id where category is 'accolade_players_killed_assist')")
+        cols = ["assists","isQp","ts"]
+        data = []
+        try:
+            for a in aData:
+                data.append({cols[i] : a[i] for i in range(len(cols))})
+        except Exception as e:
+            print('dbhandler.getassistsbymatch')
+            print(e)
+        res = {}
+        for d in data:
+            ts = d['ts']
+            if ts not in res:
+                res[ts] = {"isQp":d['isQp'],"assists": 0}
+            res[ts]["assists"] += d["assists"]
+        return res
 
 def GetTeams(timestamp):
     tVals = execute_query("select * from 'teams' where timestamp is %s" % timestamp)
@@ -189,12 +243,11 @@ def GetTeams(timestamp):
     try:
         for team in tVals:
             teams.append({tCols[i][1] : team[i] for i in range(len(tCols))})
-        return teams
 
     except Exception as e:
         print("dbhandler.getteams")
         print(e)
-        return teams
+    return teams
 
 def GetHunters(timestamp):
     hVals = execute_query("select * from 'hunters' where timestamp is %s" % timestamp)

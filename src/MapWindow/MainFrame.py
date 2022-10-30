@@ -30,6 +30,8 @@ class MainFrame(QWidget):
         self.mapView = MapView()
         self.initButtons()
         self.layout.addWidget(self.mapView)
+        self.layout.addStretch()
+        self.rulerMode = False
 
     def initButtons(self):
         self.buttons = QWidget()
@@ -43,11 +45,15 @@ class MainFrame(QWidget):
         self.buttons.names.clicked.connect(self.mapView.ToggleCompoundNames)
         self.buttons.borders = QPushButton("Toggle Compound Borders")
         self.buttons.borders.clicked.connect(self.mapView.ToggleCompoundBorders)
+        self.buttons.ruler = QPushButton("Ruler....")
+        self.buttons.ruler.clicked.connect(self.mapView.toggleRuler)
         self.buttons.layout.addWidget(self.buttons.spawns)
         self.buttons.layout.addWidget(self.buttons.beetles)
         self.buttons.layout.addWidget(self.buttons.names)
         self.buttons.layout.addWidget(self.buttons.borders)
+        self.buttons.layout.addWidget(self.buttons.ruler)
         self.layout.addWidget(self.buttons)
+
 
     def update(self):
         self.current = self.SelectMap.currentText()

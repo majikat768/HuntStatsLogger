@@ -23,11 +23,6 @@ if __name__ == '__main__':
     QFontDatabase.addApplicationFont(resource_path('./assets/fonts/LibreBaskerville/LibreBaskerville-Regular.ttf'))
     QFontDatabase.addApplicationFont(resource_path('./assets/fonts/Ubuntu/Ubuntu-R.ttf'))
 
-    '''
-    if settings.value("xml_path","") == "":
-        d.exec()
-    '''
-
     window = MainWindow()
     window.setBaseSize(1024,768)
     window.show()

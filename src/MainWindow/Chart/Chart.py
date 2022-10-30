@@ -1,13 +1,29 @@
 from math import inf
-from PyQt6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QPushButton,QComboBox, QSizePolicy, QLabel
+from PyQt6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QPushButton,QComboBox, QSizePolicy, QLabel
 from PyQt6.QtCore import QEvent, Qt
 import pyqtgraph
 from DbHandler import *
+from MainWindow.Chart.MmrData import MmrData
+from MainWindow.Chart.KdaData import KdaData
+from MainWindow.Chart.KillsData import KillsData 
 from resources import *
 
 class Chart(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.dataSelections = {
+            "mmr":self.initMmrGraph,
+            "kda":self.initKdaGraph
+            }
+        '''
+        self.dataSelections = {
+            "mmr":self.initMmrGraph,
+            "kda":self.initKdaGraph,
+            "wins":self.initMmrGraph,
+            "kills":self.initKillsGraph
+            }
+        '''
+
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.initUI()
@@ -17,13 +33,30 @@ class Chart(QWidget):
         self.tools = QWidget()
         self.tools.layout = QHBoxLayout()
         self.tools.setLayout(self.tools.layout)
-        self.dataSelect = QComboBox()
+        self.initDataSelect()
         self.updateButton = QPushButton("refresh")
         self.updateButton.clicked.connect(self.update)
         self.updateButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.tools.layout.addWidget(self.dataSelect)
         self.tools.layout.addWidget(self.updateButton)
         self.layout.addWidget(self.tools)
+
+    def initDataSelect(self):
+        self.dataSelect = QComboBox()
+        self.dataSelect.addItems(self.dataSelections.keys())
+        self.dataSelect.activated.connect(self.SetData)
+
+        self.tools.layout.addWidget(self.dataSelect)
+
+    def SetData(self):
+        self.graph.clear()
+        self.legend.clear()
+        data = self.dataSelect.currentText()
+        try:
+            self.dataSelections[data]()
+        except Exception as e:
+            print('setdata')
+            print(e)
+            return
 
     def initUI(self):
         self.initTools()
@@ -43,61 +76,58 @@ class Chart(QWidget):
         self.legend.clear()
         self.graphWindow.removeItem(self.graph)
         self.graph = self.graphWindow.addPlot(0,0)
-        self.initMmrGraph()
+        self.SetData()
         self.legend.getViewBox().setMaximumHeight(self.legend.boundingRect().height())
         self.graph.showGrid(x=True, y=True, alpha=0.4)
         self.graph.getViewBox().installEventFilter(self)
         #self.graph.setMouseEnabled(x=False)
 
-    def initMmrGraph(self):
-        data = []
-        mmrs = GetAllMmrs(name=settings.value('steam_name'))
-        i = 0
-        minMmr = 6001;
-        maxMmr = -1;
-        for ts in mmrs.keys():
-            mmr = mmrs[ts]['mmr']
-            qp = mmrs[ts]['qp']
-            if mmr > maxMmr:
-                maxMmr = mmr
-            if mmr < minMmr:
-                minMmr = mmr
-            data.append({'x':i,'y':mmr, 'qp':qp, 'ts':ts})
-            i += 1
-        line = pyqtgraph.PlotDataItem(data,pen="#ffffff88")
-        qpPoints = pyqtgraph.ScatterPlotItem(
-            [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'true'],
-            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#00ffff",name="Quick Play",tip="{data}<br>MMR: {y:.0f}".format
-        )
-        bhPoints = pyqtgraph.ScatterPlotItem(
-            [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'false'],
-            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="{data}<br>MMR: {y:.0f}".format
-        )
+    def initKdaGraph(self):
+        kda = KdaData()
+        self.graph.addItem(kda.line)
+        self.graph.addItem(kda.qpPoints)
+        self.graph.addItem(kda.bhPoints)
 
-        self.graph.addItem(line)
-        self.graph.addItem(qpPoints)
-        self.graph.addItem(bhPoints)
+        self.graph.setLabel('left','KDA')
+        self.graph.setLabel('bottom','Hunts')
+
+        self.legend.addItem(kda.qpPoints,name=kda.qpPoints.opts['name'])
+        self.legend.addItem(kda.bhPoints,name=kda.bhPoints.opts['name'])
+        self.graph.setYRange(kda.minKda - 0.1, kda.maxKda + 0.1)
+        self.graph.setXRange(max(-1,len(kda.line.xData)-20),len(kda.line.xData))
+        self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(kda.line.xData))
+
+    def initKillsGraph(self):
+        kills = KillsData()
+        #self.graph.addItem(kills.line)
+        self.graph.addItem(kills.qpPoints)
+        self.graph.addItem(kills.bhPoints)
+
+        self.graph.setLabel('left','Kills')
+        self.graph.setLabel('bottom','Hunts')
+
+        self.legend.addItem(kills.qpPoints,name=kills.qpPoints.opts['name'])
+        self.legend.addItem(kills.bhPoints,name=kills.bhPoints.opts['name'])
+        self.graph.setYRange(-1,kills.maxKills+1)
+        self.graph.setXRange(max(-1,len(kills.line.xData)-20),len(kills.line.xData))
+        self.graph.setLimits(xMin=0,yMin=-1,yMax=kills.maxKills+1,xMax=len(kills.line.xData))
+
+    def initMmrGraph(self):
+        mmr = MmrData()
+        self.graph.addItem(mmr.line)
+        self.graph.addItem(mmr.qpPoints)
+        self.graph.addItem(mmr.bhPoints)
+        for line in mmr.stars:
+            self.graph.addItem(line)
 
         self.graph.setLabel('left','MMR')
         self.graph.setLabel('bottom','Hunts')
 
-        stars = [2000,2300,2600,2750,3000,5000]
-
-        for s in stars:
-            c = s/5000*255
-            line = pyqtgraph.InfiniteLine(pos=s+1, angle=0, pen=pyqtgraph.mkPen("#ff000088",width=2))
-            label = pyqtgraph.TextItem(text="%d+: %d stars"%(s,mmr_to_stars(s)), color="#ffffff")
-            label.setParentItem(line)
-            label.setPos(0,0)
-            self.graph.addItem(line)
-
-        self.legend.addItem(qpPoints,name=qpPoints.opts['name'])
-        self.legend.addItem(bhPoints,name=bhPoints.opts['name'])
-        self.graph.setYRange(minMmr - 400, maxMmr + 400)
-        self.graph.setXRange(max(-1,len(data)-20),len(data))
-        self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=inf)
-
-            
+        self.legend.addItem(mmr.qpPoints,name=mmr.qpPoints.opts['name'])
+        self.legend.addItem(mmr.bhPoints,name=mmr.bhPoints.opts['name'])
+        self.graph.setYRange(mmr.minMmr - 400, mmr.maxMmr + 400)
+        self.graph.setXRange(max(-1,len(mmr.line.xData)-20),len(mmr.line.xData))
+        self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(mmr.line.xData))
 
     def eventFilter(self,obj,event):
         if event.type() == QEvent.Type.GraphicsSceneWheel:
