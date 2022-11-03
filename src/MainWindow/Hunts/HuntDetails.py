@@ -1,19 +1,26 @@
-from PyQt6.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QGroupBox, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt6.QtCore import Qt
 from resources import *
 from DbHandler import *
 
-class HuntDetails(QScrollArea):
-    def __init__(self):
-        super().__init__()
-        self.setWidgetResizable(True)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+class HuntDetails(QGroupBox):
+    def __init__(self,title=None):
+        super().__init__(title)
+        #self.setWidgetResizable(True)
+        #self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        huntDetails = QWidget()
-        huntDetails.setObjectName("HuntDetails")
-        huntDetails.layout = QVBoxLayout()
-        huntDetails.setLayout(huntDetails.layout)
+        self.setObjectName("huntDetails")
+        self.layout = QHBoxLayout()
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self.layout)
 
+        self.bounties = self.initBounties()
+        self.rewards = self.initRewards()
+        self.monsters = self.initMonsters()
+        self.layout.addWidget(self.bounties,0,Qt.AlignmentFlag.AlignTop)
+        self.layout.addWidget(self.rewards,0,Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.monsters,0,Qt.AlignmentFlag.AlignRight)
+        '''
         self.bounties = QLabel()
         self.bounties.setWordWrap(True)
         self.nTeams = QLabel()
@@ -27,24 +34,94 @@ class HuntDetails(QScrollArea):
         self.yourDeaths = QLabel()
         self.monsterKills = QLabel()
 
-        huntDetails.layout.addWidget(self.bounties)
-        huntDetails.layout.addWidget(self.nTeams)
-        huntDetails.layout.addWidget(self.clues)
-        huntDetails.layout.addWidget(self.rewards)
-        huntDetails.layout.addWidget(self.teamKills)
-        huntDetails.layout.addWidget(self.yourKills)
-        huntDetails.layout.addWidget(self.yourDeaths)
-        huntDetails.layout.addWidget(self.yourAssists)
-        huntDetails.layout.addWidget(self.monsterKills)
-        huntDetails.layout.addStretch()
-        self.huntDetails = huntDetails
+        #self.layout.addWidget(self.bounties)
+        #self.layout.addWidget(self.nTeams)
+        self.layout.addWidget(self.clues)
+        self.layout.addWidget(self.rewards)
+        #self.layout.addWidget(self.teamKills)
+        #self.layout.addWidget(self.yourKills)
+        #self.layout.addWidget(self.yourDeaths)
+        #self.layout.addWidget(self.yourAssists)
+        self.layout.addWidget(self.monsterKills)
+        '''
+        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.MinimumExpanding)
 
-        self.setWidget(huntDetails)
 
         self.setBaseSize(self.sizeHint())
         self.setMinimumHeight(int(self.sizeHint().height()*1.1))
+    
+    def initBounties(self):
+        self.bounties = QWidget()
+        self.bounties.layout = QVBoxLayout()
+        self.bounties.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.bounties.setLayout(self.bounties.layout)
+        self.bounties.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Fixed)
 
-    def update(self, hunt,entries, accolades):
+        return self.bounties
+
+    def initRewards(self):
+        self.rewards = QWidget()
+        self.rewards.layout = QVBoxLayout()
+        self.rewards.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.rewards.setLayout(self.rewards.layout)
+        self.rewards.layout.addWidget(QLabel("Rewards:"))
+        return self.rewards
+
+
+    def initMonsters(self):
+        self.monsters = QWidget()
+        self.monsters.layout = QHBoxLayout()
+        self.monsters.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.monsters.setLayout(self.monsters.layout)
+        self.monsters.layout.addWidget(QLabel("Monster kills:"))
+        return self.monsters
+
+    def updateBounties(self, qp, bounties, targets):
+        self.clearLayout(self.bounties.layout)
+        if qp:
+            self.bounties.layout.addWidget(QLabel("Quick Play"))
+            self.bounties.layout.addWidget(QLabel('closed %d rifts.' % bounties['rifts_closed']),0,Qt.AlignmentFlag.AlignTop)
+        else:
+            #self.bounties.layout.addWidget(QLabel("<br>".join(targets)),0,Qt.AlignmentFlag.AlignTop)
+            for name in targets:
+                boss = bounties[name.lower()]
+                text = ["%s:" % name.capitalize()]
+                if sum(boss.values()) > 0:
+                    if boss['clues'] > 0:
+                        text.append(tab+"Found %d clues." % boss['clues'])
+                    if boss['killed']:
+                        text.append(tab+"Killed.")
+                    if boss['banished']:
+                        text.append(tab+"Banished.")
+                text.append('')
+                label = QLabel("<br>".join(text))
+                self.bounties.layout.addWidget(label,0,Qt.AlignmentFlag.AlignTop)
+
+    def updateRewards(self, rewardsData):
+        self.clearLayout(self.rewards.layout)
+        self.rewards.layout.addWidget(QLabel("Rewards:"))
+        self.rewards.layout.addWidget(QLabel(
+            "<br>".join([tab+"%s: %s" % (k, rewardsData[k]) for k in rewardsData if rewardsData[k] > 0])
+        ))
+
+    def updateMonsters(self, monsters_killed):
+        n = sum(monsters_killed.values())
+        values = [tab+"%d %s" % (monsters_killed[m], m) for m in monsters_killed if monsters_killed[m] > 0]
+        self.clearLayout(self.monsters.layout)
+        monsters_killed = {}
+        text = "Monster kills: %d<br>%s" % (
+            n,
+            '<br>'.join(values)
+        )
+        self.monsters.layout.addWidget(QLabel(text))
+
+    def update(self, qp,bounties,rewards,monsters_killed,targets):
+        self.updateBounties(qp,bounties, targets)
+        self.updateRewards(rewards)
+        self.updateMonsters(monsters_killed)
+        self.setMinimumHeight(self.sizeHint().height())
+        pass
+        '''
         #print('huntdetails.update')
         qp = 1 if hunt['MissionBagIsQuickPlay'].lower() == 'true' else 0
         bounties = GetBounties(hunt)
@@ -58,7 +135,7 @@ class HuntDetails(QScrollArea):
             self.bounties.setText('Quick Play')
 
         self.nTeams.setText("%d %s" % (hunt['MissionBagNumTeams'], "hunters" if qp else "teams"))
-        #self.setFixedWidth(int(self.huntDetails.sizeHint().width()*1.1))
+        #self.setFixedWidth(int(self.self.sizeHint().width()*1.1))
 
         if qp:
             rifts_closed = 0
@@ -135,6 +212,7 @@ class HuntDetails(QScrollArea):
                 if boss in bosses:
                     bosses[boss]["banished"] = 1
 
+        monsters_killed = {}
         for entry in entries:
             cat = entry['category']
             if 'wellsprings_found' in cat:
@@ -212,6 +290,11 @@ class HuntDetails(QScrollArea):
 
         self.adjustSize()
         self.window().adjustSize()
+        '''
+    def clearLayout(self,layout):
+        for i in reversed(range(layout.count())):
+            layout.itemAt(i).widget().setParent(None)
+
 
 def calculateRewards(accolades, entries):
     bounty = 0

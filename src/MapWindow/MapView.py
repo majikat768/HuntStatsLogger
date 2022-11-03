@@ -1,12 +1,11 @@
 from random import random
 import sys
-from turtle import screensize
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QApplication
 from PIL import Image
 import os
 import json
 from PyQt6.QtCore import QEvent, Qt
-from PyQt6.QtGui import QMouseEvent, QColor, QPixmap
+from PyQt6.QtGui import QMouseEvent, QColor, QPen, QBrush, QPixmap
 from MapWindow.Grid import Grid
 from MapWindow.Marker import Border, Label, Marker
 from MapWindow.Ruler import Ruler
@@ -80,7 +79,7 @@ class MapView(QGraphicsView):
         self.InitBeetleSpawns(self.current)
         self.InitCompoundLabels(self.current)
         self.InitCompoundEdges(self.current)
-        self.grid = Grid(int(self.size().width()),8)
+        self.grid = Grid(int(self.size().width()),10)
         self.scene.addItem(self.grid)
 
     def ToggleSpawnPoints(self):
@@ -100,6 +99,7 @@ class MapView(QGraphicsView):
             name.toggle()
         self.show()
         self.update()
+
     def ToggleCompoundBorders(self):
         for border in self.compound_borders:
             border.toggle()
@@ -109,7 +109,8 @@ class MapView(QGraphicsView):
     def toggleRuler(self):
         self.defaultZoom()
         self.rulerMode = not self.rulerMode
-        self.window().statusBar.showMessage("Click a starting point")
+        if self.rulerMode:
+            self.window().statusBar.showMessage("Click a starting point")
 
     def InitSpawnPoints(self,map):
         #print('init.spawns')
@@ -133,9 +134,13 @@ class MapView(QGraphicsView):
         #print('init.beetles')
         with open(beetle_spawns_file,'r') as f:
             self.beetle_spawns_json = json.loads(f.read())
-        pbrush = QColor("#ffff0000")
-        rbrush = QColor("#ff0000ff")
-        pen = QColor("#ffffff")
+        pbrush = QBrush(QColor("#44ff0000"))
+        rbrush = QBrush(QColor("#440000ff"))
+        ppen = QPen(QColor("#ff0000"))
+        ppen.setWidth(4)
+        rpen = QPen(QColor("#0000ff"))
+        rpen.setWidth(4)
+        #pen = QColor("#ffffff")
         lst = self.beetle_spawns_json[map]
         self.beetles = []
         for type in lst:
@@ -143,9 +148,9 @@ class MapView(QGraphicsView):
                 x = pt['x']/100 * self.size().width()
                 y = pt['y']/100 * self.size().height()
                 if type == "Permanent":
-                    dot = Marker(x=x,y=y,size=16,brushColor=pbrush,penColor=pen)
+                    dot = Marker(x=x,y=y,size=16,brushColor=pbrush,penColor=ppen)
                 else:
-                    dot = Marker(x=x,y=y,size=16,brushColor=rbrush,penColor=pen)
+                    dot = Marker(x=x,y=y,size=16,brushColor=rbrush,penColor=rpen)
                 self.beetles.append(dot)
         for beetle in self.beetles:
             self.scene.addItem(beetle)
@@ -155,7 +160,7 @@ class MapView(QGraphicsView):
     def InitCompoundEdges(self,map):
         #print('init.edges')
         with open(compounds_file,'r') as f:
-            self.compound_verts_json = json.loads(f.read())
+            self.compound_verts_json = json.loads(f.read())['compounds']
         self.compound_borders = []
         compounds = self.compound_verts_json[map]
         compounds = self.compound_verts_json[map]
@@ -174,14 +179,15 @@ class MapView(QGraphicsView):
     def InitCompoundLabels(self,map):
         #print('init.labels')
         with open(compounds_file,'r') as f:
-            self.compound_names_json = json.loads(f.read())
+            self.compound_names_json = json.loads(f.read())['compounds']
         compounds = self.compound_names_json[map]
         self.compound_labels = []
         for compound in compounds:
-            for pt in compounds[compound]:
+            for pt in compounds[compound]['corners']:
                 if 'center' in pt:
-                    x = compounds[compound]['center']['x']/100*self.size().width()
-                    y = compounds[compound]['center']['y']/100*self.size().height()
+                    center = pt['center']
+                    x = center['x']/100*self.size().width()
+                    y = center['y']/100*self.size().height()
                     if x > 0 and y > 0:
                         label = Label(compound,x=x,y=y)
                         self.compound_labels.append(label)
@@ -202,7 +208,6 @@ class MapView(QGraphicsView):
                         self.factor = 0.8
                         self.zoom *= self.factor
                         self.scale(self.factor,self.factor)
-                print(self.zoom)
             if event.type() == QEvent.Type.Enter:
                 self.setCursor(Qt.CursorShape.ArrowCursor)
                 QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)

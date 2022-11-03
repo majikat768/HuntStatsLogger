@@ -12,12 +12,12 @@ class Marker(QGraphicsEllipseItem):
         self.setBrush(self.brush)
         self.setPen(self.pen)
 
-        self.text = ("(%.0f %.0f)" % (self.x,self.y))
-        self.textBox = QGraphicsTextItem(self.text)
-        self.textBox.setFont(QFont("mono",24))
-        self.textBox.setPos(self.x,self.y)
-        self.textBox.setZValue(2)
-        self.setZValue(-1)
+        #self.text = ("(%.0f %.0f)" % (self.x,self.y))
+        #self.textBox = QGraphicsTextItem(self.text)
+        #self.textBox.setFont(QFont("mono",24))
+        #self.textBox.setPos(self.x,self.y)
+        #self.textBox.setZValue(2)
+        self.setZValue(1)
 
     def toggle(self):
         if self.zValue() > 0:

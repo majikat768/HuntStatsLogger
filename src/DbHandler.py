@@ -69,11 +69,14 @@ def create_tables():
 
 
 
-def execute_query(query):
+def execute_query(query,opts=None):
     conn = sqlite3.connect(database)
     cursor = conn.cursor()
     try:
-        cursor.execute(query)
+        if opts != None:
+            cursor.execute(query,opts)
+        else:
+            cursor.execute(query)
         return cursor.fetchall()
     except Exception as e:
         print('execute_query')
@@ -120,7 +123,6 @@ def GetTopKilled():
         res = { cols[i] : vals[0][i] for i in range(len(cols))}
         return res
     return {}
-
 
 def GetTopNHunters(n):
     cols = ['frequency','name', 'profileid', 'mmr','killedme','killedbyme']
@@ -248,6 +250,36 @@ def GetTeams(timestamp):
         print("dbhandler.getteams")
         print(e)
     return teams
+
+def GetHunterByName(name):
+    res = execute_query("select profileid from 'hunters' where blood_line_name is ? collate nocase limit 1", [name])
+    if len(res) > 0:
+        return GetHunterByProfileId(res[0][0])
+    return []
+
+def GetHunterByProfileId(pid):
+    vals = execute_query("select * from 'hunters' where profileid is %d" % pid)
+    cols = execute_query("pragma table_info('hunters')")
+    res = []
+    try:
+        for v in vals:
+            res.append({cols[i][1] : v[i] for i in range(len(cols))})
+    except Exception as e:
+        print('dbhandler.gethunterbyname')
+        print(e)
+    return res
+
+def GetHunterKills(pid):
+    vals = execute_query("select sum(downedme + killedme) as killedby, sum(downedbyme + killedbyme) as killed from 'hunters' where profileid is %d" % pid)
+    cols = ['killedby','killed']
+    res = []
+    try:
+        for v in vals:
+            res.append({cols[i] : v[i] for i in range(len(cols))})
+    except Exception as e:
+        print('dbhandler.gethunterkills')
+        print(e)
+    return res
 
 def GetHunters(timestamp):
     hVals = execute_query("select * from 'hunters' where timestamp is %s" % timestamp)

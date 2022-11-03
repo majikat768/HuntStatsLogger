@@ -11,6 +11,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.mainframe)
         self.setStatusBar(QStatusBar())
         self.statusBar().font().setPixelSize(16)
+        self.statusBar().setSizeGripEnabled(True)
 
 
     def setStatus(self,msg):

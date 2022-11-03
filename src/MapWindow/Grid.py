@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QWidget
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QPen, QColor
-import typing
 
 class Grid(QGraphicsItem):
     def __init__(self, size=0, n=0, parent=None) -> None:

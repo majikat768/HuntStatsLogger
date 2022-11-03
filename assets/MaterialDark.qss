@@ -9,7 +9,10 @@ Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 * {
 }
 QWidget {
-	background: transparent
+	background:transparent;
+}
+QStackedWidget {
+	border:1px solid white;
 }
 SettingsWindow * {
     font-family: Courier New;
@@ -20,19 +23,18 @@ SettingsWindow * {
     font-family: Libre Baskerville;
     font-size:18px;
 }
-QGraphicsTextItem {
-    font-family: Courier New;
-    font-size:16px;
-}
 
 #icon {
 	border:1px solid #44ffcc;
-	height:20px;
+	padding:4px;
+	margin:0px;
 }
 
 #TeamStack {
-	border: 0px;
+	border: 0px solid #ffffff;
+	background:transparent;
 }
+
 #statusbar {
 	color:#02cf7f;
 }
@@ -57,11 +59,9 @@ QGraphicsTextItem {
 }
 #Header {
 	border: 1px solid black;
+	background-color:#1e282c;
 }
 
-#huntDetails * {
-	padding-right:192px;	
-}
 #EventPointsLabel {
 	color:#44cc88;
 	font-style:italic;
@@ -79,18 +79,40 @@ QGraphicsTextItem {
     border:1px solid black;
 }
 #teamDetails {
-	margin-left:16px;
-	border:0px;
+	border:1px solid #000000;
+	background-color: #44000000;
+	padding:16px;
+}
+
+#huntDetails {
+	background-color: #44000000;
+	border:1px solid #000000;
+	padding:0px;
+	margin:0px;
+	padding-bottom:-4px;
+}
+#huntDetails * {
+	padding:0px;
+	margin:0px;
+}
+
+#HunterWidget {
+	background: #88000000;
+}
+#HunterWidget * {
+	background: #00000000;
 }
 
 QMainWindow {
 	background-color:#1e1d23;
-    border:1px solid black;
+    border:0px solid black;
 }
+
 QGroupBox {
 	color:#cccc67;
 	font-size:24px;
 	background-color:#1e282c;
+	background-color:transparent;
 }
 QDialog {
 	background-color:#1e1d23;
@@ -102,15 +124,13 @@ QTextEdit {
 	background-color:#1e1d23;
 	color: #a9b7c6;
 }
-QListWidgetItem {
-	border: 0px solid white;
+QListView::item:selected {
+	border: 1px solid #66ffffff;
+	color:#92cf9f;
 }
 QListWidget {
 	background: transparent;
 	color:#02cf7f;
-}
-QStackedWidget {
-	border: 1px solid white;
 }
 QPlainTextEdit {
 	selection-background-color:#007b50;
@@ -146,6 +166,9 @@ QToolButton:hover{
 	color: #FFFFFF;
 	padding-bottom: 1px;
 	background-color: #1e1d23;
+}
+QScrollArea{
+	background:transparent;
 }
 QPushButton{
 	font-family:Ubuntu mono;
@@ -229,10 +252,6 @@ QLineEdit {
 QLabel {
 	color: #a9b7c6;
 	background-color:transparent;
-}
-
-#HuntDetails QLabel {
-	margin-right:16px;
 }
 
 QLCDNumber {
@@ -441,8 +460,6 @@ QStatusBar {
 	font-size:24px;
 	font-family:courier new;
 }
-QSizeGrip {
-}
 QSpinBox {
 	color: #a9b7c6;	
 	background-color: #1e1d23;
@@ -499,10 +516,6 @@ QToolBox::tab {
 QToolBox::tab:selected {
 	color: #FFFFFF;
 	background-color: #1e1d23;
-}
-QScrollArea QWidget {
-	background-color:#1e282c;
-	border-top:0px;
 }
 QSlider::groove:horizontal {
 	height: 5px;

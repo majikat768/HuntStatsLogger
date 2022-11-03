@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QSettings, QStandardPaths
 from PyQt6.QtWidgets import QLabel, QSizePolicy
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QPixmap
 
 from datetime import datetime
 import os, sys
@@ -60,9 +60,15 @@ killedByIcon = resource_path('assets/icons/killedby.png')
 killedIcon = resource_path('assets/icons/killed.png')
 teammateKilledIcon = resource_path('assets/icons/teammatekilled.png')
 killedTeammateIcon = resource_path('assets/icons/killedteammate.png')
+bountyIcon = resource_path('assets/icons/bounty.png')
+blankIcon = resource_path('assets/icons/blank.png')
+
+tab = "&nbsp;"*4
 
 def get_icon(path):
-    i = QLabel("<img src='%s'>" % path)
+    pm = QPixmap(path)
+    i = QLabel()
+    i.setPixmap(pm.scaled(32,32))
     i.setObjectName("icon")
     #i.setStyleSheet("QLabel{border:1px solid white;}")
     i.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)

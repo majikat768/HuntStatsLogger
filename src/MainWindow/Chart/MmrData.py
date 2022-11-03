@@ -1,5 +1,4 @@
 from DbHandler import GetAllMmrs
-from math import inf
 import pyqtgraph
 from DbHandler import *
 from resources import *
@@ -30,15 +29,13 @@ class MmrData():
             size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="{data}<br>MMR: {y:.0f}".format
         )
 
-        starValues = [2000,2300,2600,2750,3000,5000]
+        starValues = [0,2000,2300,2600,2750,3000,5000]
 
         self.stars = []
         for s in starValues:
             c = s/5000*255
             line = pyqtgraph.InfiniteLine(pos=s+1, angle=0, pen=pyqtgraph.mkPen("#ff000088",width=2))
-            line.label = pyqtgraph.TextItem(text="%d+: %d stars"%(s,mmr_to_stars(s)), color="#ffffff")
-            line.label.setParentItem(line)
-            line.label.setPos(0,0)
+            line.label = pyqtgraph.InfLineLabel(line,text="%d stars"%(mmr_to_stars(s)),movable=True,position=0.1)
+            #line.label.setParentItem(line)
+            #line.label.setPos(0,0)
             self.stars.append(line)
-    '''
-        '''

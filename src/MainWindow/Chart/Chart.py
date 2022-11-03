@@ -1,4 +1,3 @@
-from math import inf
 from PyQt6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QPushButton,QComboBox, QSizePolicy, QLabel
 from PyQt6.QtCore import QEvent, Qt
 import pyqtgraph

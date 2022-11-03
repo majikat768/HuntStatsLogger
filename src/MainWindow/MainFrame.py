@@ -28,7 +28,7 @@ class MainFrame(QWidget):
         settingsButton = QPushButton("Settings")
         settingsButton.clicked.connect(self.openSettings)
 
-        self.mapWindow = MapWindow()
+        self.mapWindow = MapWindow(self)
         mapsButton = QPushButton("Maps")
         mapsButton.clicked.connect(self.openMaps)
 
@@ -87,7 +87,7 @@ class MainFrame(QWidget):
 
     def openSettings(self):
         if self.settingsWindow == None:
-            self.settingsWindow = SettingsWindow(self.window())
+            self.settingsWindow = SettingsWindow(self)
         if not self.settingsWindow.isVisible():
             self.settingsWindow.show()
         else:
@@ -95,7 +95,7 @@ class MainFrame(QWidget):
 
     def openMaps(self):
         if self.mapWindow == None:
-            self.mapWindow = MapWindow(self.window())
+            self.mapWindow = MapWindow(self)
         if not self.mapWindow.isVisible():
             self.mapWindow.show()
         else:
