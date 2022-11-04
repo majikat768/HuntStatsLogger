@@ -1,4 +1,3 @@
-json/
 __pycache__/
 src/__pycache__/
 build/
@@ -7,5 +6,3 @@ huntstats.db
 logs/
 .venv/
 settings.ini
-HuntStats.exe.lnk
-hsl_files/
