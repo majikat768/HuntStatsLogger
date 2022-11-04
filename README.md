@@ -9,6 +9,9 @@
 This program was made to record hunt statistics in the game <b>Hunt: Showdown</b>.
 <br>It works by tracking changes in the attributes.xml file, which is updated after every Hunt, logging those changes to a local .json file, and uploading them to a local sqlite database.
 <p>
+Data for the beetle spawn locations in the maps is from <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2876319397">RinLove's Steam Guide</a>.
+</p>
+<p>
 App has to be running for hunts to be logged.
 </p>
 
