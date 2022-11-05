@@ -1,6 +1,4 @@
-from random import random
-import sys
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QApplication
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QApplication, QPushButton
 from PIL import Image
 import os
 import json
@@ -34,8 +32,7 @@ class MapView(QGraphicsView):
 
         self.zoom = 1
         self.factor = 1
-
-        self.ruler = Ruler()
+        self.rulerMode = False
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -43,15 +40,12 @@ class MapView(QGraphicsView):
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setMap(self.current)
 
-        self.rulerMode = False
-
     def initScene(self,w,h):
         self.scene = QGraphicsScene(0,0,w,h)
         #self.setBaseSize(w,h)
         self.setFixedSize(w,h)
         self.setScene(self.scene)
         self.scene.installEventFilter(self)
-        self.scene.addItem(self.ruler)
     
     def setMap(self,map):
         self.current = map
@@ -81,6 +75,10 @@ class MapView(QGraphicsView):
         self.InitCompoundEdges(self.current)
         self.grid = Grid(int(self.size().width()),10)
         self.scene.addItem(self.grid)
+        self.ruler = Ruler()
+        self.scene.addItem(self.ruler)
+        if self.rulerMode:
+            self.toggleRuler()
 
     def ToggleSpawnPoints(self):
         for spawn in self.spawns:
@@ -111,6 +109,9 @@ class MapView(QGraphicsView):
         self.rulerMode = not self.rulerMode
         if self.rulerMode:
             self.window().statusBar.showMessage("Click a starting point")
+            self.parent().buttons.ruler.setStyleSheet("QPushButton{border:4px solid yellow;}")
+        else:
+            self.parent().buttons.ruler.setStyleSheet("QPushButton{border:1px solid black;}")
 
     def InitSpawnPoints(self,map):
         #print('init.spawns')
@@ -208,12 +209,7 @@ class MapView(QGraphicsView):
                         self.factor = 0.8
                         self.zoom *= self.factor
                         self.scale(self.factor,self.factor)
-            if event.type() == QEvent.Type.Enter:
-                self.setCursor(Qt.CursorShape.ArrowCursor)
-                QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
 
-        elif obj == self:
-            pass
         elif type(obj) == Marker:
             print("event",obj)
         return True
@@ -228,6 +224,16 @@ class MapView(QGraphicsView):
             self.zoom *= self.factor
             self.scale(self.factor,self.factor)
 
+    def enterEvent(self, event) -> None:
+        if not self.rulerMode:
+            QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
+        else:
+            QApplication.setOverrideCursor(Qt.CursorShape.CrossCursor)
+        return super().enterEvent(event)
+
+    def leaveEvent(self, a0) -> None:
+        QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
+        return super().leaveEvent(a0)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if self.rulerMode:
@@ -244,7 +250,6 @@ class MapView(QGraphicsView):
             if type(item) == Marker:
                 pass
         self.update()
-        print(event.pos())
         return super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:

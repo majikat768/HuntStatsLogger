@@ -6,12 +6,14 @@ class Ruler(QGraphicsLineItem):
     def __init__(self):
         super().__init__()
         self.line = QLineF(-1,-1,-1,-1)
+        self.pen = QPen(QColor("#cc0000"))
+        self.pen.setStyle(Qt.PenStyle.DashLine)
+        self.pen.setWidth(4)
+        self.setPen(self.pen)
         self.setZValue(8)
         self.setLine(self.line)
-        self.setPen(QPen(QColor("#ffffff")))
 
     def setStart(self,x,y):
-        print('setstart')
         self.line.setP1(QPointF(x,y))
         self.line.setP2(QPointF(x,y))
         self.setLine(self.line)
@@ -21,10 +23,7 @@ class Ruler(QGraphicsLineItem):
         self.setLine(self.line)
 
     def moveEnd(self,x,y):
-        pen = self.pen()
-        pen.setStyle(Qt.PenStyle.DashLine)
-        pen.setDashPattern([self.length()/64,self.length()/64])
-        self.setPen(pen)
+        self.pen.setDashPattern([self.length()/64,self.length()/64])
         self.line.setP2(QPointF(x,y))
         self.setLine(self.line)
         self.scene().update()

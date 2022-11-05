@@ -13,5 +13,11 @@ class MapWindow(QMainWindow):
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
 
+    def show(self) -> None:
+        p_pos = self.parent().window().pos()
+        self.move(p_pos.x()+32,p_pos.y()+32)
+
+        return super().show()
+
     def wheelEvent(self, a0) -> None:
         return 

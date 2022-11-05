@@ -213,16 +213,19 @@ class TeamDetails(QGroupBox):
 
             self.teamStack.addWidget(tab)
 
-            if isQp:
-                if hadWellspring:
-                    item = QListWidgetItem(QtGui.QIcon(bountyIcon),"%s - %d" % (name,teamMmr))
-                else:
-                    item = QListWidgetItem(QtGui.QIcon(blankIcon),"%s - %d" % (name,teamMmr))
+            if hadKills:
+                icon = QtGui.QIcon(deadIcon)
+            elif hadWellspring or hadbounty:
+                icon = QtGui.QIcon(bountyIcon)
             else:
-                if hadbounty:
-                    item = QListWidgetItem(QtGui.QIcon(bountyIcon),"%s hunters - %d" % (len(teamhunters),teamMmr))
-                else:
-                    item = QListWidgetItem(QtGui.QIcon(blankIcon),"%s hunters - %d" % (len(teamhunters),teamMmr))
+                icon = QtGui.QIcon(blankIcon)
+            if isQp:
+                if len(name) > 10:
+                    name = name[0:7] + '...'
+                title = "%s - %d" % (name,teamMmr)
+            else:
+                title = "%s hunters - %d" % (len(teamhunters),teamMmr)
+            item = QListWidgetItem(QtGui.QIcon(icon),title)
             self.teamList.insertItem(i,item)
         self.teamList.setCurrentRow(0)
         #self.teamList.setFixedHeight(self.teamList.sizeHint().height())
