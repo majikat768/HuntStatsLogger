@@ -63,7 +63,7 @@ killedTeammateIcon = resource_path('assets/icons/killedteammate.png')
 bountyIcon = resource_path('assets/icons/bounty.png')
 blankIcon = resource_path('assets/icons/blank.png')
 
-tab = "&nbsp;"*4
+tab = " "*4
 
 def get_icon(path):
     pm = QPixmap(path)

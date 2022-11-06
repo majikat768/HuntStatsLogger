@@ -72,7 +72,7 @@ class MainFrame(QWidget):
         self.huntsTab.update()
         self.huntersTab.update()
         self.chartTab.update()
-        self.window().adjustSize()
+        #self.window().adjustSize()
 
 
     def StartLogger(self):

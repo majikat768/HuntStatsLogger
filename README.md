@@ -39,3 +39,5 @@ $ pip install -r requirements.txt;  python ./src/main.py
 ```
 
 Alternatively, right click on <b>startapp.ps1</b> and choose <b>Run with PowerShell</b>, which will automatically execute the above command.
+
+( I'm not associated with Crytek or Hunt Showdown in any way. This program is free and open source software. )
