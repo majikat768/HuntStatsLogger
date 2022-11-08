@@ -74,7 +74,6 @@ class MainFrame(QWidget):
         self.chartTab.update()
         #self.window().adjustSize()
 
-
     def StartLogger(self):
         thread = QThread(parent=self)
         self.logger.moveToThread(thread)

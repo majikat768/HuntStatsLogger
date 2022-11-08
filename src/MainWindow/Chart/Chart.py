@@ -51,11 +51,20 @@ class Chart(QWidget):
         self.legend.clear()
         data = self.dataSelect.currentText()
         try:
-            self.dataSelections[data]()
+            plots = self.dataSelections[data]()
+            for plot in plots:
+                plot.sigClicked.connect(self.clickHandle)
         except Exception as e:
             print('setdata')
             print(e)
-            return
+
+    def clickHandle(self,plot,spots):
+        ts = spots[0].data()
+        mainframe = self.window().mainframe
+        huntsTab = mainframe.huntsTab
+        mainframe.tabs.setCurrentWidget(huntsTab)
+        huntsTab.HuntSelect.setCurrentIndex(huntsTab.HuntSelect.findData(ts))
+        huntsTab.updateDetails()
 
     def initUI(self):
         self.initTools()
@@ -95,6 +104,7 @@ class Chart(QWidget):
         self.graph.setYRange(kda.minKda - 0.1, kda.maxKda + 0.1)
         self.graph.setXRange(max(-1,len(kda.line.xData)-20),len(kda.line.xData))
         self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(kda.line.xData))
+        return [kda.qpPoints, kda.bhPoints]
 
     def initKillsGraph(self):
         kills = KillsData()
@@ -127,6 +137,7 @@ class Chart(QWidget):
         self.graph.setYRange(mmr.minMmr - 400, mmr.maxMmr + 400)
         self.graph.setXRange(max(-1,len(mmr.line.xData)-20),len(mmr.line.xData))
         self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(mmr.line.xData))
+        return [mmr.qpPoints,mmr.bhPoints]
 
     def eventFilter(self,obj,event):
         if event.type() == QEvent.Type.GraphicsSceneWheel:

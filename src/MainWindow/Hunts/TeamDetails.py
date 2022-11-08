@@ -85,7 +85,7 @@ class TeamDetails(QGroupBox):
             self.teamStack.removeWidget(self.teamStack.currentWidget())
 
         isQp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
-
+        teamItems = {}
         for i in range(len(teams)):
             hadKills = False
             team = teams[i]
@@ -107,6 +107,7 @@ class TeamDetails(QGroupBox):
             teamhunters = HuntersOnTeam(hunters,team)
             hadbounty = 0
             bountyextracted = 0
+            ownTeam = False
 
             hunterNames = []
             for j in range(len(teamhunters)):
@@ -115,6 +116,8 @@ class TeamDetails(QGroupBox):
                 hunterWidget.layout = QVBoxLayout()
                 hunterWidget.setLayout(hunterWidget.layout)
                 name = hunter['blood_line_name']
+                if name.lower() == settings.value("steam_name").lower():
+                    ownTeam = True
                 if isQp:
                     teamLabel.setText("%s<br>" % name)
                 nameLabel = QLabel(hunter['blood_line_name'])
@@ -141,7 +144,6 @@ class TeamDetails(QGroupBox):
                     hunter['killedbyteammate'],
                     hunter['downedbyteammate']
                 ]
-
 
                 hunterWidget.layout.addWidget(nameLabel)
                 hunterWidget.layout.addWidget(mmrLabel)
@@ -212,8 +214,9 @@ class TeamDetails(QGroupBox):
             tab.layout.setColumnStretch(tab.layout.columnCount(),1)
 
             self.teamStack.addWidget(tab)
-
-            if hadKills:
+            if ownTeam:
+                icon = QtGui.QIcon(livedIcon)
+            elif hadKills:
                 icon = QtGui.QIcon(deadIcon)
             elif hadWellspring or hadbounty:
                 icon = QtGui.QIcon(bountyIcon)
@@ -226,7 +229,11 @@ class TeamDetails(QGroupBox):
             else:
                 title = "%s hunters - %d" % (len(teamhunters),teamMmr)
             item = QListWidgetItem(QtGui.QIcon(icon),title)
-            self.teamList.insertItem(i,item)
+            #self.teamList.insertItem(i,item)
+            teamItems[i] = {'item':item,'widget':tab}
+        for i in teamItems:
+            self.teamList.insertItem(i,teamItems[i]['item'])
+            self.teamStack.addWidget(teamItems[i]['widget'])
         self.teamList.setCurrentRow(0)
         #self.teamList.setFixedHeight(self.teamList.sizeHint().height())
         self.teamsArea.setMinimumHeight(int(self.teamStack.sizeHint().height()*1.1))

@@ -53,10 +53,11 @@ class Hunts(QWidget):
             return
         qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
         monsters_killed = {}
-        team_kills = {i : 0 for i in range(6)}
-        your_kills = {i : 0 for i in range(6)}
-        your_deaths = {i : 0 for i in range(6)}
+        team_kills = {i+1 : 0 for i in range(6)}
+        your_kills = {i+1 : 0 for i in range(6)}
+        your_deaths = {i+1 : 0 for i in range(6)}
         assists = 0
+
         your_total_kills = execute_query("select downedbyme+killedbyme,mmr from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0)" % hunt['timestamp'])
         your_total_deaths = execute_query("select downedme+killedme,mmr from 'hunters' where timestamp is %d and (downedme > 0 or killedme > 0)" % hunt['timestamp'])
         for k in your_total_kills:

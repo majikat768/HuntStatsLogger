@@ -21,12 +21,16 @@ class MmrData():
             i += 1
         self.line = pyqtgraph.PlotDataItem(data,pen="#ffffff88")
         self.qpPoints = pyqtgraph.ScatterPlotItem(
-            [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'true'],
-            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#00ffff",name="Quick Play",tip="{data}<br>MMR: {y:.0f}".format
+            [{
+                'x': pt['x'],
+                'y': pt['y'],
+                'data':pt['ts']
+            } for pt in data if pt['qp'] == 'true'],
+            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#00ffff",name="Quick Play",tip="MMR: {y:.0f}".format
         )
         self.bhPoints = pyqtgraph.ScatterPlotItem(
-            [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'false'],
-            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="{data}<br>MMR: {y:.0f}".format
+            [{'x': pt['x'], 'y': pt['y'], 'data':pt['ts']} for pt in data if pt['qp'] == 'false'],
+            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="MMR: {y:.0f}".format
         )
 
         starValues = [0,2000,2300,2600,2750,3000,5000]
