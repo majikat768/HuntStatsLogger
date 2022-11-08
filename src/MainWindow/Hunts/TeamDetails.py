@@ -231,10 +231,12 @@ class TeamDetails(QGroupBox):
             item = QListWidgetItem(QtGui.QIcon(icon),title)
             #self.teamList.insertItem(i,item)
             teamItems[i] = {'item':item,'widget':tab}
+
         for i in teamItems:
             self.teamList.insertItem(i,teamItems[i]['item'])
             self.teamStack.addWidget(teamItems[i]['widget'])
         self.teamList.setCurrentRow(0)
+
         #self.teamList.setFixedHeight(self.teamList.sizeHint().height())
         self.teamsArea.setMinimumHeight(int(self.teamStack.sizeHint().height()*1.1))
         self.teamsArea.setMinimumWidth(int(self.teamStack.sizeHint().width()*1.1))
