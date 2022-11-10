@@ -20,7 +20,7 @@ class MmrData():
             data.append({'x':i,'y':mmr, 'qp':qp, 'ts':ts})
             i += 1
         prediction = predictNextMmr()
-        data.append({'x':GetTotalHuntCount()-1,'y':prediction,'qp':None, 'ts':GetLastHuntTimestamp()})
+        data.append({'x':GetTotalHuntCount(),'y':prediction,'qp':None, 'ts':GetLastHuntTimestamp()})
         self.line = pyqtgraph.PlotDataItem(data,pen="#ffffff88")
         self.qpPoints = pyqtgraph.ScatterPlotItem(
             [{
@@ -34,7 +34,7 @@ class MmrData():
             [{'x': pt['x'], 'y': pt['y'], 'data':pt['ts']} for pt in data if pt['qp'] == 'false'],
             size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="MMR: {y:.0f}".format
         )
-        spots = [{'x':GetTotalHuntCount()-1,'y':prediction,'data':GetLastHuntTimestamp()}]
+        spots = [{'x':GetTotalHuntCount(),'y':prediction,'data':GetLastHuntTimestamp()}]
         self.nextPoint = pyqtgraph.ScatterPlotItem(spots,size=12,hoverable=True,hoverSize=16,symbol='t1',pen="#ffffff",brush="#000000",tip="Predicted MMR: {y:.0f}".format)
 
         starValues = [0,2000,2300,2600,2750,3000,5000]
