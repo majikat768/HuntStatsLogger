@@ -32,10 +32,15 @@ class TeamDetails(QGroupBox):
         self.yourKills = QLabel()
         self.yourAssists = QLabel()
         self.yourDeaths = QLabel()
+        self.mmrChange = QLabel()
+        self.mmrChange.setWordWrap(True)
         self.killsData.layout.addWidget(self.teamKills)
         self.killsData.layout.addWidget(self.yourKills)
         self.killsData.layout.addWidget(self.yourDeaths)
         self.killsData.layout.addWidget(self.yourAssists)
+        self.killsData.layout.addWidget(QLabel())
+        self.killsData.layout.addWidget(self.mmrChange)
+
 
         self.layout.addWidget(self.teamList,0,0,1,1)
         self.layout.addWidget(self.killsData,1,0,1,1)
@@ -116,7 +121,7 @@ class TeamDetails(QGroupBox):
                 hunterWidget.layout = QVBoxLayout()
                 hunterWidget.setLayout(hunterWidget.layout)
                 name = hunter['blood_line_name']
-                if name.lower() == settings.value("steam_name").lower():
+                if name.lower() == settings.value("steam_name","").lower():
                     ownTeam = True
                 if isQp:
                     teamLabel.setText("%s<br>" % name)
@@ -223,12 +228,15 @@ class TeamDetails(QGroupBox):
             else:
                 icon = QtGui.QIcon(blankIcon)
             if isQp:
-                if len(name) > 10:
-                    name = name[0:7] + '...'
-                title = "%s - %d" % (name,teamMmr)
+                if len(name) > 11:
+                    nickname = name[0:8] + '...'
+                else:
+                    nickname = name
+                title = "%s - %d" % (nickname,teamMmr)
             else:
                 title = "%s hunters - %d" % (len(teamhunters),teamMmr)
             item = QListWidgetItem(QtGui.QIcon(icon),title)
+            item.setToolTip(name)
             #self.teamList.insertItem(i,item)
             teamItems[i] = {'item':item,'widget':tab}
 
@@ -277,3 +285,4 @@ class ItemDelegate(QStyledItemDelegate):
     def paint(self,painter,option,index):
         option.decorationPosition = QStyleOptionViewItem.Position.Right
         super(ItemDelegate,self).paint(painter,option,index)
+

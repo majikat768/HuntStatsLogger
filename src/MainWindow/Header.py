@@ -44,16 +44,20 @@ class Header(QGroupBox):
         self.bestMmr.setText("Best: %d" % GetBestMmr())
 
     def updateKdaBox(self):
-        gameTypeCondition = ""
+        timeRange = int(settings.value("kda_range","-1"))
+        earliest = 0
+        if timeRange > -1:
+            earliest = int(time.time() - timeRange)
+        condition = "where ts > %d" % earliest
         if self.gameTypeButton.text() != "All Hunts":
             if self.gameTypeButton.text() == "Quick Play":
-                gameTypeCondition = "where MissionBagIsQuickPlay is 'true'"
+                condition += " and MissionBagIsQuickPlay is 'true'"
             else:
-                gameTypeCondition = "where MissionBagIsQuickPlay is 'false'"
+                condition += " and MissionBagIsQuickPlay is 'false'"
 
-        kData = execute_query("select downedbyme + killedbyme from 'hunters' join 'games' on 'hunters'.game_id = 'games'.game_id %s" % gameTypeCondition)
-        dData = execute_query("select downedme + killedme from 'hunters' join 'games' on 'hunters'.game_id = 'games'.game_id %s" % gameTypeCondition)
-        aData = execute_query("select amount from (select amount, MissionBagIsQuickPlay from 'entries' join 'games' on 'games'.game_id = 'entries'.game_id where category is 'accolade_players_killed_assist') %s" % gameTypeCondition)
+        kData = execute_query("select downedbyme + killedbyme, 'hunters'.timestamp as ts from 'hunters' join 'games' on 'hunters'.game_id = 'games'.game_id %s" % condition)
+        dData = execute_query("select downedme + killedme, 'hunters'.timestamp as ts from 'hunters' join 'games' on 'hunters'.game_id = 'games'.game_id %s" % (condition))
+        aData = execute_query("select amount from (select amount, 'entries'.timestamp as ts, MissionBagIsQuickPlay from 'entries' join 'games' on 'games'.game_id = 'entries'.game_id where category is 'accolade_players_killed_assist') %s" % (condition))
 
         kills = sum(k[0] for k in kData) 
         deaths = max(1,sum(d[0] for d in dData))

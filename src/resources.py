@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QLabel, QSizePolicy
 from PyQt6.QtGui import QPixmap
 
 from datetime import datetime
+import time
 import os, sys
 
 app_data_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation),'hsl_files2')
