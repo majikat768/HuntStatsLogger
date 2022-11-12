@@ -12,7 +12,7 @@ from MainWindow.MainWindow import MainWindow
 
 
 if __name__ == '__main__':
-    if int(platform.release()) >= 8:
+    if platform.system() == "Windows" and int(platform.release()) >= 8:
         ctypes.windll.shcore.SetProcessDpiAwareness(True)
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 
