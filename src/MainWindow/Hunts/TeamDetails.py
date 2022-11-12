@@ -121,6 +121,9 @@ class TeamDetails(QGroupBox):
                 hunterWidget.layout = QVBoxLayout()
                 hunterWidget.setLayout(hunterWidget.layout)
                 name = hunter['blood_line_name']
+                pid = hunter['profileid']
+                n_games = execute_query("select count(*) from 'hunters' where profileid is %d" % pid)
+                n_games = 0 if len(n_games) == 0 else n_games[0][0]
                 if name.lower() == settings.value("steam_name","").lower():
                     ownTeam = True
                 if isQp:
@@ -131,6 +134,9 @@ class TeamDetails(QGroupBox):
                 mmrLabel = QLabel("%d" % mmr)
                 stars = "<img src='%s'>" % (star_path())*mmr_to_stars(mmr)
                 starsLabel = QLabel("%s" % stars)
+                n_gamesLabel = QLabel()
+                if n_games > 1:
+                    n_gamesLabel.setText("seen in %d games" % n_games)
                 bountypickedup = hunter['bountypickedup']
                 if bountypickedup:
                     hadbounty = 1
@@ -153,6 +159,7 @@ class TeamDetails(QGroupBox):
                 hunterWidget.layout.addWidget(nameLabel)
                 hunterWidget.layout.addWidget(mmrLabel)
                 hunterWidget.layout.addWidget(starsLabel)
+                hunterWidget.layout.addWidget(n_gamesLabel)
                 iconWidget = QWidget()
                 iconWidget.layout = QHBoxLayout()
                 iconWidget.setLayout(iconWidget.layout)
