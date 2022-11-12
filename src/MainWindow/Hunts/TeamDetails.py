@@ -122,7 +122,6 @@ class TeamDetails(QGroupBox):
                 hunterWidget.setLayout(hunterWidget.layout)
                 name = hunter['blood_line_name']
                 if name.lower() == settings.value("steam_name","").lower():
-
                     ownTeam = True
                 if isQp:
                     teamLabel.setText("%s<br>" % name)
