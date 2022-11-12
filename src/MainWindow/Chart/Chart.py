@@ -63,7 +63,11 @@ class Chart(QWidget):
         mainframe = self.window().mainframe
         huntsTab = mainframe.huntsTab
         mainframe.tabs.setCurrentWidget(huntsTab)
-        huntsTab.HuntSelect.setCurrentIndex(huntsTab.HuntSelect.findData(ts))
+        idx = huntsTab.HuntSelect.findData(ts)
+        if idx < huntsTab.HuntSelect.count():
+            huntsTab.HuntSelect.setCurrentIndex(idx+1)
+        else:
+            huntsTab.HuntSelect.setCurrentIndex(idx)
         huntsTab.updateDetails()
 
     def initUI(self):
@@ -102,8 +106,8 @@ class Chart(QWidget):
         self.legend.addItem(kda.qpPoints,name=kda.qpPoints.opts['name'])
         self.legend.addItem(kda.bhPoints,name=kda.bhPoints.opts['name'])
         self.graph.setYRange(kda.minKda - 0.1, kda.maxKda + 0.1)
-        self.graph.setXRange(max(-1,len(kda.line.xData)-20),len(kda.line.xData))
-        self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(kda.line.xData))
+        self.graph.setXRange(max(-1,len(kda.line.xData)-20),len(kda.line.xData)+5)
+        self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(kda.line.xData)+5)
         return [kda.qpPoints, kda.bhPoints]
 
     def initKillsGraph(self):
@@ -118,14 +122,15 @@ class Chart(QWidget):
         self.legend.addItem(kills.qpPoints,name=kills.qpPoints.opts['name'])
         self.legend.addItem(kills.bhPoints,name=kills.bhPoints.opts['name'])
         self.graph.setYRange(-1,kills.maxKills+1)
-        self.graph.setXRange(max(-1,len(kills.line.xData)-20),len(kills.line.xData))
-        self.graph.setLimits(xMin=0,yMin=-1,yMax=kills.maxKills+1,xMax=len(kills.line.xData))
+        self.graph.setXRange(max(-1,len(kills.line.xData)-20),len(kills.line.xData)+5)
+        self.graph.setLimits(xMin=0,yMin=-1,yMax=kills.maxKills+1,xMax=len(kills.line.xData)+5)
 
     def initMmrGraph(self):
         mmr = MmrData()
         self.graph.addItem(mmr.line)
         self.graph.addItem(mmr.qpPoints)
         self.graph.addItem(mmr.bhPoints)
+        self.graph.addItem(mmr.nextPoint)
         for line in mmr.stars:
             self.graph.addItem(line)
 
@@ -135,9 +140,9 @@ class Chart(QWidget):
         self.legend.addItem(mmr.qpPoints,name=mmr.qpPoints.opts['name'])
         self.legend.addItem(mmr.bhPoints,name=mmr.bhPoints.opts['name'])
         self.graph.setYRange(mmr.minMmr - 400, mmr.maxMmr + 400)
-        self.graph.setXRange(max(-1,len(mmr.line.xData)-20),len(mmr.line.xData))
-        self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(mmr.line.xData))
-        return [mmr.qpPoints,mmr.bhPoints]
+        self.graph.setXRange(max(-1,len(mmr.line.xData)-20),len(mmr.line.xData)+5)
+        self.graph.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(mmr.line.xData)+5)
+        return [mmr.qpPoints,mmr.bhPoints,mmr.nextPoint]
 
     def eventFilter(self,obj,event):
         if event.type() == QEvent.Type.GraphicsSceneWheel:

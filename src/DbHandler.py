@@ -135,8 +135,8 @@ def GetTopNHunters(n):
             )
     return results
 
-def GetHunts():
-    vals = execute_query("select * from 'games' order by timestamp desc")
+def GetHunts(earliest=0):
+    vals = execute_query("select * from 'games' where timestamp > %s order by timestamp desc" % earliest)
     cols = execute_query("pragma table_info('games')")
     try:
         return [ { cols[i][1] : hunt[i] for i in range(len(cols)) } for hunt in vals]
@@ -305,9 +305,73 @@ def GetAllMmrs(name = settings.value('steam_name')):
     return res
 
 def GetGameTypes():
+    earliest = 0
+    timeRange = int(settings.value("kda_range","-1"))
+    if timeRange > -1:
+        earliest = int(time.time() - timeRange)
     cols = ['timestamp', 'MissionBagIsQuickplay']
-    vals = execute_query("select %s from 'games' order by timestamp asc" % ','.join(cols))
+    vals = execute_query("select %s from 'games' where timestamp > %s order by timestamp asc" % (','.join(cols),earliest))
     res = {}
     for v in vals:
         res[v[0]] = v[1]
     return res
+
+
+def predictNextMmr(currentMmr = GetCurrentMmr(), currentTs = GetLastHuntTimestamp()):
+    predictedMmr = 0
+    predictedChange = 0
+    your_total_kills = execute_query("select downedbyme+killedbyme,mmr from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0)" % currentTs)
+    your_total_deaths = execute_query("select downedme+killedme,mmr from 'hunters' where timestamp is %d and (downedme > 0 or killedme > 0)" % currentTs)
+    your_kills = {}
+    your_deaths = {}
+    assists = execute_query("select amount from 'entries' where category is 'accolade_players_killed_assist' and timestamp is %d" % currentTs)
+    assists = 0 if len(assists) == 0 else assists[0][0]
+    for h in your_total_kills:
+        kills = h[0]
+        mmr = h[1]
+        if mmr not in your_kills:
+            your_kills[mmr] = 0
+        your_kills[mmr] += kills
+    for h in your_total_deaths:
+        deaths = h[0]
+        mmr = h[1]
+        if mmr not in your_deaths:
+            your_deaths[mmr] = 0
+        your_deaths[mmr] += deaths 
+
+    for mmr in your_kills:
+        mmrDiff = mmr - currentMmr
+        starDiff = mmr_to_stars(mmr) - mmr_to_stars(currentMmr)
+        if starDiff > 0:
+            print('killed %d higher' % mmrDiff)
+            change = (starDiff * mmrDiff/10.0) * your_kills[mmr]
+        elif starDiff < 0:
+            print('killed %d lower' % mmrDiff)
+            change = (1/starDiff * mmrDiff/20.0) * your_kills[mmr]
+        elif starDiff == 0:
+            print('killed same - %d' % mmrDiff)
+            change = (mmrDiff/10.0) * your_kills[mmr]
+        print('%+f' % change)
+        if assists > 0:
+            change = change + assists
+        predictedChange += change
+
+    for mmr in your_deaths:
+        mmrDiff = mmr - currentMmr
+        starDiff = mmr_to_stars(mmr) - mmr_to_stars(currentMmr)
+        if starDiff < 0:
+            print('died to %d lower' % mmrDiff)
+            change = (-1/starDiff * mmrDiff/10.0) * your_deaths[mmr]
+        elif starDiff > 0:
+            print('died to %d higher' % mmrDiff)
+            change = (-0.5/starDiff * mmrDiff/30.0) * your_deaths[mmr]
+        elif starDiff == 0:
+            print('died to same - %d' % mmrDiff)
+            change = (-mmrDiff/20.0) * your_deaths[mmr]
+        print('%+f' % change)
+        if assists > 0:
+            change = change + assists
+        predictedChange += change
+    predictedMmr = currentMmr + predictedChange
+    print('predict',predictedChange,predictedMmr)
+    return predictedMmr

@@ -128,9 +128,13 @@ QListView::item:selected {
 	border: 1px solid #66ffffff;
 	color:#92cf9f;
 }
+QListView::item {
+	font-family: Courier New;
+}
 QListWidget {
 	background: transparent;
 	color:#02cf7f;
+	font-family: Courier New;
 }
 QPlainTextEdit {
 	selection-background-color:#007b50;

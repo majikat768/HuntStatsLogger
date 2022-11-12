@@ -15,7 +15,6 @@ class KdaData():
         kda = 0.0
         data = []
 
-        timestamps = execute_query("select timestamp from 'games'")
         GameTypes = GetGameTypes()
 
         i = 0
