@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QMainWindow, QStatusBar
 from MainWindow.MainFrame import MainFrame
 from resources import settings
 
+
 class MainWindow(QMainWindow):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -14,11 +15,18 @@ class MainWindow(QMainWindow):
         self.statusBar().font().setPixelSize(16)
         self.statusBar().setSizeGripEnabled(True)
 
-        if settings.value("window_position","") != "":
+        if settings.value("window_position", "") != "":
             self.move(settings.value("window_position"))
+        if settings.value("window_size", "") != "":
+            size = settings.value("window_size")
+            self.setGeometry(
+                self.pos().x(),
+                self.pos().y(),
+                size.width(),
+                size.height()
+            )
 
-
-    def setStatus(self,msg):
+    def setStatus(self, msg):
         self.statusBar().showMessage(msg)
 
     def closeEvent(self, a0):
@@ -27,5 +35,6 @@ class MainWindow(QMainWindow):
         if self.mainframe.mapWindow:
             self.mainframe.mapWindow.close()
         self.mainframe.logger.running = False
-        settings.setValue("window_position",self.pos())
+        settings.setValue("window_position", self.pos())
+        settings.setValue("window_size", self.size())
         return super().closeEvent(a0)

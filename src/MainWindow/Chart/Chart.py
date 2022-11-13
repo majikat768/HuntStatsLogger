@@ -93,7 +93,6 @@ class Chart(QScrollArea):
         self.main.layout.addWidget(self.graphWidget)
         self.main.layout.addWidget(
             QLabel("Use scroll wheel to zoom y axis; Shift+scroll to zoom x axis."))
-        self.main.layout.addStretch()
 
     def update(self):
         self.legend.clear()

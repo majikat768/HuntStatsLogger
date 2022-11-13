@@ -37,9 +37,6 @@ class Hunts(QScrollArea):
         self.main.layout.addWidget(self.HuntSelect)
         self.main.layout.addWidget(self.huntDetails)
         self.main.layout.addWidget(self.teamDetails)
-        self.main.layout.addStretch()
-        self.main.setSizePolicy(
-            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         self.setWidget(self.main)
         # self.layout.addWidget(self.buttonsContainer)
         # self.layout.addStretch()

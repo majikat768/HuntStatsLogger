@@ -19,27 +19,22 @@ class TeamDetails(QGroupBox):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         self.teamStack = QStackedWidget()
-        self.teamStack.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.teamStack.setObjectName("TeamStack")
 
         self.teamList = QListWidget()
         self.teamList.setItemDelegate(ItemDelegate())
         self.teamList.currentRowChanged.connect(self.switchTeamWidget)
-        self.teamList.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.killsData = QGroupBox()
         self.killsData.layout = QVBoxLayout()
         self.killsData.setLayout(self.killsData.layout)
-        self.killsData.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
 
         self.layout.addWidget(self.teamList, 0, 0, 1, 1)
         self.layout.addWidget(self.killsData, 1, 0, 1, 1)
-        self.layout.addWidget(self.teamStack, 0, 1, 2, 3)
+        self.layout.addWidget(self.teamStack, 0, 1, 2, 4)
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.layout.setColumnStretch(1, 1)
 
     def update(self, teams, hunters, hunt, kills):
         qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
@@ -58,7 +53,6 @@ class TeamDetails(QGroupBox):
                     ) for stars in team_kills.keys() if team_kills[stars] > 0])
                 )
             )
-            teamKills.setFixedHeight(teamKills.sizeHint().height())
             self.killsData.layout.addWidget(teamKills)
 
         yourKills = QLabel(
@@ -70,11 +64,9 @@ class TeamDetails(QGroupBox):
                 ) for stars in your_kills.keys() if your_kills[stars] > 0])
             )
         )
-        yourKills.setFixedHeight(yourKills.sizeHint().height())
         self.killsData.layout.addWidget(yourKills)
 
         yourAssists = QLabel("%d assists." % assists)
-        yourAssists.setFixedHeight(yourAssists.sizeHint().height())
         self.killsData.layout.addWidget(yourAssists)
 
         yourDeaths = QLabel(
@@ -86,11 +78,7 @@ class TeamDetails(QGroupBox):
                 ) for stars in your_deaths.keys() if your_deaths[stars] > 0])
             )
         )
-        yourDeaths.setFixedHeight(yourDeaths.sizeHint().height())
         self.killsData.layout.addWidget(yourDeaths)
-        self.killsData.layout.addStretch()
-        print(self.killsData.sizeHint())
-        self.killsData.adjustSize()
 
         self.teamList.clear()
         while self.teamStack.count() > 0:
