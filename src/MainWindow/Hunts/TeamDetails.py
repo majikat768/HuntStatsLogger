@@ -32,37 +32,24 @@ class TeamDetails(QGroupBox):
         self.killsData = QGroupBox()
         self.killsData.layout = QVBoxLayout()
         self.killsData.setLayout(self.killsData.layout)
-        self.teamKills = QLabel()
-        self.yourKills = QLabel()
-        self.yourAssists = QLabel()
-        self.yourDeaths = QLabel()
-        self.mmrChange = QLabel()
-        self.mmrChange.setWordWrap(True)
-        self.killsData.layout.addWidget(self.teamKills)
-        self.killsData.layout.addWidget(self.yourKills)
-        self.killsData.layout.addWidget(self.yourDeaths)
-        self.killsData.layout.addWidget(self.yourAssists)
-        self.killsData.layout.addWidget(QLabel())
-        self.killsData.layout.addWidget(self.mmrChange)
         self.killsData.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
 
         self.layout.addWidget(self.teamList, 0, 0, 1, 1)
         self.layout.addWidget(self.killsData, 1, 0, 1, 1)
         self.layout.addWidget(self.teamStack, 0, 1, 2, 3)
         self.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        print('t', self.size())
-        print('t', self.sizeHint())
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def update(self, teams, hunters, hunt, kills):
         qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
+        clearLayout(self.killsData.layout)
         team_kills = kills['team_kills']
         your_kills = kills['your_kills']
         your_deaths = kills['your_deaths']
         assists = kills['assists']
         if not qp:
-            self.teamKills.setText(
+            teamKills = QLabel(
                 "Team kills: %d<br>%s" % (
                     sum(team_kills.values()),
                     '<br>'.join(["%sx %s" % (
@@ -71,9 +58,10 @@ class TeamDetails(QGroupBox):
                     ) for stars in team_kills.keys() if team_kills[stars] > 0])
                 )
             )
-        else:
-            self.teamKills.setText('')
-        self.yourKills.setText(
+            teamKills.setFixedHeight(teamKills.sizeHint().height())
+            self.killsData.layout.addWidget(teamKills)
+
+        yourKills = QLabel(
             "Your kills: %d<br>%s" % (
                 sum(your_kills.values()),
                 '<br>'.join(["%sx %s" % (
@@ -82,9 +70,14 @@ class TeamDetails(QGroupBox):
                 ) for stars in your_kills.keys() if your_kills[stars] > 0])
             )
         )
+        yourKills.setFixedHeight(yourKills.sizeHint().height())
+        self.killsData.layout.addWidget(yourKills)
 
-        self.yourAssists.setText("%d assists." % assists)
-        self.yourDeaths.setText(
+        yourAssists = QLabel("%d assists." % assists)
+        yourAssists.setFixedHeight(yourAssists.sizeHint().height())
+        self.killsData.layout.addWidget(yourAssists)
+
+        yourDeaths = QLabel(
             "Your deaths: %d<br>%s" % (
                 sum(your_deaths.values()),
                 '<br>'.join(["%sx %s" % (
@@ -93,6 +86,11 @@ class TeamDetails(QGroupBox):
                 ) for stars in your_deaths.keys() if your_deaths[stars] > 0])
             )
         )
+        yourDeaths.setFixedHeight(yourDeaths.sizeHint().height())
+        self.killsData.layout.addWidget(yourDeaths)
+        self.killsData.layout.addStretch()
+        print(self.killsData.sizeHint())
+        self.killsData.adjustSize()
 
         self.teamList.clear()
         while self.teamStack.count() > 0:
@@ -276,8 +274,6 @@ class TeamDetails(QGroupBox):
         self.teamList.setCurrentRow(0)
 
         # self.teamList.setFixedHeight(self.teamList.sizeHint().height())
-
-        self.setFixedHeight(self.sizeHint().height())
 
     def switchTeamWidget(self, idx):
         self.teamStack.setCurrentIndex(idx)

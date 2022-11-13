@@ -76,8 +76,8 @@ class Hunts(QScrollArea):
         currentMmr = 0 if len(currentMmr) == 0 else currentMmr[0][0]
         if currentIndex == 0:
             predictedMmr = predictNextMmr(currentMmr, currentTs)
-            self.teamDetails.mmrChange.setText(
-                'predicted MMR change:<br>%d -> %d<br>%+d' % (currentMmr, predictedMmr, predictedMmr-currentMmr))
+            self.teamDetails.killsData.layout.addWidget(QLabel(
+                'predicted MMR change:<br>%d -> %d<br>%+d' % (currentMmr, predictedMmr, predictedMmr-currentMmr)))
         else:
             predictedMmr = predictNextMmr(currentMmr, currentTs)
             self.HuntSelect.setCurrentIndex(currentIndex-1)
@@ -90,7 +90,7 @@ class Hunts(QScrollArea):
             mmrChange = nextMmr - currentMmr
             mmrOutput = "Your MMR change:<br>%d -> %d<br>%+d" % (
                 currentMmr, nextMmr, mmrChange)
-            self.teamDetails.mmrChange.setText(mmrOutput)
+            self.teamDetails.killsData.layout.addWidget(QLabel(mmrOutput))
 
     def updateDetails(self):
         ts = self.HuntSelect.currentData()
