@@ -31,7 +31,7 @@ class TeamDetails(QGroupBox):
 
         self.layout.addWidget(self.teamList, 0, 0, 1, 1)
         self.layout.addWidget(self.killsData, 1, 0, 1, 1)
-        self.layout.addWidget(self.teamStack, 0, 1, 2, 4)
+        self.layout.addWidget(self.teamStack, 0, 1, 2, 3)
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.layout.setColumnStretch(1, 1)
@@ -244,8 +244,8 @@ class TeamDetails(QGroupBox):
             else:
                 icon = QtGui.QIcon(blankIcon)
             if isQp:
-                if len(name) > 11:
-                    nickname = name[0:8] + '...'
+                if len(name) > 16:
+                    nickname = name[0:13] + '...'
                 else:
                     nickname = name
                 title = "%s - %d" % (nickname, teamMmr)
@@ -262,6 +262,7 @@ class TeamDetails(QGroupBox):
         self.teamList.setCurrentRow(0)
 
         # self.teamList.setFixedHeight(self.teamList.sizeHint().height())
+        self.teamList.setFixedWidth(int(self.teamList.sizeHint().width()*1.2))
 
     def switchTeamWidget(self, idx):
         self.teamStack.setCurrentIndex(idx)
