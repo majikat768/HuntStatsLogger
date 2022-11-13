@@ -3,11 +3,12 @@ from PyQt6.QtCore import Qt
 from resources import *
 from DbHandler import *
 
+
 class HuntDetails(QGroupBox):
-    def __init__(self,title=None):
+    def __init__(self, title=None):
         super().__init__(title)
-        #self.setWidgetResizable(True)
-        #self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # self.setWidgetResizable(True)
+        # self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.setObjectName("huntDetails")
         self.layout = QHBoxLayout()
@@ -18,33 +19,36 @@ class HuntDetails(QGroupBox):
         self.rewards = self.initRewards()
         self.monsters = self.initMonsters()
         self.layout.addWidget(self.bounties)
-        self.layout.setAlignment(self.bounties,Qt.AlignmentFlag.AlignTop)
+        self.layout.setAlignment(self.bounties, Qt.AlignmentFlag.AlignTop)
         self.layout.addStretch()
         self.layout.addWidget(self.rewards)
-        self.layout.setAlignment(self.rewards,Qt.AlignmentFlag.AlignTop)
+        self.layout.setAlignment(self.rewards, Qt.AlignmentFlag.AlignTop)
         self.layout.addStretch()
         self.layout.addWidget(self.monsters)
-        self.layout.setAlignment(self.monsters,Qt.AlignmentFlag.AlignTop)
+        self.layout.setAlignment(self.monsters, Qt.AlignmentFlag.AlignTop)
 
-        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Minimum)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,
+                           QSizePolicy.Policy.Fixed)
 
         self.setBaseSize(self.sizeHint())
-        self.setMinimumHeight(int(self.sizeHint().height()*1.1))
-    
+        self.setFixedHeight(int(self.sizeHint().height()*1.1))
+
     def initBounties(self):
         self.bounties = QLabel()
-        self.bounties.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Fixed)
+        self.bounties.setSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         return self.bounties
 
     def initRewards(self):
         self.rewards = QLabel()
-        self.rewards.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Minimum)
+        self.rewards.setSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         return self.rewards
-
 
     def initMonsters(self):
         self.monsters = QLabel()
-        self.monsters.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Minimum)
+        self.monsters.setSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         return self.monsters
 
     def updateBounties(self, qp, bounties, targets):
@@ -68,11 +72,13 @@ class HuntDetails(QGroupBox):
         self.bounties.setText("<br>".join(text))
 
     def updateRewards(self, rewardsData):
-        self.rewards.setText("Rewards:<br>%s" % ("<br>".join([tab+"%s: %s" % (k, rewardsData[k]) for k in rewardsData if rewardsData[k] > 0])))
+        self.rewards.setText("Rewards:<br>%s" % ("<br>".join(
+            [tab+"%s: %s" % (k, rewardsData[k]) for k in rewardsData if rewardsData[k] > 0])))
 
     def updateMonsters(self, monsters_killed):
         n = sum(monsters_killed.values())
-        values = [tab+"%d %s" % (monsters_killed[m], m) for m in monsters_killed if monsters_killed[m] > 0]
+        values = [tab+"%d %s" % (monsters_killed[m], m)
+                  for m in monsters_killed if monsters_killed[m] > 0]
         monsters_killed = {}
         text = "Monster kills: %d<br>%s" % (
             n,
@@ -80,15 +86,16 @@ class HuntDetails(QGroupBox):
         )
         self.monsters.setText(text)
 
-    def update(self, qp,bounties,rewards,monsters_killed,targets):
-        self.updateBounties(qp,bounties, targets)
+    def update(self, qp, bounties, rewards, monsters_killed, targets):
+        self.updateBounties(qp, bounties, targets)
         self.updateRewards(rewards)
         self.updateMonsters(monsters_killed)
         self.setFixedHeight(self.sizeHint().height())
 
-    def clearLayout(self,layout):
+    def clearLayout(self, layout):
         for i in reversed(range(layout.count())):
             layout.itemAt(i).widget().setParent(None)
+
 
 def calculateRewards(accolades, entries):
     bounty = 0
@@ -106,8 +113,8 @@ def calculateRewards(accolades, entries):
     xp += 4*bounty
     gold += bounty
     return {
-        'Hunt Dollars':gold,
-        'Blood Bonds':bb,
-        'XP':xp,
-        'Event Points':eventPoints
+        'Hunt Dollars': gold,
+        'Blood Bonds': bb,
+        'XP': xp,
+        'Event Points': eventPoints
     }

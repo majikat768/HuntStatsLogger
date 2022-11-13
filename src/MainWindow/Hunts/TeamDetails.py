@@ -1,12 +1,13 @@
-from PyQt6.QtWidgets import QWidget, QStackedWidget, QListWidget, QGroupBox, QSizePolicy, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QListWidgetItem,QStyledItemDelegate,QStyleOptionViewItem
+from PyQt6.QtWidgets import QWidget, QStackedWidget, QListWidget, QGroupBox, QSizePolicy, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QListWidgetItem, QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtCore import Qt, QEvent
 from PyQt6 import QtGui
 from resources import *
 from DbHandler import execute_query
 from Popup import Popup
 
+
 class TeamDetails(QGroupBox):
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QGridLayout()
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -14,16 +15,19 @@ class TeamDetails(QGroupBox):
 
         self.teamsArea = QWidget()
         self.setObjectName("teamDetails")
-        self.teamsArea.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
+        self.teamsArea.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         self.teamStack = QStackedWidget()
-        self.teamStack.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        self.teamStack.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.teamStack.setObjectName("TeamStack")
 
         self.teamList = QListWidget()
         self.teamList.setItemDelegate(ItemDelegate())
         self.teamList.currentRowChanged.connect(self.switchTeamWidget)
-        self.teamList.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Minimum)
+        self.teamList.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.killsData = QGroupBox()
         self.killsData.layout = QVBoxLayout()
@@ -40,11 +44,16 @@ class TeamDetails(QGroupBox):
         self.killsData.layout.addWidget(self.yourAssists)
         self.killsData.layout.addWidget(QLabel())
         self.killsData.layout.addWidget(self.mmrChange)
+        self.killsData.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
-
-        self.layout.addWidget(self.teamList,0,0,1,1)
-        self.layout.addWidget(self.killsData,1,0,1,1)
-        self.layout.addWidget(self.teamStack,0,1,2,3)
+        self.layout.addWidget(self.teamList, 0, 0, 1, 1)
+        self.layout.addWidget(self.killsData, 1, 0, 1, 1)
+        self.layout.addWidget(self.teamStack, 0, 1, 2, 3)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        print('t', self.size())
+        print('t', self.sizeHint())
 
     def update(self, teams, hunters, hunt, kills):
         qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
@@ -57,9 +66,9 @@ class TeamDetails(QGroupBox):
                 "Team kills: %d<br>%s" % (
                     sum(team_kills.values()),
                     '<br>'.join(["%sx %s" % (
-                            team_kills[stars],
-                            "<img src='%s'>"%(star_path())*stars
-                        ) for stars in team_kills.keys() if team_kills[stars] > 0])
+                        team_kills[stars],
+                        "<img src='%s'>" % (star_path())*stars
+                    ) for stars in team_kills.keys() if team_kills[stars] > 0])
                 )
             )
         else:
@@ -68,9 +77,9 @@ class TeamDetails(QGroupBox):
             "Your kills: %d<br>%s" % (
                 sum(your_kills.values()),
                 '<br>'.join(["%sx %s" % (
-                        your_kills[stars],
-                        "<img src='%s'>"%(star_path())*stars
-                    ) for stars in your_kills.keys() if your_kills[stars] > 0])
+                    your_kills[stars],
+                    "<img src='%s'>" % (star_path())*stars
+                ) for stars in your_kills.keys() if your_kills[stars] > 0])
             )
         )
 
@@ -79,9 +88,9 @@ class TeamDetails(QGroupBox):
             "Your deaths: %d<br>%s" % (
                 sum(your_deaths.values()),
                 '<br>'.join(["%sx %s" % (
-                        your_deaths[stars],
-                        "<img src='%s'>"%(star_path())*stars
-                    ) for stars in your_deaths.keys() if your_deaths[stars] > 0])
+                    your_deaths[stars],
+                    "<img src='%s'>" % (star_path())*stars
+                ) for stars in your_deaths.keys() if your_deaths[stars] > 0])
             )
         )
 
@@ -98,6 +107,8 @@ class TeamDetails(QGroupBox):
             tab = QWidget()
             tab.layout = QGridLayout()
             tab.setLayout(tab.layout)
+            tab.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
             teamLabel = QLabel("Team %d<br>" % i)
             teamMmr = team['mmr']
@@ -105,11 +116,11 @@ class TeamDetails(QGroupBox):
             nHunters = team['numplayers']
             nHuntersLabel = QLabel("Hunters: %d" % nHunters)
 
-            tab.layout.addWidget(teamLabel,0,0)
-            tab.layout.addWidget(teamMmrLabel,1,0)
-            tab.layout.addWidget(nHuntersLabel,2,0)
+            tab.layout.addWidget(teamLabel, 0, 0)
+            tab.layout.addWidget(teamMmrLabel, 1, 0)
+            tab.layout.addWidget(nHuntersLabel, 2, 0)
 
-            teamhunters = HuntersOnTeam(hunters,team)
+            teamhunters = HuntersOnTeam(hunters, team)
             hadbounty = 0
             bountyextracted = 0
             ownTeam = False
@@ -120,11 +131,14 @@ class TeamDetails(QGroupBox):
                 hunterWidget = QWidget()
                 hunterWidget.layout = QVBoxLayout()
                 hunterWidget.setLayout(hunterWidget.layout)
+                hunterWidget.setSizePolicy(
+                    QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
                 name = hunter['blood_line_name']
                 pid = hunter['profileid']
-                n_games = execute_query("select count(*) from 'hunters' where profileid is %d" % pid)
+                n_games = execute_query(
+                    "select count(*) from 'hunters' where profileid is %d" % pid)
                 n_games = 0 if len(n_games) == 0 else n_games[0][0]
-                if name.lower() == settings.value("steam_name","").lower():
+                if name.lower() == settings.value("steam_name", "").lower():
                     ownTeam = True
                 if isQp:
                     teamLabel.setText("%s<br>" % name)
@@ -167,36 +181,44 @@ class TeamDetails(QGroupBox):
                     icon = get_icon(killedByIcon)
                     icon.data = []
                     if hunter['killedme'] > 0:
-                        icon.data.append('%s killed you %d times.' % (name,hunter['killedme'])),
+                        icon.data.append('%s killed you %d times.' %
+                                         (name, hunter['killedme'])),
                     if hunter['downedme'] > 0:
-                        icon.data.append('%s downed you %d times.' % (name,hunter['downedme'])),
+                        icon.data.append('%s downed you %d times.' %
+                                         (name, hunter['downedme'])),
                     icon.installEventFilter(self)
                     iconWidget.layout.addWidget(icon)
                 if hunter['killedbyme'] > 0 or hunter['downedbyme'] > 0:
                     icon = get_icon(killedIcon)
                     icon.data = []
                     if hunter['killedbyme'] > 0:
-                        icon.data.append('You killed %s %d times.' % (name,hunter['killedbyme'])),
+                        icon.data.append('You killed %s %d times.' %
+                                         (name, hunter['killedbyme'])),
                     if hunter['downedbyme'] > 0:
-                        icon.data.append('You downed %s %d times.' % (name,hunter['downedbyme'])),
+                        icon.data.append('You downed %s %d times.' %
+                                         (name, hunter['downedbyme'])),
                     icon.installEventFilter(self)
                     iconWidget.layout.addWidget(icon)
                 if hunter['killedteammate'] > 0 or hunter['downedteammate'] > 0:
                     icon = get_icon(killedTeammateIcon)
                     icon.data = []
                     if hunter['killedteammate'] > 0:
-                        icon.data.append('%s killed your teammates %d times.' % (name,hunter['killedteammate'])),
+                        icon.data.append('%s killed your teammates %d times.' % (
+                            name, hunter['killedteammate'])),
                     if hunter['downedteammate'] > 0:
-                        icon.data.append('%s downed your teammates %d times.' % (name,hunter['downedteammate'])),
+                        icon.data.append('%s downed your teammates %d times.' % (
+                            name, hunter['downedteammate'])),
                     icon.installEventFilter(self)
                     iconWidget.layout.addWidget(icon)
                 if hunter['killedbyteammate'] > 0 or hunter['downedbyteammate'] > 0:
                     icon = get_icon(teammateKilledIcon)
                     icon.data = []
                     if hunter['killedbyteammate'] > 0:
-                        icon.data.append('Your teammates killed %s %d times.' % (name,hunter['killedbyteammate'])),
+                        icon.data.append('Your teammates killed %s %d times.' % (
+                            name, hunter['killedbyteammate'])),
                     if hunter['downedbyteammate'] > 0:
-                        icon.data.append('Your teammates downed %s %d times.' % (name,hunter['downedbyteammate'])),
+                        icon.data.append('Your teammates downed %s %d times.' % (
+                            name, hunter['downedbyteammate'])),
                     icon.installEventFilter(self)
                     iconWidget.layout.addWidget(icon)
                 if bountypickedup or hadWellspring or soulSurvivor:
@@ -211,19 +233,20 @@ class TeamDetails(QGroupBox):
                     icon.installEventFilter(self)
                     iconWidget.layout.addWidget(icon)
                 iconWidget.layout.addStretch()
-                hunterWidget.layout.addWidget(iconWidget,0,Qt.AlignmentFlag.AlignLeft)
+                hunterWidget.layout.addWidget(
+                    iconWidget, 0, Qt.AlignmentFlag.AlignLeft)
                 hunterWidget.layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-
-                tab.layout.addWidget(hunterWidget,4,j)
-                if(sum(kills) > 0):
+                tab.layout.addWidget(hunterWidget, 4, j)
+                if (sum(kills) > 0):
                     hadKills = True
 
                 hunterWidget.layout.addStretch()
             if bountyextracted:
-                tab.layout.addWidget(QLabel("Extracted with the bounty."),3,0)
-            tab.layout.setRowStretch(tab.layout.rowCount(),1)
-            tab.layout.setColumnStretch(tab.layout.columnCount(),1)
+                tab.layout.addWidget(
+                    QLabel("Extracted with the bounty."), 3, 0)
+            tab.layout.setRowStretch(tab.layout.rowCount(), 1)
+            tab.layout.setColumnStretch(tab.layout.columnCount(), 1)
 
             self.teamStack.addWidget(tab)
             if ownTeam:
@@ -239,24 +262,24 @@ class TeamDetails(QGroupBox):
                     nickname = name[0:8] + '...'
                 else:
                     nickname = name
-                title = "%s - %d" % (nickname,teamMmr)
+                title = "%s - %d" % (nickname, teamMmr)
             else:
-                title = "%s hunters - %d" % (len(teamhunters),teamMmr)
-            item = QListWidgetItem(QtGui.QIcon(icon),title)
+                title = "%s hunters - %d" % (len(teamhunters), teamMmr)
+            item = QListWidgetItem(QtGui.QIcon(icon), title)
             item.setToolTip(name)
-            #self.teamList.insertItem(i,item)
-            teamItems[i] = {'item':item,'widget':tab}
+            # self.teamList.insertItem(i,item)
+            teamItems[i] = {'item': item, 'widget': tab}
 
         for i in teamItems:
-            self.teamList.insertItem(i,teamItems[i]['item'])
+            self.teamList.insertItem(i, teamItems[i]['item'])
             self.teamStack.addWidget(teamItems[i]['widget'])
         self.teamList.setCurrentRow(0)
 
-        #self.teamList.setFixedHeight(self.teamList.sizeHint().height())
-        self.teamsArea.setMinimumHeight(int(self.teamStack.sizeHint().height()*1.1))
-        self.teamsArea.setMinimumWidth(int(self.teamStack.sizeHint().width()*1.1))
+        # self.teamList.setFixedHeight(self.teamList.sizeHint().height())
 
-    def switchTeamWidget(self,idx):
+        self.setFixedHeight(self.sizeHint().height())
+
+    def switchTeamWidget(self, idx):
         self.teamStack.setCurrentIndex(idx)
 
     def eventFilter(self, obj, event) -> bool:
@@ -268,8 +291,8 @@ class TeamDetails(QGroupBox):
             y = event.globalPosition().y()
             for d in obj.data:
                 info.layout.addWidget(QLabel(d))
-            self.popup = Popup(info,x,y)
-            #self.popup.keepAlive(True)
+            self.popup = Popup(info, x, y)
+            # self.popup.keepAlive(True)
             self.popup.show()
             self.raise_()
             self.activateWindow()
@@ -280,6 +303,7 @@ class TeamDetails(QGroupBox):
                 self.popup = None
         return super().eventFilter(obj, event)
 
+
 def HuntersOnTeam(hunters, team):
     teamhunters = []
     for hunter in hunters:
@@ -289,7 +313,6 @@ def HuntersOnTeam(hunters, team):
 
 
 class ItemDelegate(QStyledItemDelegate):
-    def paint(self,painter,option,index):
+    def paint(self, painter, option, index):
         option.decorationPosition = QStyleOptionViewItem.Position.Right
-        super(ItemDelegate,self).paint(painter,option,index)
-
+        super(ItemDelegate, self).paint(painter, option, index)

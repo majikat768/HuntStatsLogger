@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout,QHBoxLayout, QPushButton, QTabWidget
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTabWidget
 from PyQt6.QtCore import QThread
 
 from MainWindow.Header import Header
@@ -8,7 +8,7 @@ from Logger import Logger
 from resources import *
 from MainWindow.Hunts.Hunts import Hunts
 from MainWindow.Hunters import Hunters
-from MainWindow.Chart.Chart import Chart 
+from MainWindow.Chart.Chart import Chart
 
 
 class MainFrame(QWidget):
@@ -42,17 +42,16 @@ class MainFrame(QWidget):
         self.layout.addWidget(self.buttons)
 
         self.setStatus("ready.")
-        if settings.value("xml_path","") == "":
+        if settings.value("xml_path", "") == "":
             pass
-            #steamworks_init()
+            # steamworks_init()
 
-        if(settings.value("xml_path","") != ""):
+        if (settings.value("xml_path", "") != ""):
             self.StartLogger()
 
         self.update()
 
-
-    def setStatus(self,msg):
+    def setStatus(self, msg):
         self.window().setStatus(msg)
 
     def initBody(self):
@@ -65,14 +64,13 @@ class MainFrame(QWidget):
         self.tabs.addTab(self.chartTab, "Chart")
         self.layout.addWidget(self.tabs)
 
-
     def update(self):
-        #print('mainframe.update')
+        # print('mainframe.update')
         self.header.update()
         self.huntsTab.update()
         self.huntersTab.update()
         self.chartTab.update()
-        #self.window().adjustSize()
+        # self.window().adjustSize()
 
     def StartLogger(self):
         thread = QThread(parent=self)
@@ -100,5 +98,5 @@ class MainFrame(QWidget):
         else:
             self.mapWindow.raise_()
 
-    def setStatus(self,msg):
+    def setStatus(self, msg):
         self.window().setStatus(msg)
