@@ -1,9 +1,14 @@
-from PyQt6.QtWidgets import QWidget, QStackedWidget, QListWidget, QGroupBox, QSizePolicy, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QListWidgetItem, QStyledItemDelegate, QStyleOptionViewItem
-from PyQt6.QtCore import Qt, QEvent
 from PyQt6 import QtGui
-from resources import *
+from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel,
+                             QListWidget, QListWidgetItem, QSizePolicy,
+                             QStackedWidget, QStyledItemDelegate,
+                             QStyleOptionViewItem, QTreeWidget,
+                             QTreeWidgetItem, QVBoxLayout, QWidget)
+
 from DbHandler import execute_query
 from Popup import Popup
+from resources import *
 
 
 class TeamDetails(QGroupBox):
@@ -21,9 +26,12 @@ class TeamDetails(QGroupBox):
         self.teamStack = QStackedWidget()
         self.teamStack.setObjectName("TeamStack")
 
-        self.teamList = QListWidget()
+        self.teamList = QTreeWidget()
+        self.teamList.setHeaderHidden(True)
+        self.teamList.setColumnCount(2)
         self.teamList.setItemDelegate(ItemDelegate())
-        self.teamList.currentRowChanged.connect(self.switchTeamWidget)
+        self.teamList.currentItemChanged.connect(self.switchTeamWidget)
+        self.teamList.setDropIndicatorShown(False)
 
         self.killsData = QGroupBox()
         self.killsData.layout = QVBoxLayout()
@@ -31,7 +39,7 @@ class TeamDetails(QGroupBox):
 
         self.layout.addWidget(self.teamList, 0, 0, 1, 1)
         self.layout.addWidget(self.killsData, 1, 0, 1, 1)
-        self.layout.addWidget(self.teamStack, 0, 1, 2, 3)
+        self.layout.addWidget(self.teamStack, 0, 1, 2, 2)
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.layout.setColumnStretch(1, 1)
@@ -87,7 +95,6 @@ class TeamDetails(QGroupBox):
         isQp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
         teamItems = {}
         for i in range(len(teams)):
-            hadKills = False
             team = teams[i]
 
             tab = QWidget()
@@ -108,126 +115,27 @@ class TeamDetails(QGroupBox):
 
             teamhunters = HuntersOnTeam(hunters, team)
             hadbounty = 0
+            hadKills = False
             bountyextracted = 0
             ownTeam = False
+            hadWellspring = False
+            soulSurvivor = False
 
-            hunterNames = []
+            title = "%s hunters - %d" % (len(teamhunters), teamMmr)
+            title = "%s hunters" % len(teamhunters)
             for j in range(len(teamhunters)):
-                hunter = teamhunters[j]
-                hunterWidget = QWidget()
-                hunterWidget.layout = QVBoxLayout()
-                hunterWidget.setLayout(hunterWidget.layout)
-                hunterWidget.setSizePolicy(
-                    QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-                name = hunter['blood_line_name']
-                pid = hunter['profileid']
-                n_games = execute_query(
-                    "select count(*) from 'hunters' where profileid is %d" % pid)
-                n_games = 0 if len(n_games) == 0 else n_games[0][0]
-                if name.lower() == settings.value("steam_name", "").lower():
-                    ownTeam = True
-                if isQp:
-                    teamLabel.setText("%s<br>" % name)
-                nameLabel = QLabel(hunter['blood_line_name'])
-                mmr = hunter['mmr']
-                hunterNames.append('  %s' % name)
-                mmrLabel = QLabel("%d" % mmr)
-                stars = "<img src='%s'>" % (star_path())*mmr_to_stars(mmr)
-                starsLabel = QLabel("%s" % stars)
-                n_gamesLabel = QLabel()
-                if n_games > 1:
-                    n_gamesLabel.setText("seen in %d games" % n_games)
-                bountypickedup = hunter['bountypickedup']
-                if bountypickedup:
-                    hadbounty = 1
-                hadWellspring = hunter['hadWellspring'].lower() == 'true'
-                soulSurvivor = hunter['issoulsurvivor'].lower() == 'true'
-                if hunter['bountyextracted']:
-                    bountyextracted = 1
-
-                kills = [
-                    hunter['killedme'],
-                    hunter['downedme'],
-                    hunter['killedbyme'],
-                    hunter['downedbyme'],
-                    hunter['killedteammate'],
-                    hunter['downedteammate'],
-                    hunter['killedbyteammate'],
-                    hunter['downedbyteammate']
-                ]
-
-                hunterWidget.layout.addWidget(nameLabel)
-                hunterWidget.layout.addWidget(mmrLabel)
-                hunterWidget.layout.addWidget(starsLabel)
-                hunterWidget.layout.addWidget(n_gamesLabel)
-                iconWidget = QWidget()
-                iconWidget.layout = QHBoxLayout()
-                iconWidget.setLayout(iconWidget.layout)
-                if hunter['killedme'] > 0 or hunter['downedme'] > 0:
-                    icon = get_icon(killedByIcon)
-                    icon.data = []
-                    if hunter['killedme'] > 0:
-                        icon.data.append('%s killed you %d times.' %
-                                         (name, hunter['killedme'])),
-                    if hunter['downedme'] > 0:
-                        icon.data.append('%s downed you %d times.' %
-                                         (name, hunter['downedme'])),
-                    icon.installEventFilter(self)
-                    iconWidget.layout.addWidget(icon)
-                if hunter['killedbyme'] > 0 or hunter['downedbyme'] > 0:
-                    icon = get_icon(killedIcon)
-                    icon.data = []
-                    if hunter['killedbyme'] > 0:
-                        icon.data.append('You killed %s %d times.' %
-                                         (name, hunter['killedbyme'])),
-                    if hunter['downedbyme'] > 0:
-                        icon.data.append('You downed %s %d times.' %
-                                         (name, hunter['downedbyme'])),
-                    icon.installEventFilter(self)
-                    iconWidget.layout.addWidget(icon)
-                if hunter['killedteammate'] > 0 or hunter['downedteammate'] > 0:
-                    icon = get_icon(killedTeammateIcon)
-                    icon.data = []
-                    if hunter['killedteammate'] > 0:
-                        icon.data.append('%s killed your teammates %d times.' % (
-                            name, hunter['killedteammate'])),
-                    if hunter['downedteammate'] > 0:
-                        icon.data.append('%s downed your teammates %d times.' % (
-                            name, hunter['downedteammate'])),
-                    icon.installEventFilter(self)
-                    iconWidget.layout.addWidget(icon)
-                if hunter['killedbyteammate'] > 0 or hunter['downedbyteammate'] > 0:
-                    icon = get_icon(teammateKilledIcon)
-                    icon.data = []
-                    if hunter['killedbyteammate'] > 0:
-                        icon.data.append('Your teammates killed %s %d times.' % (
-                            name, hunter['killedbyteammate'])),
-                    if hunter['downedbyteammate'] > 0:
-                        icon.data.append('Your teammates downed %s %d times.' % (
-                            name, hunter['downedbyteammate'])),
-                    icon.installEventFilter(self)
-                    iconWidget.layout.addWidget(icon)
-                if bountypickedup or hadWellspring or soulSurvivor:
-                    icon = get_icon(bountyIcon)
-                    icon.data = []
-                    if bountypickedup:
-                        icon.data.append("%s carried the bounty." % name)
-                    if hadWellspring:
-                        icon.data.append("%s activated the Wellspring." % name)
-                    if soulSurvivor:
-                        icon.data.append("%s was the soul survivor." % name)
-                    icon.installEventFilter(self)
-                    iconWidget.layout.addWidget(icon)
-                iconWidget.layout.addStretch()
-                hunterWidget.layout.addWidget(
-                    iconWidget, 0, Qt.AlignmentFlag.AlignLeft)
-                hunterWidget.layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
+                hunterWidget = self.GetHunterWidget(teamhunters[j])
                 tab.layout.addWidget(hunterWidget, 4, j)
-                if (sum(kills) > 0):
-                    hadKills = True
 
-                hunterWidget.layout.addStretch()
+                hadKills = not hadKills and hunterWidget.hadKills
+                hadbounty = not hadbounty and hunterWidget.hadbounty
+                bountyextracted = not bountyextracted and hunterWidget.bountyextracted
+                ownTeam = not ownTeam and hunterWidget.ownTeam
+                hadWellspring = not hadWellspring and hunterWidget.hadWellspring
+                soulSurvivor = not soulSurvivor and hunterWidget.soulSurvivor
+                name = teamhunters[j]['blood_line_name']
+                if isQp:
+                    title = name
             if bountyextracted:
                 tab.layout.addWidget(
                     QLabel("Extracted with the bounty."), 3, 0)
@@ -235,37 +143,64 @@ class TeamDetails(QGroupBox):
             tab.layout.setColumnStretch(tab.layout.columnCount(), 1)
 
             self.teamStack.addWidget(tab)
+            icons = []
             if ownTeam:
-                icon = QtGui.QIcon(livedIcon)
-            elif hadKills:
-                icon = QtGui.QIcon(deadIcon)
-            elif hadWellspring or hadbounty:
-                icon = QtGui.QIcon(bountyIcon)
-            else:
-                icon = QtGui.QIcon(blankIcon)
-            if isQp:
-                if len(name) > 16:
-                    nickname = name[0:13] + '...'
-                else:
-                    nickname = name
-                title = "%s - %d" % (nickname, teamMmr)
-            else:
-                title = "%s hunters - %d" % (len(teamhunters), teamMmr)
-            item = QListWidgetItem(QtGui.QIcon(icon), title)
-            item.setToolTip(name)
+                icons.append(livedIcon)
+                print('own',title)
+            if hadKills:
+                icons.append(deadIcon)
+            if hadWellspring or hadbounty:
+                icons.append(bountyIcon)
+            item = QTreeWidgetItem()
+            item.setText(0,title)
+            item.view = tab
+            item.idx = i
             # self.teamList.insertItem(i,item)
-            teamItems[i] = {'item': item, 'widget': tab}
+            teamItems[i] = {'item': item, 'widget': tab,'icons':icons}
 
-        for i in teamItems:
-            self.teamList.insertItem(i, teamItems[i]['item'])
+        for i in range(len(teamItems)):
+            icons = teamItems[i]['icons']
+            if livedIcon in icons:
+                self.teamList.insertTopLevelItem(0,teamItems[i]['item'])
+            else:
+                if deadIcon in icons or bountyIcon in icons:
+                    if self.teamList.topLevelItemCount() > 0:
+                        self.teamList.insertTopLevelItem(1,teamItems[i]['item'])
+                    else:
+                        self.teamList.insertTopLevelItem(0,teamItems[i]['item'])
+                else:
+                    self.teamList.insertTopLevelItem(self.teamList.topLevelItemCount(),teamItems[i]['item'])
+                
+            icons = teamItems[i]['icons']
+            icoLabel = QLabel()
+            print('i',len(icons))
+            pm = QPixmap(32*len(icons),32)
+            pm.fill(QtGui.QColor(0,0,0,0))
+            if len(icons) > 0:
+                painter = QtGui.QPainter(pm)
+                for j in range(len(icons)):
+                    icon = icons[j]
+                    painter.drawPixmap(j*32,0,32,32,QPixmap(icon).scaled(32,32))
+                del painter
+                icoLabel.setPixmap(pm)
+                self.teamList.setItemWidget(teamItems[i]['item'],1,icoLabel)
+                self.teamList.setColumnWidth(1,pm.width())
             self.teamStack.addWidget(teamItems[i]['widget'])
-        self.teamList.setCurrentRow(0)
+            print('pm',pm.width())
+            self.teamList.setColumnWidth(
+                0,
+                min(self.teamList.columnWidth(0),self.teamList.width()-pm.width())
+            )
+        self.teamList.setCurrentItem(self.teamList.itemAt(0,0))
 
         # self.teamList.setFixedHeight(self.teamList.sizeHint().height())
-        self.teamList.setFixedWidth(int(self.teamList.sizeHint().width()*1.2))
+        #self.teamList.setFixedWidth(int(self.teamList.sizeHint().width()*1.2))
 
-    def switchTeamWidget(self, idx):
-        self.teamStack.setCurrentIndex(idx)
+    def switchTeamWidget(self, new,old):
+        if new != None:
+            self.teamStack.setCurrentWidget(new.view)
+        else:
+            self.teamStack.setCurrentWidget(old.view)
 
     def eventFilter(self, obj, event) -> bool:
         if event.type() == QEvent.Type.Enter:
@@ -289,6 +224,129 @@ class TeamDetails(QGroupBox):
         return super().eventFilter(obj, event)
 
 
+    def GetHunterWidget(self,hunter):
+        hunterWidget = QWidget()
+        hunterWidget.layout = QVBoxLayout()
+        hunterWidget.setLayout(hunterWidget.layout)
+        hunterWidget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        name = hunter['blood_line_name']
+        pid = hunter['profileid']
+        n_games = execute_query(
+            "select count(*) from 'hunters' where profileid is %d" % pid)
+        n_games = 0 if len(n_games) == 0 else n_games[0][0]
+        if name.lower() == settings.value("steam_name", "").lower():
+            hunterWidget.ownTeam = True
+        else:
+            hunterWidget.ownTeam = False
+        #if isQp:
+        #    teamLabel.setText("%s<br>" % name)
+        nameLabel = QLabel(hunter['blood_line_name'])
+        mmr = hunter['mmr']
+        mmrLabel = QLabel("%d" % mmr)
+        stars = "<img src='%s'>" % (star_path())*mmr_to_stars(mmr)
+        starsLabel = QLabel("%s" % stars)
+        n_gamesLabel = QLabel()
+        if n_games > 1:
+            n_gamesLabel.setText("seen in %d games" % n_games)
+        bountypickedup = hunter['bountypickedup']
+        if bountypickedup:
+            hunterWidget.hadbounty = 1
+        else:
+            hunterWidget.hadbounty = 0
+        hunterWidget.hadWellspring = hunter['hadWellspring'].lower() == 'true'
+        hunterWidget.soulSurvivor = hunter['issoulsurvivor'].lower() == 'true'
+        if hunter['bountyextracted']:
+            hunterWidget.bountyextracted = 1
+        else:
+            hunterWidget.bountyextracted = 0
+
+        kills = [
+            hunter['killedme'],
+            hunter['downedme'],
+            hunter['killedbyme'],
+            hunter['downedbyme'],
+            hunter['killedteammate'],
+            hunter['downedteammate'],
+            hunter['killedbyteammate'],
+            hunter['downedbyteammate']
+        ]
+
+        hunterWidget.layout.addWidget(nameLabel)
+        hunterWidget.layout.addWidget(mmrLabel)
+        hunterWidget.layout.addWidget(starsLabel)
+        hunterWidget.layout.addWidget(n_gamesLabel)
+        iconWidget = QWidget()
+        iconWidget.layout = QHBoxLayout()
+        iconWidget.setLayout(iconWidget.layout)
+        if hunter['killedme'] > 0 or hunter['downedme'] > 0:
+            icon = get_icon(killedByIcon)
+            icon.data = []
+            if hunter['killedme'] > 0:
+                icon.data.append('%s killed you %d times.' %
+                                    (name, hunter['killedme'])),
+            if hunter['downedme'] > 0:
+                icon.data.append('%s downed you %d times.' %
+                                    (name, hunter['downedme'])),
+            icon.installEventFilter(self)
+            iconWidget.layout.addWidget(icon)
+        if hunter['killedbyme'] > 0 or hunter['downedbyme'] > 0:
+            icon = get_icon(killedIcon)
+            icon.data = []
+            if hunter['killedbyme'] > 0:
+                icon.data.append('You killed %s %d times.' %
+                                    (name, hunter['killedbyme'])),
+            if hunter['downedbyme'] > 0:
+                icon.data.append('You downed %s %d times.' %
+                                    (name, hunter['downedbyme'])),
+            icon.installEventFilter(self)
+            iconWidget.layout.addWidget(icon)
+        if hunter['killedteammate'] > 0 or hunter['downedteammate'] > 0:
+            icon = get_icon(killedTeammateIcon)
+            icon.data = []
+            if hunter['killedteammate'] > 0:
+                icon.data.append('%s killed your teammates %d times.' % (
+                    name, hunter['killedteammate'])),
+            if hunter['downedteammate'] > 0:
+                icon.data.append('%s downed your teammates %d times.' % (
+                    name, hunter['downedteammate'])),
+            icon.installEventFilter(self)
+            iconWidget.layout.addWidget(icon)
+        if hunter['killedbyteammate'] > 0 or hunter['downedbyteammate'] > 0:
+            icon = get_icon(teammateKilledIcon)
+            icon.data = []
+            if hunter['killedbyteammate'] > 0:
+                icon.data.append('Your teammates killed %s %d times.' % (
+                    name, hunter['killedbyteammate'])),
+            if hunter['downedbyteammate'] > 0:
+                icon.data.append('Your teammates downed %s %d times.' % (
+                    name, hunter['downedbyteammate'])),
+            icon.installEventFilter(self)
+            iconWidget.layout.addWidget(icon)
+        if bountypickedup or hunterWidget.hadWellspring or hunterWidget.soulSurvivor:
+            icon = get_icon(bountyIcon)
+            icon.data = []
+            if bountypickedup:
+                icon.data.append("%s carried the bounty." % name)
+            if hunterWidget.hadWellspring:
+                icon.data.append("%s activated the Wellspring." % name)
+            if hunterWidget.soulSurvivor:
+                icon.data.append("%s was the soul survivor." % name)
+            icon.installEventFilter(self)
+            iconWidget.layout.addWidget(icon)
+        iconWidget.layout.addStretch()
+        hunterWidget.layout.addWidget(
+            iconWidget, 0, Qt.AlignmentFlag.AlignLeft)
+        hunterWidget.layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        hunterWidget.layout.addStretch()
+
+        if (sum(kills) > 0):
+            hunterWidget.hadKills = True
+        else:
+            hunterWidget.hadKills = False
+        return hunterWidget
+
+
 def HuntersOnTeam(hunters, team):
     teamhunters = []
     for hunter in hunters:
@@ -301,3 +359,5 @@ class ItemDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         option.decorationPosition = QStyleOptionViewItem.Position.Right
         super(ItemDelegate, self).paint(painter, option, index)
+
+

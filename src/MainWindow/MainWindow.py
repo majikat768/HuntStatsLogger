@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QStatusBar
+from PyQt6.QtCore import QPoint
 
 from MainWindow.MainFrame import MainFrame
 from resources import settings
@@ -35,6 +36,8 @@ class MainWindow(QMainWindow):
         if self.mainframe.mapWindow:
             self.mainframe.mapWindow.close()
         self.mainframe.logger.running = False
-        settings.setValue("window_position", self.pos())
+        pos = self.mapToGlobal(QPoint(0,0))
+        print(pos)
+        settings.setValue("window_position", pos)
         settings.setValue("window_size", self.size())
         return super().closeEvent(a0)

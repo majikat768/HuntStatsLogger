@@ -131,7 +131,19 @@ QListView::item:selected {
 QListView::item {
 	font-family: Courier New;
 }
+QTreeView::item:selected {
+	border: 1px solid #66ffffff;
+	color:#92cf9f;
+}
+QTreeView::item {
+	font-family: Courier New;
+}
 QListWidget {
+	background: transparent;
+	color:#02cf7f;
+	font-family: Courier New;
+}
+QTreeWidget {
 	background: transparent;
 	color:#02cf7f;
 	font-family: Courier New;
