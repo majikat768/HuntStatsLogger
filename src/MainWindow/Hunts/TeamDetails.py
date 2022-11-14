@@ -146,7 +146,6 @@ class TeamDetails(QGroupBox):
             icons = []
             if ownTeam:
                 icons.append(livedIcon)
-                print('own',title)
             if hadKills:
                 icons.append(deadIcon)
             if hadWellspring or hadbounty:
@@ -173,7 +172,6 @@ class TeamDetails(QGroupBox):
                 
             icons = teamItems[i]['icons']
             icoLabel = QLabel()
-            print('i',len(icons))
             pm = QPixmap(32*len(icons),32)
             pm.fill(QtGui.QColor(0,0,0,0))
             if len(icons) > 0:
@@ -186,7 +184,6 @@ class TeamDetails(QGroupBox):
                 self.teamList.setItemWidget(teamItems[i]['item'],1,icoLabel)
                 self.teamList.setColumnWidth(1,pm.width())
             self.teamStack.addWidget(teamItems[i]['widget'])
-            print('pm',pm.width())
             self.teamList.setColumnWidth(
                 0,
                 min(self.teamList.columnWidth(0),self.teamList.width()-pm.width())
