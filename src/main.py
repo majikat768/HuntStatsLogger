@@ -26,11 +26,13 @@ if __name__ == '__main__':
     QFontDatabase.addApplicationFont(
         resource_path('./assets/fonts/Ubuntu/Ubuntu-R.ttf'))
 
+    app.setQuitOnLastWindowClosed(False)
+
     window = MainWindow()
     window.setBaseSize(1024, 768)
     window.show()
 
-    app.setWindowIcon(QIcon(resource_path('assets/icons/app.png')))
+    app.setWindowIcon(QIcon(resource_path('assets/icons/hsl.ico')))
     if settings.value("xml_path", "") == "":
         window.mainframe.settingsWindow.show()
 

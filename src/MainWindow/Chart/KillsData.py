@@ -26,7 +26,6 @@ class KillsData():
                     'ts':ts
                 })
             i += 1
-        print(data)
 
         self.line = pyqtgraph.PlotDataItem(data,pen="#ffffff88")
         self.qpPoints = pyqtgraph.ScatterPlotItem(

@@ -343,15 +343,11 @@ def predictNextMmr(currentMmr = GetCurrentMmr(), currentTs = GetLastHuntTimestam
         mmrDiff = mmr - currentMmr
         starDiff = mmr_to_stars(mmr) - mmr_to_stars(currentMmr)
         if starDiff > 0:
-            print('killed %d higher' % mmrDiff)
             change = (starDiff * mmrDiff/10.0) * your_kills[mmr]
         elif starDiff < 0:
-            print('killed %d lower' % mmrDiff)
             change = (1/starDiff * mmrDiff/20.0) * your_kills[mmr]
         elif starDiff == 0:
-            print('killed same - %d' % mmrDiff)
             change = (mmrDiff/10.0) * your_kills[mmr]
-        print('%+f' % change)
         if assists > 0:
             change = change + assists
         predictedChange += change
@@ -360,18 +356,13 @@ def predictNextMmr(currentMmr = GetCurrentMmr(), currentTs = GetLastHuntTimestam
         mmrDiff = mmr - currentMmr
         starDiff = mmr_to_stars(mmr) - mmr_to_stars(currentMmr)
         if starDiff < 0:
-            print('died to %d lower' % mmrDiff)
             change = (-1/starDiff * mmrDiff/10.0) * your_deaths[mmr]
         elif starDiff > 0:
-            print('died to %d higher' % mmrDiff)
             change = (-0.5/starDiff * mmrDiff/30.0) * your_deaths[mmr]
         elif starDiff == 0:
-            print('died to same - %d' % mmrDiff)
             change = (-mmrDiff/20.0) * your_deaths[mmr]
-        print('%+f' % change)
         if assists > 0:
             change = change + assists
         predictedChange += change
     predictedMmr = currentMmr + predictedChange
-    print('predict',predictedChange,predictedMmr)
     return predictedMmr

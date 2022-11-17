@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTabWidget
-from PyQt6.QtCore import QThread
+from PyQt6.QtCore import QThread, QPoint
+from PyQt6.QtGui import QIcon
 
 from MainWindow.Header import Header
 from MapWindow.MapWindow import MapWindow
@@ -14,9 +15,11 @@ from MainWindow.Chart.Chart import Chart
 class MainFrame(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self.mousePressed = False
         self.logger = Logger(self)
 
         self.settingsWindow = SettingsWindow(self)
+        self.mapWindow = MapWindow(self)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -25,21 +28,8 @@ class MainFrame(QWidget):
         self.layout.addWidget(self.header)
         self.initBody()
 
-        settingsButton = QPushButton("Settings")
-        settingsButton.clicked.connect(self.openSettings)
-
-        self.mapWindow = MapWindow(self)
-        mapsButton = QPushButton("Maps")
-        mapsButton.clicked.connect(self.openMaps)
-
-        self.buttons = QWidget()
-        self.buttons.layout = QHBoxLayout()
-        self.buttons.setLayout(self.buttons.layout)
-
-        self.buttons.layout.addWidget(mapsButton)
-        self.buttons.layout.addWidget(settingsButton)
-
-        self.layout.addWidget(self.buttons)
+        self.initButtons()
+        self.offset = QPoint()
 
         self.setStatus("ready.")
         if settings.value("xml_path", "") == "":
@@ -51,14 +41,30 @@ class MainFrame(QWidget):
 
         self.update()
 
+    def initButtons(self):
+        settingsButton = QPushButton("Settings")
+        settingsButton.clicked.connect(lambda : self.openWindow(self.settingsWindow))
+
+        mapsButton = QPushButton("Maps")
+        mapsButton.clicked.connect(lambda : self.openWindow(self.mapWindow))
+
+        self.buttons = QWidget()
+        self.buttons.layout = QHBoxLayout()
+        self.buttons.setLayout(self.buttons.layout)
+
+        self.buttons.layout.addWidget(mapsButton)
+        self.buttons.layout.addWidget(settingsButton)
+
+        self.layout.addWidget(self.buttons)
+
     def setStatus(self, msg):
         self.window().setStatus(msg)
 
     def initBody(self):
         self.tabs = QTabWidget()
-        self.huntsTab = Hunts(self)
-        self.huntersTab = Hunters(self)
-        self.chartTab = Chart(self)
+        self.huntsTab = Hunts(parent=self)
+        self.huntersTab = Hunters(parent=self)
+        self.chartTab = Chart(parent=self)
         self.tabs.addTab(self.huntsTab, "Hunts")
         self.tabs.addTab(self.huntersTab, "Hunters")
         self.tabs.addTab(self.chartTab, "Chart")
@@ -98,5 +104,10 @@ class MainFrame(QWidget):
         else:
             self.mapWindow.raise_()
 
+    def openWindow(self,window):
+        if not window.isVisible():
+            window.show()
+        else:
+            window.raise_()
     def setStatus(self, msg):
         self.window().setStatus(msg)

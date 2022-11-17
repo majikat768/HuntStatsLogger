@@ -1,11 +1,12 @@
-from PyQt6.QtCore import QSettings, QStandardPaths
-from PyQt6.QtWidgets import QLabel, QSizePolicy
-from PyQt6.QtGui import QPixmap
-
-from datetime import datetime
-import time
 import os
+import math
 import sys
+import time
+from datetime import datetime
+
+from PyQt6.QtCore import QSettings, QStandardPaths
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QLabel, QSizePolicy
 
 app_data_path = os.path.join(QStandardPaths.writableLocation(
     QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
@@ -96,4 +97,7 @@ def clearLayout(layout):
         try:
             layout.itemAt(i).widget().setParent(None)
         except:
-            continue
+            try:
+                layout.itemAt(i).spacerItem().setParent(None)
+            except:
+                continue

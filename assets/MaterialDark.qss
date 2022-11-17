@@ -11,9 +11,6 @@ Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 QWidget {
 	background:transparent;
 }
-QStackedWidget {
-	border:1px solid white;
-}
 SettingsWindow * {
     font-family: Courier New;
     font-size:18px;
@@ -79,14 +76,13 @@ SettingsWindow * {
     border:1px solid black;
 }
 #teamDetails {
-	border:1px solid #000000;
+	border:0px solid #000000;
 	background-color: #44000000;
 	padding:16px;
 }
 
 #huntDetails {
-	background-color: #44000000;
-	border:1px solid #000000;
+	border:1px solid #88ccdd;
 	padding:0px;
 	margin:0px;
 	padding-bottom:-4px;
@@ -108,10 +104,16 @@ QMainWindow {
     border:0px solid black;
 }
 
+QSplitter::handle:horizontal {
+	image: url("assets/icons/h_handle.png");
+}
+QSplitter::handle:vertical {
+	image: url("assets/icons/v_handle.png");
+}
+
 QGroupBox {
 	color:#cccc67;
 	font-size:24px;
-	background-color:#1e282c;
 	background-color:transparent;
 }
 QDialog {
@@ -337,22 +339,14 @@ QMenu{
 QTabWidget {
 	color:rgb(0,0,0);
 	background-color:#1e1d23;
-	border-width: 1px;
+	border-width: 0px;
 	border-color: #44ffffff;
 }
 QTabWidget::pane {
 		background-color:#1e282c;
-		border-width: 1px;
-		border-color: #44ffffff;
-    	border-radius: 6px;
-		border-style:solid;
+		border-style:transparent;
 }
 QTabWidget::QWidget {
-	border: 1px solid white;
-		border-width: 1px;
-		border-color: #ffffff;
-    	border-radius: 6px;
-		border-style:solid;
 }
 QTabBar {
 	background-color: transparent;

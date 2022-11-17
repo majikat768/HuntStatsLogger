@@ -168,7 +168,6 @@ def clean_data(obj):
     except Exception as e:
         print('clean_data')
         print(e)
-        print(obj)
         return obj
 
 
@@ -238,6 +237,8 @@ def build_json_from_xml(ts):
                     cat = '_'.join(keysplit[2:])
                     accolades[accolade_num][cat] = val
             elif "UnlockRank" in line:
+                if settings.value("HunterLevel","") != "" and int(val) < int(settings.value("HunterLevel")):
+                    print("prestiged")
                 settings.setValue("HunterLevel",val)
         
         return clean_data({

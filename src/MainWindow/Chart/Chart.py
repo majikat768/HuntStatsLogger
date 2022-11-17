@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QSizePolicy, QLabel, QScrollArea
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QSizePolicy, QLabel, QScrollArea, QApplication, QFileDialog
 from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtGui import QScreen
 import pyqtgraph
 from DbHandler import *
 from MainWindow.Chart.MmrData import MmrData
@@ -93,6 +94,10 @@ class Chart(QScrollArea):
         self.main.layout.addWidget(self.graphWidget)
         self.main.layout.addWidget(
             QLabel("Use scroll wheel to zoom y axis; Shift+scroll to zoom x axis."))
+        self.screenshotButton = QPushButton("Save as image")
+        self.screenshotButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.screenshotButton.clicked.connect(self.save_chart)
+        self.main.layout.addWidget(self.screenshotButton)
 
     def update(self):
         self.legend.clear()
@@ -159,6 +164,17 @@ class Chart(QScrollArea):
         self.graph.setLimits(xMin=0, yMin=0, yMax=6000,
                              xMax=len(mmr.line.xData)+5)
         return [mmr.qpPoints, mmr.bhPoints, mmr.nextPoint]
+
+    def save_chart(self):
+        name = "chart_%s.png" % int(time.time())
+        file = QFileDialog.getSaveFileName(
+            parent=self.window(),
+            directory=os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DesktopLocation),name),
+            filter="PNG (*.png)"
+        )[0]
+
+        scrn = QApplication.primaryScreen().grabWindow(self.graphWindow.winId())
+        scrn.save(file)
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Type.GraphicsSceneWheel:

@@ -1,7 +1,7 @@
 from PyQt6 import QtGui
 from PyQt6.QtCore import QEvent, Qt
-from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel,
-                             QListWidget, QListWidgetItem, QSizePolicy,
+from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel, QFrame,
+                             QSizePolicy, QSplitter, QSplitterHandle, QScrollArea,
                              QStackedWidget, QStyledItemDelegate,
                              QStyleOptionViewItem, QTreeWidget,
                              QTreeWidgetItem, QVBoxLayout, QWidget)
@@ -14,37 +14,52 @@ from resources import *
 class TeamDetails(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.layout = QGridLayout()
+        self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.layout)
 
-        self.teamsArea = QWidget()
-        self.setObjectName("teamDetails")
-        self.teamsArea.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-
+        self.teamStackScroll = QScrollArea()
         self.teamStack = QStackedWidget()
         self.teamStack.setObjectName("TeamStack")
+        self.teamStackScroll.setWidget(self.teamStack)
+        self.teamStackScroll.setWidgetResizable(True)
 
         self.teamList = QTreeWidget()
         self.teamList.setHeaderHidden(True)
-        self.teamList.setColumnCount(2)
-        self.teamList.setItemDelegate(ItemDelegate())
+        self.teamList.setColumnCount(3)
+        #self.teamList.setItemDelegate(ItemDelegate())
         self.teamList.currentItemChanged.connect(self.switchTeamWidget)
         self.teamList.setDropIndicatorShown(False)
+        self.teamList.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding)
+        self.teamList.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        self.leftColumn = QWidget()
+        self.leftColumn.layout = QVBoxLayout()
+        self.leftColumn.setLayout(self.leftColumn.layout)
+
+        self.body = QSplitter(Qt.Orientation.Horizontal)
+        self.body.setChildrenCollapsible(False)
 
         self.killsData = QGroupBox()
         self.killsData.layout = QVBoxLayout()
         self.killsData.setLayout(self.killsData.layout)
+        self.killsData.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Maximum)
 
-        self.layout.addWidget(self.teamList, 0, 0, 1, 1)
-        self.layout.addWidget(self.killsData, 1, 0, 1, 1)
-        self.layout.addWidget(self.teamStack, 0, 1, 2, 2)
+        self.leftColumn.layout.addWidget(self.teamList)
+        self.leftColumn.layout.addWidget(self.killsData)
+        self.body.addWidget(self.leftColumn)
+        self.body.addWidget(self.teamStackScroll)
+        self.layout.addWidget(self.body)
+        self.body.setStretchFactor(0,2)
+        self.body.setStretchFactor(1,3)
+
+        self.body.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.layout.setColumnStretch(1, 1)
 
-    def update(self, teams, hunters, hunt, kills):
+    def update(self, teams, hunters, hunt, kills,mmrChange):
+        maxIconWidth = 0
         qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
         clearLayout(self.killsData.layout)
         team_kills = kills['team_kills']
@@ -87,6 +102,8 @@ class TeamDetails(QGroupBox):
             )
         )
         self.killsData.layout.addWidget(yourDeaths)
+        self.killsData.layout.addWidget(QLabel(mmrChange))
+        self.killsData.layout.addStretch()
 
         self.teamList.clear()
         while self.teamStack.count() > 0:
@@ -126,13 +143,20 @@ class TeamDetails(QGroupBox):
             for j in range(len(teamhunters)):
                 hunterWidget = self.GetHunterWidget(teamhunters[j])
                 tab.layout.addWidget(hunterWidget, 4, j)
+                tab.layout.setAlignment(hunterWidget,Qt.AlignmentFlag.AlignTop)
 
-                hadKills = not hadKills and hunterWidget.hadKills
-                hadbounty = not hadbounty and hunterWidget.hadbounty
-                bountyextracted = not bountyextracted and hunterWidget.bountyextracted
-                ownTeam = not ownTeam and hunterWidget.ownTeam
-                hadWellspring = not hadWellspring and hunterWidget.hadWellspring
-                soulSurvivor = not soulSurvivor and hunterWidget.soulSurvivor
+                if not hadKills:
+                    hadKills = hunterWidget.hadKills
+                if not hadbounty:
+                    hadbounty = hunterWidget.hadbounty
+                if not bountyextracted:
+                    bountyextracted = hunterWidget.bountyextracted
+                if not ownTeam:
+                    ownTeam = hunterWidget.ownTeam
+                if not hadWellspring:
+                    hadWellspring = hunterWidget.hadWellspring
+                if not soulSurvivor:
+                    soulSurvivor = hunterWidget.soulSurvivor
                 name = teamhunters[j]['blood_line_name']
                 if isQp:
                     title = name
@@ -153,26 +177,20 @@ class TeamDetails(QGroupBox):
             item = QTreeWidgetItem()
             item.setText(0,title)
             item.view = tab
-            item.idx = i
             # self.teamList.insertItem(i,item)
-            teamItems[i] = {'item': item, 'widget': tab,'icons':icons}
+            teamItems[i] = {'title': title, 'widget': tab,'icons':icons}
 
+        maxColWidth = 0
         for i in range(len(teamItems)):
             icons = teamItems[i]['icons']
-            if livedIcon in icons:
-                self.teamList.insertTopLevelItem(0,teamItems[i]['item'])
-            else:
-                if deadIcon in icons or bountyIcon in icons:
-                    if self.teamList.topLevelItemCount() > 0:
-                        self.teamList.insertTopLevelItem(1,teamItems[i]['item'])
-                    else:
-                        self.teamList.insertTopLevelItem(0,teamItems[i]['item'])
-                else:
-                    self.teamList.insertTopLevelItem(self.teamList.topLevelItemCount(),teamItems[i]['item'])
-                
-            icons = teamItems[i]['icons']
+            widget = teamItems[i]['widget']
+            title = teamItems[i]['title']
+            item = QTreeWidgetItem()
+            item.view = widget
+            self.teamList.insertTopLevelItem(self.teamList.topLevelItemCount(),item)
+             
             icoLabel = QLabel()
-            pm = QPixmap(32*len(icons),32)
+            pm = QPixmap(32*(len(icons)+1),32)
             pm.fill(QtGui.QColor(0,0,0,0))
             if len(icons) > 0:
                 painter = QtGui.QPainter(pm)
@@ -181,17 +199,22 @@ class TeamDetails(QGroupBox):
                     painter.drawPixmap(j*32,0,32,32,QPixmap(icon).scaled(32,32))
                 del painter
                 icoLabel.setPixmap(pm)
-                self.teamList.setItemWidget(teamItems[i]['item'],1,icoLabel)
-                self.teamList.setColumnWidth(1,pm.width())
-            self.teamStack.addWidget(teamItems[i]['widget'])
-            self.teamList.setColumnWidth(
-                0,
-                min(self.teamList.columnWidth(0),self.teamList.width()-pm.width())
-            )
+            maxIconWidth = max(maxIconWidth,32*len(icons)+32)
+            if len(title) > 20:
+                title = title[:17] + '...'
+            #self.teamList.setItemWidget(item,0,label)
+            item.setText(0,title)
+            self.teamList.setItemWidget(item,1,icoLabel)
+            icoLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
+            self.teamStack.addWidget(widget)
         self.teamList.setCurrentItem(self.teamList.itemAt(0,0))
 
-        # self.teamList.setFixedHeight(self.teamList.sizeHint().height())
-        #self.teamList.setFixedWidth(int(self.teamList.sizeHint().width()*1.2))
+        for i in range(self.teamList.columnCount()):
+            self.teamList.resizeColumnToContents(i)
+        self.teamList.setColumnWidth(0,self.teamList.columnWidth(0)+32)
+        self.teamList.setColumnWidth(1,self.teamList.columnWidth(1)+32)
+
+        self.teamStackScroll.resize(self.teamStack.sizeHint())
 
     def switchTeamWidget(self, new,old):
         if new != None:
@@ -200,24 +223,28 @@ class TeamDetails(QGroupBox):
             self.teamStack.setCurrentWidget(old.view)
 
     def eventFilter(self, obj, event) -> bool:
-        if event.type() == QEvent.Type.Enter:
-            info = QWidget()
-            info.layout = QVBoxLayout()
-            info.setLayout(info.layout)
-            x = event.globalPosition().x()
-            y = event.globalPosition().y()
-            for d in obj.data:
-                info.layout.addWidget(QLabel(d))
-            self.popup = Popup(info, x, y)
-            # self.popup.keepAlive(True)
-            self.popup.show()
-            self.raise_()
-            self.activateWindow()
-        elif event.type() == QEvent.Type.Leave:
-            try:
-                self.popup.close()
-            except:
-                self.popup = None
+        if obj.objectName() == "icon":
+            if event.type() == QEvent.Type.Enter:
+                info = QWidget()
+                info.layout = QVBoxLayout()
+                info.setLayout(info.layout)
+                x = event.globalPosition().x()
+                y = event.globalPosition().y()
+                for d in obj.data:
+                    info.layout.addWidget(QLabel(d))
+                self.popup = Popup(info, x, y)
+                # self.popup.keepAlive(True)
+                self.popup.show()
+                self.raise_()
+                self.activateWindow()
+            elif event.type() == QEvent.Type.Leave:
+                try:
+                    self.popup.close()
+                except:
+                    self.popup = None
+        elif obj.objectName() == "handle":
+            print(obj.objectName())
+            print(event.type())
         return super().eventFilter(obj, event)
 
 
@@ -343,7 +370,6 @@ class TeamDetails(QGroupBox):
             hunterWidget.hadKills = False
         return hunterWidget
 
-
 def HuntersOnTeam(hunters, team):
     teamhunters = []
     for hunter in hunters:
@@ -356,5 +382,4 @@ class ItemDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         option.decorationPosition = QStyleOptionViewItem.Position.Right
         super(ItemDelegate, self).paint(painter, option, index)
-
 

@@ -42,15 +42,15 @@ class MmrData():
         self.nextPoint = pyqtgraph.ScatterPlotItem(
             spots, size=12, hoverable=True, hoverSize=16, symbol='t1', pen="#ffffff", brush="#000000", tip="Predicted MMR: {y:.0f}".format)
 
-        starValues = [0, 2000, 2300, 2600, 2750, 3000, 5000]
+        starValues = [0, 1999, 2299, 2599, 2749, 2999, 4999]
 
         self.stars = []
         for s in starValues:
             c = s/5000*255
             line = pyqtgraph.InfiniteLine(
-                pos=s+1, angle=0, pen=pyqtgraph.mkPen("#ff000088", width=2))
+                pos=s, angle=0, pen=pyqtgraph.mkPen("#ff000088", width=2))
             line.label = pyqtgraph.InfLineLabel(line, text="%d stars" % (
-                mmr_to_stars(s)), movable=True, position=0.1)
+                mmr_to_stars(s)), movable=False, position=0.1,anchors=[(0,0),(0,0)])
             # line.label.setParentItem(line)
             # line.label.setPos(0,0)
             self.stars.append(line)

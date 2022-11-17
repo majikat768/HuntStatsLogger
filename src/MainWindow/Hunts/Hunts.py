@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QGridLayout, QVBoxLayout, QGroupBox, QLabel, QSizePolicy, QScrollArea, QTabWidget, QPushButton, QDialog, QComboBox, QStackedWidget, QListWidget
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QSizePolicy, QScrollArea, QPushButton, QComboBox, QSplitter
 from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.QtGui import QIcon
 from DbHandler import *
@@ -23,44 +23,15 @@ class Hunts(QScrollArea):
         self.initUI()
 
     def initUI(self):
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
-
-        self.SelectHuntBox = QGroupBox()
-        self.SelectHuntBox.layout = QHBoxLayout()
-        self.SelectHuntBox.setLayout(self.SelectHuntBox.layout)
+        self.main = QSplitter(Qt.Orientation.Vertical)
 
         self.initDetails()
         self.initHuntSelection()
-        # self.initButtons()
-        self.main.layout.addWidget(self.HuntSelect)
-        self.main.layout.addWidget(self.huntDetails)
-        self.main.layout.addWidget(self.teamDetails)
+        self.main.addWidget(self.HuntSelect)
+        self.main.addWidget(self.huntDetails)
+        self.main.addWidget(self.teamDetails)
         self.setWidget(self.main)
-        # self.layout.addWidget(self.buttonsContainer)
-        # self.layout.addStretch()
-        # self.layout.addWidget(self.refreshButton,1,self.layout.columnCount()-1,1,1)
-        # self.layout.setRowStretch(self.layout.rowCount()-1,1)
-
-    def initButtons(self):
-        self.buttonsContainer = QWidget()
-        self.buttonsContainer.layout = QHBoxLayout()
-        self.buttonsContainer.setLayout(self.buttonsContainer.layout)
-
-        self.refreshButton = QPushButton(" reload ")
-        self.refreshButton.clicked.connect(self.update)
-        self.refreshButton.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.calculateMmrChangeButton = QPushButton("calculate MMR changes")
-        self.calculateMmrChangeButton.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.calculateMmrChangeButton.clicked.connect(self.calculateMmrChange)
-        self.buttonsContainer.layout.addWidget(self.refreshButton)
-        self.buttonsContainer.layout.addWidget(self.calculateMmrChangeButton)
-        self.buttonsContainer.setSizePolicy(
-            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        self.buttonsContainer.layout.addStretch()
+        self.update()
 
     def calculateMmrChange(self):
         '''
@@ -73,8 +44,8 @@ class Hunts(QScrollArea):
         currentMmr = 0 if len(currentMmr) == 0 else currentMmr[0][0]
         if currentIndex == 0:
             predictedMmr = predictNextMmr(currentMmr, currentTs)
-            self.teamDetails.killsData.layout.addWidget(QLabel(
-                'predicted MMR change:<br>%d -> %d<br>%+d' % (currentMmr, predictedMmr, predictedMmr-currentMmr)))
+            mmrOutput = 'predicted MMR change:<br>%d -> %d<br>%+d' % (currentMmr, predictedMmr, predictedMmr-currentMmr)
+            return mmrOutput
         else:
             predictedMmr = predictNextMmr(currentMmr, currentTs)
             self.HuntSelect.setCurrentIndex(currentIndex-1)
@@ -87,7 +58,7 @@ class Hunts(QScrollArea):
             mmrChange = nextMmr - currentMmr
             mmrOutput = "Your MMR change:<br>%d -> %d<br>%+d" % (
                 currentMmr, nextMmr, mmrChange)
-            self.teamDetails.killsData.layout.addWidget(QLabel(mmrOutput))
+            return mmrOutput
 
     def updateDetails(self):
         ts = self.HuntSelect.currentData()
@@ -153,12 +124,10 @@ class Hunts(QScrollArea):
                 monsters_killed[monster] += entry['amount']
 
         killData = getKillData(ts)
-        rewards = calculateRewards(accolades, entries)
         targets = GetBounties(hunt)
-        self.huntDetails.update(qp, bounties, rewards,
+        self.huntDetails.update(qp, bounties, accolades,
                                 monsters_killed, targets)
-        self.teamDetails.update(teams, hunters, hunt, killData)
-        self.calculateMmrChange()
+        self.teamDetails.update(teams, hunters, hunt, killData,self.calculateMmrChange())
 
     def update(self):
         # print('hunts.update')
@@ -197,33 +166,7 @@ class Hunts(QScrollArea):
 
     def initDetails(self):
         self.huntDetails = HuntDetails()
-        self.huntDetails.setSizePolicy(
-            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         self.teamDetails = TeamDetails()
-
-
-def calculateRewards(accolades, entries):
-    bounty = 0
-    gold = 0
-    bb = 0
-    xp = 0
-    eventPoints = 0
-
-    for acc in accolades:
-        bounty += acc['bounty']
-        xp += acc['xp']
-        bb += acc['generatedGems']
-        eventPoints += acc['eventPoints']
-
-    xp += 4*bounty
-    gold += bounty
-    return {
-        'Hunt Dollars': gold,
-        'Blood Bonds': bb,
-        'XP': xp,
-        'Event Points': eventPoints
-    }
-
 
 def getKillData(ts):
     your_kills = {i+1: 0 for i in range(6)}
