@@ -1,6 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QStatusBar, QApplication, QSystemTrayIcon
 from PyQt6.QtCore import QPoint, Qt
-from PyQt6.QtGui import QIcon
 
 from MainWindow.MainFrame import MainFrame
 from Widgets.SystemTrayIcon import SystemTrayIcon

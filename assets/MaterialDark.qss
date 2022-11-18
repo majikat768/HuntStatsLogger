@@ -13,12 +13,12 @@ QWidget {
 }
 SettingsWindow * {
     font-family: Courier New;
-    font-size:18px;
+    font-size:12px;
 	background-color: #1e282c;
 }
 * {
     font-family: Libre Baskerville;
-    font-size:18px;
+    font-size:12px;
 }
 
 #icon {
@@ -52,7 +52,7 @@ SettingsWindow * {
 }
 
 #popup {
-	font-size:18px;
+	font-size:12px;
 }
 #Header {
 	border: 1px solid black;
@@ -65,11 +65,11 @@ SettingsWindow * {
 }
 
 #HunterTitle {
-	font-size:36px;
+	font-size:32px;
 }
 
 #kdaTitle {
-	font-size:36px;
+	font-size:24px;
 }
 #titlebar {
 	background-color: #222222;
@@ -104,6 +104,9 @@ QMainWindow {
     border:0px solid black;
 }
 
+QSplitter::handle:pressed {
+	curso
+}
 QSplitter::handle:horizontal {
 	image: url("assets/icons/h_handle.png");
 }
@@ -113,7 +116,7 @@ QSplitter::handle:vertical {
 
 QGroupBox {
 	color:#cccc67;
-	font-size:24px;
+	font-size:16px;
 	background-color:transparent;
 }
 QDialog {
@@ -467,7 +470,7 @@ QStatusBar {
 	color:#02cf7f;
 	border: 1px solid black;
 	border-top: 2px solid #cccccc;
-	font-size:24px;
+	font-size:14px;
 	font-family:courier new;
 }
 QSpinBox {

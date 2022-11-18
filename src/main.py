@@ -12,10 +12,10 @@ from MainWindow.MainWindow import MainWindow
 
 
 if __name__ == '__main__':
+    # fixing scaling issue for multiple monitors/multiple DPI:
     if platform.system() == "Windows" and int(platform.release()) >= 8:
         ctypes.windll.shcore.SetProcessDpiAwareness(True)
-    QApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 
     app = QApplication(sys.argv)
     stylesheet = open(resource_path('./assets/MaterialDark.qss'), 'r').read()

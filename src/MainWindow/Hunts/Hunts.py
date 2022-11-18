@@ -1,10 +1,9 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QSizePolicy, QScrollArea, QPushButton, QComboBox, QSplitter
-from PyQt6.QtCore import Qt, QSize, QEvent
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QComboBox
+from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon
 from DbHandler import *
 from MainWindow.Hunts.HuntDetails import HuntDetails
 from MainWindow.Hunts.TeamDetails import TeamDetails
-from Popup import Popup
 
 
 BountyNames = {
@@ -23,14 +22,18 @@ class Hunts(QScrollArea):
         self.initUI()
 
     def initUI(self):
-        self.main = QSplitter(Qt.Orientation.Vertical)
+        #self.main = QSplitter(Qt.Orientation.Vertical)
+        self.main = QWidget()
+        self.main.layout = QVBoxLayout()
+        self.main.setLayout(self.main.layout)
 
         self.initDetails()
         self.initHuntSelection()
-        self.main.addWidget(self.HuntSelect)
-        self.main.addWidget(self.huntDetails)
-        self.main.addWidget(self.teamDetails)
+        self.main.layout.addWidget(self.HuntSelect)
+        self.main.layout.addWidget(self.huntDetails)
+        self.main.layout.addWidget(self.teamDetails)
         self.setWidget(self.main)
+        #self.main.setCollapsible(0,False)
         self.update()
 
     def calculateMmrChange(self):

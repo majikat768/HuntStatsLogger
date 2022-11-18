@@ -6,10 +6,11 @@ from datetime import datetime
 
 from PyQt6.QtCore import QSettings, QStandardPaths
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QLabel, QSizePolicy
+from PyQt6.QtWidgets import QLabel, QSizePolicy, QWidgetItem, QSpacerItem
 
 app_data_path = os.path.join(QStandardPaths.writableLocation(
     QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
+icon_size = 24
 
 if not os.path.exists(app_data_path):
     os.makedirs(app_data_path, exist_ok=True)
@@ -85,7 +86,7 @@ tab = " "*4
 def get_icon(path):
     pm = QPixmap(path)
     i = QLabel()
-    i.setPixmap(pm.scaled(32, 32))
+    i.setPixmap(pm.scaled(icon_size, icon_size))
     i.setObjectName("icon")
     #i.setStyleSheet("QLabel{border:1px solid white;}")
     i.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
@@ -94,10 +95,8 @@ def get_icon(path):
 
 def clearLayout(layout):
     for i in reversed(range(layout.count())):
-        try:
+        item = layout.itemAt(i)
+        if isinstance(item,QWidgetItem):
             layout.itemAt(i).widget().setParent(None)
-        except:
-            try:
-                layout.itemAt(i).spacerItem().setParent(None)
-            except:
-                continue
+        elif isinstance(item,QSpacerItem):
+            layout.removeItem(item)

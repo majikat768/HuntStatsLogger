@@ -10,6 +10,7 @@ from DbHandler import execute_query
 from Popup import Popup
 from resources import *
 
+icon_size = 16
 
 class TeamDetails(QGroupBox):
     def __init__(self, parent=None):
@@ -25,12 +26,13 @@ class TeamDetails(QGroupBox):
         self.teamStackScroll.setWidgetResizable(True)
 
         self.teamList = QTreeWidget()
+        self.teamList.setIndentation(0)
+        self.teamList.setItemsExpandable(False)
         self.teamList.setHeaderHidden(True)
         self.teamList.setColumnCount(3)
         #self.teamList.setItemDelegate(ItemDelegate())
         self.teamList.currentItemChanged.connect(self.switchTeamWidget)
-        self.teamList.setDropIndicatorShown(False)
-        self.teamList.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding)
+        self.teamList.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
         self.teamList.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.leftColumn = QWidget()
@@ -43,7 +45,7 @@ class TeamDetails(QGroupBox):
         self.killsData = QGroupBox()
         self.killsData.layout = QVBoxLayout()
         self.killsData.setLayout(self.killsData.layout)
-        self.killsData.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Maximum)
+        self.killsData.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
 
         self.leftColumn.layout.addWidget(self.teamList)
         self.leftColumn.layout.addWidget(self.killsData)
@@ -62,6 +64,8 @@ class TeamDetails(QGroupBox):
         maxIconWidth = 0
         qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
         clearLayout(self.killsData.layout)
+        for i in  range(self.killsData.layout.count()):
+            print(self.killsData.layout.itemAt(i))
         team_kills = kills['team_kills']
         your_kills = kills['your_kills']
         your_deaths = kills['your_deaths']
@@ -159,7 +163,10 @@ class TeamDetails(QGroupBox):
                     soulSurvivor = hunterWidget.soulSurvivor
                 name = teamhunters[j]['blood_line_name']
                 if isQp:
-                    title = name
+                    if len(name) > 12:
+                        title = name[:9] + '...'
+                    else:
+                        title = name
             if bountyextracted:
                 tab.layout.addWidget(
                     QLabel("Extracted with the bounty."), 3, 0)
@@ -178,28 +185,37 @@ class TeamDetails(QGroupBox):
             item.setText(0,title)
             item.view = tab
             # self.teamList.insertItem(i,item)
-            teamItems[i] = {'title': title, 'widget': tab,'icons':icons}
+            teamItems[i] = {'title': title, 'widget': tab,'icons':icons, 'ownteam':ownTeam}
 
-        maxColWidth = 0
+        ownTeamInserted = False
         for i in range(len(teamItems)):
             icons = teamItems[i]['icons']
             widget = teamItems[i]['widget']
             title = teamItems[i]['title']
             item = QTreeWidgetItem()
             item.view = widget
-            self.teamList.insertTopLevelItem(self.teamList.topLevelItemCount(),item)
+            if teamItems[i]['ownteam']:
+                self.teamList.insertTopLevelItem(0,item)
+                ownTeamInserted = True
+            elif len(icons) > 0:
+                if not ownTeamInserted:
+                    self.teamList.insertTopLevelItem(0,item)
+                else:
+                    self.teamList.insertTopLevelItem(1,item)
+            else:
+                self.teamList.insertTopLevelItem(self.teamList.topLevelItemCount(),item)
              
             icoLabel = QLabel()
-            pm = QPixmap(32*(len(icons)+1),32)
+            pm = QPixmap(icon_size*(len(icons)+1),icon_size)
             pm.fill(QtGui.QColor(0,0,0,0))
             if len(icons) > 0:
                 painter = QtGui.QPainter(pm)
                 for j in range(len(icons)):
                     icon = icons[j]
-                    painter.drawPixmap(j*32,0,32,32,QPixmap(icon).scaled(32,32))
+                    painter.drawPixmap(j*icon_size,0,icon_size,icon_size,QPixmap(icon).scaled(icon_size,icon_size))
                 del painter
                 icoLabel.setPixmap(pm)
-            maxIconWidth = max(maxIconWidth,32*len(icons)+32)
+            maxIconWidth = max(maxIconWidth,icon_size*len(icons)+icon_size)
             if len(title) > 20:
                 title = title[:17] + '...'
             #self.teamList.setItemWidget(item,0,label)
@@ -211,8 +227,6 @@ class TeamDetails(QGroupBox):
 
         for i in range(self.teamList.columnCount()):
             self.teamList.resizeColumnToContents(i)
-        self.teamList.setColumnWidth(0,self.teamList.columnWidth(0)+32)
-        self.teamList.setColumnWidth(1,self.teamList.columnWidth(1)+32)
 
         self.teamStackScroll.resize(self.teamStack.sizeHint())
 

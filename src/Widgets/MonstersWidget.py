@@ -23,3 +23,4 @@ class MonstersWidget(QWidget):
                 label = QLabel("%d %s" % (monsters_killed[m],m))
                 label.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
                 self.layout.addWidget(label)
+        self.adjustSize()

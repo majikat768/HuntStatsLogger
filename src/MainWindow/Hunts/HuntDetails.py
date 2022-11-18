@@ -32,4 +32,3 @@ class HuntDetails(QGroupBox):
         self.bounties.update(qp,bounties,targets)
         self.rewards.update(accolades)
         self.monsters.update(monsters_killed)
-        self.setFixedHeight(int(self.sizeHint().height()*1.1))

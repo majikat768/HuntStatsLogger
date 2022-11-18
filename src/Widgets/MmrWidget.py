@@ -3,7 +3,7 @@ from PyQt6.QtGui import QPixmap, QColor, QPainter
 from DbHandler import GetCurrentMmr, GetBestMmr
 from resources import mmr_to_stars, star_path
 
-star_size = 24
+star_size = 16
 
 class MmrWidget(QWidget):
     def __init__(self, parent=None):
