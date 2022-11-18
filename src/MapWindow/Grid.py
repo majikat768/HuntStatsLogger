@@ -23,10 +23,10 @@ class Grid(QGraphicsItem):
         for j in range(1,self.n):
             y = j*self.step
             line = QGraphicsLineItem(0,y,self.size,y)
-            line.setZValue(3)
+            line.setZValue(1)
             line.setPen(pen)
             self.lines.append(line)
-        self.setZValue(4)
+        self.setZValue(1)
 
     def boundingRect(self):
         return QRectF(0,0,self.size,self.size)

@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, 
 from PIL import Image
 import os
 import json
-from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtCore import QEvent, Qt, QSize
 from PyQt6.QtGui import QMouseEvent, QColor, QPen, QBrush, QPixmap
 from MapWindow.Grid import Grid
 from MapWindow.Marker import Border, Label, Marker
@@ -33,6 +33,7 @@ class MapView(QGraphicsView):
         self.zoom = 1
         self.factor = 1
         self.rulerMode = False
+        self.mapScale = 0.5
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -43,7 +44,7 @@ class MapView(QGraphicsView):
     def initScene(self,w,h):
         self.scene = QGraphicsScene(0,0,w,h)
         #self.setBaseSize(w,h)
-        self.setFixedSize(w,h)
+        self.setFixedSize(int(w),int(h))
         self.setScene(self.scene)
         self.scene.installEventFilter(self)
     
@@ -61,9 +62,12 @@ class MapView(QGraphicsView):
                 path = os.path.join(maps[self.current],f)
                 if size == 0:
                     size = Image.open(path).size[0]
+                    size = size*self.mapScale
                 if self.scene == None:
                     self.initScene(4*size,4*size)
                 tile = QGraphicsPixmapItem(QPixmap(path))
+                tile.setZValue(0)
+                tile.setScale(self.mapScale)
                 self.scene.addItem(tile)
                 tile.setPos(x*size,y*size)
 
@@ -125,7 +129,7 @@ class MapView(QGraphicsView):
             x = pt['x']/100 * self.size().width()
             y = pt['y']/100 * self.size().height()
             self.spawns.append(
-                Marker(x=x,y=y,size=16,brushColor=brush,penColor=pen)
+                Marker(x=x,y=y,brushColor=brush,penColor=pen)
             )
         for spawn in self.spawns:
             self.scene.addItem(spawn)
@@ -149,9 +153,9 @@ class MapView(QGraphicsView):
                 x = pt['x']/100 * self.size().width()
                 y = pt['y']/100 * self.size().height()
                 if type == "Permanent":
-                    dot = Marker(x=x,y=y,size=16,brushColor=pbrush,penColor=ppen)
+                    dot = Marker(x=x,y=y,brushColor=pbrush,penColor=ppen)
                 else:
-                    dot = Marker(x=x,y=y,size=16,brushColor=rbrush,penColor=rpen)
+                    dot = Marker(x=x,y=y,brushColor=rbrush,penColor=rpen)
                 self.beetles.append(dot)
         for beetle in self.beetles:
             self.scene.addItem(beetle)

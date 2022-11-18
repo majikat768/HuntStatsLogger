@@ -35,7 +35,7 @@ class MainFrame(QWidget):
 
     def initButtons(self):
         self.buttons = QWidget()
-        self.buttons.layout = QHBoxLayout()
+        self.buttons.layout = QGridLayout()
         self.buttons.setLayout(self.buttons.layout)
         self.buttons.spawns = QPushButton("Toggle Player Spawns")
         self.buttons.spawns.clicked.connect(self.mapView.ToggleSpawnPoints)
@@ -47,11 +47,14 @@ class MainFrame(QWidget):
         self.buttons.borders.clicked.connect(self.mapView.ToggleCompoundBorders)
         self.buttons.ruler = QPushButton("Ruler....")
         self.buttons.ruler.clicked.connect(self.mapView.toggleRuler)
-        self.buttons.layout.addWidget(self.buttons.spawns)
-        self.buttons.layout.addWidget(self.buttons.beetles)
-        self.buttons.layout.addWidget(self.buttons.names)
-        self.buttons.layout.addWidget(self.buttons.borders)
-        self.buttons.layout.addWidget(self.buttons.ruler)
+        self.buttons.layout.addWidget(self.buttons.spawns,0,0)
+        self.buttons.layout.addWidget(self.buttons.beetles,0,1)
+        self.buttons.layout.addWidget(self.buttons.names,1,0)
+        self.buttons.layout.addWidget(self.buttons.borders,1,1)
+        self.buttons.layout.addWidget(self.buttons.ruler,0,2)
+        for i in range(self.buttons.layout.count()):
+            if type(self.buttons.layout.itemAt(i)) == QWidget:
+                self.buttons.layout.itemAt(i).setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.layout.addWidget(self.buttons)
 
 

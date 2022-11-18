@@ -3,7 +3,7 @@ from PyQt6.QtGui import QColor, QBrush, QPen, QFont, QPolygonF
 from PyQt6.QtCore import QPointF
 
 class Marker(QGraphicsEllipseItem):
-    def __init__(self, parent=None,x=0,y=0,brushColor=QColor("#000000"),penColor=QColor("#ffffff"),size=16):
+    def __init__(self, parent=None,x=0,y=0,brushColor=QColor("#000000"),penColor=QColor("#ffffff"),size=10):
         super().__init__(x,y,size,size,parent)
         self.brush = QBrush(brushColor)
         self.pen = QPen(penColor)
@@ -17,20 +17,20 @@ class Marker(QGraphicsEllipseItem):
         #self.textBox.setFont(QFont("mono",24))
         #self.textBox.setPos(self.x,self.y)
         #self.textBox.setZValue(2)
-        self.setZValue(1)
+        self.setZValue(2)
 
     def toggle(self):
         if self.zValue() > 0:
             self.setZValue(-1)
         else:
-            self.setZValue(1)
+            self.setZValue(2)
 
 class Label(QGraphicsTextItem):
     def __init__(self,text,parent=None,x=0,y=0):
         super().__init__(text,parent)
         self.text = text
         self.font = QFont("Libre Baskerville",10)
-        self.font.setBold(True)
+        #self.font.setBold(True)
         self.setFont(self.font)
         self.w = self.boundingRect().width()
         self.h = self.boundingRect().height()
@@ -40,7 +40,7 @@ class Label(QGraphicsTextItem):
         self.setDefaultTextColor(QColor("#ffffff"))
         self.shadow = self.setShadow()
         self.setGraphicsEffect(self.shadow)
-        self.setZValue(1)
+        self.setZValue(2)
 
     def setShadow(self):
         shadow = QGraphicsDropShadowEffect()
@@ -60,7 +60,7 @@ class Label(QGraphicsTextItem):
         if self.zValue() > 0:
             self.setZValue(-1)
         else:
-            self.setZValue(1)
+            self.setZValue(2)
 
     def paint(self, painter, option, widget) -> None:
         return super().paint(painter, option, widget)
@@ -71,7 +71,7 @@ class Border(QGraphicsPolygonItem):
         self.verts = verts
         self.pen = QPen(QColor("#aadd0000"))
         self.brush = QBrush(QColor("#00000000"))
-        self.pen.setWidth(8)
+        self.pen.setWidth(4)
         self.setPolygon(QPolygonF([QPointF(v['x'],v['y']) for v in self.verts]))
         self.setBrush(self.brush)
         self.setPen(self.pen)
@@ -84,4 +84,4 @@ class Border(QGraphicsPolygonItem):
         if self.zValue() > 0:
             self.setZValue(-1)
         else:
-            self.setZValue(1)
+            self.setZValue(2)
