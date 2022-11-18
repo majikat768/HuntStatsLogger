@@ -143,6 +143,10 @@ QTreeView::item:selected {
 QTreeView::item {
 	font-family: Courier New;
 }
+QHeaderView::section {
+	background: transparent;
+	border:1px;
+}
 QListWidget {
 	background: transparent;
 	color:#02cf7f;

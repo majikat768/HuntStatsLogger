@@ -28,8 +28,8 @@ class TeamDetails(QGroupBox):
         self.teamList = QTreeWidget()
         self.teamList.setIndentation(0)
         self.teamList.setItemsExpandable(False)
-        self.teamList.setHeaderHidden(True)
-        self.teamList.setColumnCount(3)
+        #self.teamList.setHeaderHidden(True)
+        self.teamList.setColumnCount(2)
         #self.teamList.setItemDelegate(ItemDelegate())
         self.teamList.currentItemChanged.connect(self.switchTeamWidget)
         self.teamList.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
@@ -52,8 +52,11 @@ class TeamDetails(QGroupBox):
         self.body.addWidget(self.leftColumn)
         self.body.addWidget(self.teamStackScroll)
         self.layout.addWidget(self.body)
-        self.body.setStretchFactor(0,2)
+        self.body.setStretchFactor(0,1)
         self.body.setStretchFactor(1,3)
+        self.teamList.setHeaderLabels(["",""])
+        self.teamList.header().setFixedHeight(4)
+        self.teamList.header().setObjectName("teamsHeader")
 
         self.body.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
 
@@ -163,10 +166,7 @@ class TeamDetails(QGroupBox):
                     soulSurvivor = hunterWidget.soulSurvivor
                 name = teamhunters[j]['blood_line_name']
                 if isQp:
-                    if len(name) > 12:
-                        title = name[:9] + '...'
-                    else:
-                        title = name
+                    title = name
             if bountyextracted:
                 tab.layout.addWidget(
                     QLabel("Extracted with the bounty."), 3, 0)
@@ -216,8 +216,6 @@ class TeamDetails(QGroupBox):
                 del painter
                 icoLabel.setPixmap(pm)
             maxIconWidth = max(maxIconWidth,icon_size*len(icons)+icon_size)
-            if len(title) > 20:
-                title = title[:17] + '...'
             #self.teamList.setItemWidget(item,0,label)
             item.setText(0,title)
             self.teamList.setItemWidget(item,1,icoLabel)
