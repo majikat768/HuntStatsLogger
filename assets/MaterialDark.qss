@@ -82,7 +82,7 @@ SettingsWindow * {
 }
 
 #huntDetails {
-	border:1px solid #88ccdd;
+	border:1px solid #44002244;
 	padding:0px;
 	margin:0px;
 	padding-bottom:-4px;

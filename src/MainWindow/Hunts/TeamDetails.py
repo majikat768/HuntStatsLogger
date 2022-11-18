@@ -43,6 +43,7 @@ class TeamDetails(QGroupBox):
         self.body.setChildrenCollapsible(False)
 
         self.killsData = QGroupBox()
+        self.killsData.setStyleSheet("QGroupBox{border:1px solid #44ffffff;}")
         self.killsData.layout = QVBoxLayout()
         self.killsData.setLayout(self.killsData.layout)
         self.killsData.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
@@ -57,6 +58,8 @@ class TeamDetails(QGroupBox):
         self.teamList.setHeaderLabels(["",""])
         self.teamList.header().setFixedHeight(4)
         self.teamList.header().setObjectName("teamsHeader")
+
+        self.setStyleSheet("QGroupBox{border:0px;}")
 
         self.body.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
 

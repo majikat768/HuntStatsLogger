@@ -1,5 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy, QPushButton
+from PyQt6.QtCore import QEvent
 from resources import clearLayout
+from Popup import Popup
 
 class MonstersWidget(QWidget):
     def __init__(self, parent=None):
@@ -18,9 +20,46 @@ class MonstersWidget(QWidget):
         title = QLabel("Monster kills: %d" % n)
         title.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.layout.addWidget(title)
-        for m in monsters_killed:
-            if monsters_killed[m] > 0:
-                label = QLabel("%d %s" % (monsters_killed[m],m))
-                label.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-                self.layout.addWidget(label)
+        overflow = None
+        i = 0
+        for monster,kills in reversed(sorted(monsters_killed.items(),key=lambda item : item[1])):
+            if kills > 0:
+                if i < 3:
+                    label = QLabel("%d %s" % (kills,monster))
+                    label.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+                    self.layout.addWidget(label)
+                    i += 1
+                else:
+                    if overflow == None:
+                        overflow = QPushButton(" > > ")
+                        overflow.setObjectName("overflow")
+                        overflow.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+                        overflow.installEventFilter(self)
+                        overflow.data = {}
+                    overflow.data[monster] = kills
+        if overflow != None:
+            self.layout.addWidget(overflow)
         self.adjustSize()
+
+    def eventFilter(self, obj, event) -> bool:
+        if obj.objectName() == "overflow":
+            if event.type() == QEvent.Type.Enter:
+                info = QWidget()
+                info.layout = QVBoxLayout()
+                info.setLayout(info.layout)
+                x = event.globalPosition().x()
+                y = event.globalPosition().y()
+                for d in obj.data:
+                    info.layout.addWidget(QLabel("%d %s" % (obj.data[d],d)))
+                self.popup = Popup(info, x, y)
+                # self.popup.keepAlive(True)
+                self.popup.show()
+                self.raise_()
+                self.activateWindow()
+            elif event.type() == QEvent.Type.Leave:
+                try:
+                    self.popup.close()
+                except:
+                    self.popup = None
+                pass
+        return super().eventFilter(obj, event)
