@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow, QStatusBar, QApplication, QSystemTrayIcon
+from PyQt6.QtWidgets import QMainWindow, QStatusBar, QApplication
 from PyQt6.QtCore import QPoint, Qt
 
 from MainWindow.MainFrame import MainFrame
@@ -26,6 +26,7 @@ class MainWindow(QMainWindow):
         self.offset = QPoint()
         self.mousePressed = False
         self.isMini = False
+        self.wasMax = False
 
         self.showSysTray = settings.value("show_sys_tray","False").lower() == "true"
         
@@ -54,6 +55,9 @@ class MainWindow(QMainWindow):
 
     def minify(self):
         self.isMini = True
+        if self.isMaximized():
+            self.showNormal()
+            self.wasMax = True
         settings.setValue("window_size", self.size())
         self.mainframe.tabs.setVisible(False)
         #self.mainframe.buttons.setVisible(False)
@@ -69,7 +73,9 @@ class MainWindow(QMainWindow):
         self.mainframe.tabs.setVisible(True)
         self.statusBar().setVisible(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint,False)
-        if settings.value("window_size", "") != "":
+        if self.wasMax:
+            self.showMaximized()
+        elif settings.value("window_size", "") != "":
             size = settings.value("window_size")
             self.resize(size.width(),size.height())
         else:
