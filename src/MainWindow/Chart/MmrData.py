@@ -1,5 +1,6 @@
 from DbHandler import GetAllMmrs
 import pyqtgraph
+from MainWindow.Chart.ScatterItem import ScatterItem
 from DbHandler import *
 from resources import *
 
@@ -24,23 +25,25 @@ class MmrData():
         data.append({'x': GetTotalHuntCount(), 'y': prediction,
                     'qp': None, 'ts': GetLastHuntTimestamp()})
         self.line = pyqtgraph.PlotDataItem(data, pen="#ffffff88")
-        self.qpPoints = pyqtgraph.ScatterPlotItem(
+        self.qpPoints = ScatterItem(
             [{
                 'x': pt['x'],
                 'y': pt['y'],
                 'data':pt['ts']
             } for pt in data if pt['qp'] == 'true'],
-            size=12, hoverable=True, hoverSize=16, symbol='o', pen="#000000", brush="#00ffff", name="Quick Play", tip="MMR: {y:.0f}".format
+            pen="#000000", brush="#00ffff", name="Quick Play", tip="MMR: {y:.0f}".format
         )
-        self.bhPoints = pyqtgraph.ScatterPlotItem(
+        self.bhPoints = ScatterItem(
             [{'x': pt['x'], 'y': pt['y'], 'data':pt['ts']}
                 for pt in data if pt['qp'] == 'false'],
-            size=12, hoverable=True, hoverSize=16, symbol='o', pen="#000000", brush="#ff0000", name="Bounty Hunt", tip="MMR: {y:.0f}".format
+            pen="#000000", brush="#ff0000", name="Bounty Hunt", tip=("MMR: {y:.0f}").format,
         )
+        lastTs = GetLastHuntTimestamp()
         spots = [{'x': GetTotalHuntCount(), 'y': prediction,
-                  'data': GetLastHuntTimestamp()}]
-        self.nextPoint = pyqtgraph.ScatterPlotItem(
-            spots, size=12, hoverable=True, hoverSize=16, symbol='t1', pen="#ffffff", brush="#000000", tip="Predicted MMR: {y:.0f}".format)
+                  'data': -1}]
+
+        self.nextPoint = ScatterItem(
+            spots, symbol='t1', pen="#ffffff", brush="#000000", tip=("Predicted MMR: %d" % (prediction)).format)
 
         starValues = [0, 1999, 2299, 2599, 2749, 2999, 4999]
 

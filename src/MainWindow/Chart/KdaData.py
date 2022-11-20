@@ -1,6 +1,7 @@
 from cmath import inf
 from DbHandler import *
-import pyqtgraph
+from pyqtgraph import PlotDataItem
+from MainWindow.Chart.ScatterItem import ScatterItem
 
 class KdaData():
     def __init__(self):
@@ -41,12 +42,12 @@ class KdaData():
             })
             i += 1
 
-        self.line = pyqtgraph.PlotDataItem(data,pen="#ffffff88")
-        self.qpPoints = pyqtgraph.ScatterPlotItem(
+        self.line = PlotDataItem(data,pen="#ffffff88")
+        self.qpPoints = ScatterItem(
             [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'true'],
-            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#00ffff",name="Quick Play",tip="{data}<br>KDA: {y:.2f}".format
+            pen="#000000",brush="#00ffff",name="Quick Play",tip="{data}<br>KDA: {y:.2f}".format
         )
-        self.bhPoints = pyqtgraph.ScatterPlotItem(
+        self.bhPoints = ScatterItem(
             [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'false'],
-            size=12,hoverable=True,hoverSize=16,symbol='o',pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="{data}<br>KDA: {y:.2f}".format
+            pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="{data}<br>KDA: {y:.2f}".format
         )

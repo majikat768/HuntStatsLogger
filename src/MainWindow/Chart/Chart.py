@@ -68,11 +68,11 @@ class Chart(QScrollArea):
         mainframe = self.window().mainframe
         huntsTab = mainframe.huntsTab
         mainframe.tabs.setCurrentWidget(huntsTab)
-        idx = huntsTab.HuntSelect.findData(ts)
-        if idx < huntsTab.HuntSelect.count():
-            huntsTab.HuntSelect.setCurrentIndex(idx+1)
+        if ts > 0:
+            idx = huntsTab.HuntSelect.findData(ts)
         else:
-            huntsTab.HuntSelect.setCurrentIndex(idx)
+            idx = -1 
+        huntsTab.HuntSelect.setCurrentIndex(idx+1)
         huntsTab.updateDetails()
 
     def initUI(self):

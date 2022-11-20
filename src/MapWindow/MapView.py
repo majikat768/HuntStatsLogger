@@ -24,6 +24,8 @@ spawn_points_file = resource_path("assets/json/spawn_points.json")
 beetle_spawns_file = resource_path("assets/json/beetle_spawns.json")
 compounds_file = resource_path("assets/json/compound_coordinates.json")
 
+grid_size = 8
+
 class MapView(QGraphicsView):
     def __init__(self) -> None:
         super().__init__()
@@ -77,7 +79,7 @@ class MapView(QGraphicsView):
         self.InitBeetleSpawns(self.current)
         self.InitCompoundLabels(self.current)
         self.InitCompoundEdges(self.current)
-        self.grid = Grid(int(self.size().width()),10)
+        self.grid = Grid(int(self.size().width()),grid_size)
         self.scene.addItem(self.grid)
         self.ruler = Ruler()
         self.scene.addItem(self.ruler)
@@ -113,9 +115,12 @@ class MapView(QGraphicsView):
         self.rulerMode = not self.rulerMode
         if self.rulerMode:
             self.window().statusBar.showMessage("Click a starting point")
-            self.parent().buttons.ruler.setStyleSheet("QPushButton{border:4px solid yellow;}")
+            self.parent().buttons.ruler.setStyleSheet("QPushButton{border:2px solid #99ffff00;}")
         else:
             self.parent().buttons.ruler.setStyleSheet("QPushButton{border:1px solid black;}")
+            self.setMap(self.current)
+            self.ruler.clear()
+            self.scene.update()
 
     def InitSpawnPoints(self,map):
         #print('init.spawns')
@@ -245,9 +250,16 @@ class MapView(QGraphicsView):
                 x = event.pos().x() / self.zoom
                 y = event.pos().y() / self.zoom
                 self.ruler.setStart(x,y)
-            else:
+            elif not self.ruler.set:
+                self.ruler.set = True
+                x = event.pos().x() / self.zoom
+                y = event.pos().y() / self.zoom
+                self.ruler.moveEnd(x,y)
+                self.window().statusBar.showMessage("%d meters" % (self.ruler.length() / self.mapScale))
+            elif self.ruler.set:
+                self.ruler.set = False
                 self.ruler.setStart(-1,-1)
-            self.window().statusBar.showMessage("Distance: 0 meters")
+                self.window().statusBar.showMessage("Click a starting point")
 
         items = self.items(event.pos())
         for item in items:
@@ -258,13 +270,15 @@ class MapView(QGraphicsView):
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         if self.rulerMode:
-            if self.ruler.line.p1().x() > 0 or self.ruler.line.p1().y() > 0:
+            if not self.ruler.set and (self.ruler.line.p1().x() > 0 or self.ruler.line.p1().y() > 0):
                 x = event.pos().x() / self.zoom
                 y = event.pos().y() / self.zoom
                 self.ruler.moveEnd(x,y)
                 self.update()
                 self.scene.update()
-                self.window().statusBar.showMessage("Distance: %d meters" % self.ruler.length())
+                self.window().statusBar.showMessage("%d meters | click again to anchor" % (self.ruler.length() / self.mapScale))
         else:
-            self.window().statusBar.showMessage("(%s %s)" % (int(event.position().x()),int(event.position().y())))
+            x = event.pos().x() / self.mapScale
+            y = event.pos().y() / self.mapScale
+            self.window().statusBar.showMessage("(%d %d)" % (x,y))
         return super().mouseMoveEvent(event)

@@ -6,15 +6,15 @@ Company: GTRONICK
 Last updated: 04/12/2018, 15:00.
 Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 */
+
 * {
 }
 QWidget {
 	background:transparent;
 }
-SettingsWindow * {
+SettingsWindow {
     font-family: Courier New;
     font-size:12px;
-	background-color: #1e282c;
 }
 * {
     font-family: Libre Baskerville;
@@ -341,7 +341,7 @@ QMenu::item {
 	background-color: #1e1d23;
 }
 QMenu{
-	background-color:#1e1d23;
+    font-family: Courier New;
 }
 QTabWidget {
 	color:rgb(0,0,0);

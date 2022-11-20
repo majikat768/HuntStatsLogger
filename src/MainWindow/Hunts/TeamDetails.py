@@ -191,6 +191,7 @@ class TeamDetails(QGroupBox):
             teamItems[i] = {'title': title, 'widget': tab,'icons':icons, 'ownteam':ownTeam}
 
         ownTeamInserted = False
+        maxIconWidth = 0
         for i in range(len(teamItems)):
             icons = teamItems[i]['icons']
             widget = teamItems[i]['widget']
@@ -208,7 +209,7 @@ class TeamDetails(QGroupBox):
             else:
                 self.teamList.insertTopLevelItem(self.teamList.topLevelItemCount(),item)
              
-            icoLabel = QLabel()
+            iconLabel = QLabel()
             pm = QPixmap(icon_size*(len(icons)+1),icon_size)
             pm.fill(QtGui.QColor(0,0,0,0))
             if len(icons) > 0:
@@ -217,17 +218,15 @@ class TeamDetails(QGroupBox):
                     icon = icons[j]
                     painter.drawPixmap(j*icon_size,0,icon_size,icon_size,QPixmap(icon).scaled(icon_size,icon_size))
                 del painter
-                icoLabel.setPixmap(pm)
+                iconLabel.setPixmap(pm)
             maxIconWidth = max(maxIconWidth,icon_size*len(icons)+icon_size)
             #self.teamList.setItemWidget(item,0,label)
             item.setText(0,title)
-            self.teamList.setItemWidget(item,1,icoLabel)
-            icoLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
+            self.teamList.setItemWidget(item,1,iconLabel)
+            iconLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.teamStack.addWidget(widget)
         self.teamList.setCurrentItem(self.teamList.itemAt(0,0))
-
-        for i in range(self.teamList.columnCount()):
-            self.teamList.resizeColumnToContents(i)
+        self.teamList.setColumnWidth(1,maxIconWidth)
 
         self.teamStackScroll.resize(self.teamStack.sizeHint())
 
@@ -397,4 +396,3 @@ class ItemDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         option.decorationPosition = QStyleOptionViewItem.Position.Right
         super(ItemDelegate, self).paint(painter, option, index)
-

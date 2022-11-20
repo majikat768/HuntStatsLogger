@@ -13,6 +13,8 @@ class Ruler(QGraphicsLineItem):
         self.setZValue(8)
         self.setLine(self.line)
 
+        self.set = False
+
     def setStart(self,x,y):
         self.line.setP1(QPointF(x,y))
         self.line.setP2(QPointF(x,y))
