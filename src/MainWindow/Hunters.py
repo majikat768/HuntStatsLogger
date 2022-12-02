@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget, QGroupBox, QGridLayout, QHBoxLayout, QVBoxL
 from PyQt6.QtCore import Qt
 from resources import *
 from DbHandler import *
+from Widgets.Modal import Modal
 
 
 class Hunters(QScrollArea):
@@ -128,8 +129,7 @@ class Hunters(QScrollArea):
         self.ShowResults(res, name)
 
     def ShowResults(self, data, name):
-        resultsWindow = QMainWindow(self)
-        resultsWindow.setWindowFlag(Qt.WindowType.Popup)
+        resultsWindow = Modal(parent=self)
         results = QWidget()
         results.layout = QVBoxLayout()
         results.setLayout(results.layout)
@@ -167,19 +167,10 @@ class Hunters(QScrollArea):
                 results.layout.addWidget(
                     QLabel("You've killed them %d times." % killed))
 
-        closeButton = QPushButton("close")
-        closeButton.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        closeButton.clicked.connect(resultsWindow.close)
         results.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        results.layout.addWidget(closeButton)
 
-        resultsWindow.setCentralWidget(results)
+        resultsWindow.addWidget(results)
         resultsWindow.show()
-        resultsWindow.move(
-            int(self.window().pos().x() + self.window().width()/2 - resultsWindow.width()/2),
-            int(self.window().pos().y() + self.window().height()/2 - resultsWindow.height()/2),
-        )
 
     def SameTeamCount(self, data):
         teamnums = {}

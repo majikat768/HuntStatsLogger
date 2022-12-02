@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QMainWindow,QWidget,QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QPushButton,QLabel, QFileDialog, QSizePolicy, QLineEdit, QComboBox, QCheckBox, QSpacerItem, QApplication
+from PyQt6.QtWidgets import QMainWindow,QWidget,QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QPushButton,QLabel, QFileDialog, QSizePolicy, QLineEdit, QComboBox, QCheckBox, QSpacerItem, QApplication, QDialog
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from DbHandler import execute_query
 from Server import *
 from resources import *
+from Widgets.Modal import Modal
 
 class SettingsWindow(QMainWindow):
     def __init__(self, parent=None) -> None:
@@ -31,16 +32,34 @@ class SettingsWindow(QMainWindow):
         self.syncFilesButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.syncFilesButton.clicked.connect(self.initSync)
         self.syncFilesInfoButton = QPushButton(" ? ")
-        self.syncFilesInfoButton.setObjectName("icon") 
-        self.syncFilesButton.clicked.connect(self.SyncInfoDialog)
+        self.syncFilesInfoButton.setObjectName("link") 
+        self.syncFilesInfoButton.clicked.connect(self.SyncInfoDialog)
         self.syncFilesInfoButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.syncFilesWidget.layout.addWidget(self.syncFilesButton,1,0)
-        self.syncFilesWidget.layout.addWidget(self.syncFilesInfoButton,0,1)
-        self.syncFilesWidget.layout.setColumnStretch(self.syncFilesWidget.layout.columnCount()-1,1)
+        self.syncFilesWidget.layout.addWidget(QLabel(),1,1)
+        self.syncFilesWidget.layout.addWidget(self.syncFilesInfoButton,0,2)
+        self.syncFilesWidget.layout.setColumnStretch(1,1)
         self.main.layout.addWidget(self.syncFilesWidget)
 
     def SyncInfoDialog(self):
-        pass
+        print("what's this")
+        w = Modal(parent=self)
+        info = QWidget()
+        info.layout = QVBoxLayout()
+        info.setLayout(info.layout)
+        text = "Selecting this option allows the app to automatically upload logfiles\nand data files to a remote server, viewable by the developer."
+        text += "\n\nThis can be helpful in debugging, and in developing more features."
+        text += "\n\nThe files which will be shared are in the Settings Folder"
+        text += "\nunder logs/ and json/ .\n"
+        btn = QPushButton("Settings Folder")
+        btn.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        btn.clicked.connect(lambda : os.startfile(app_data_path))
+        textLabel = QLabel(text)
+        textLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        info.layout.addWidget(textLabel,0,Qt.AlignmentFlag.AlignCenter)
+        info.layout.addWidget(btn,0,Qt.AlignmentFlag.AlignCenter)
+        w.addWidget(info)
+        w.show()
 
     def initUI(self):
         self.initSteamOptions()

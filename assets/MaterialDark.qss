@@ -37,6 +37,7 @@ SettingsWindow {
 }
 #popup {
 	border:1px solid red;
+	font-size:12px;
 }
 #link {
 	background-color: #0e0d23;
@@ -51,9 +52,6 @@ SettingsWindow {
 	border: 1px solid #444444;
 }
 
-#popup {
-	font-size:12px;
-}
 #Header {
 	border: 1px solid black;
 	background-color:#1e282c;

@@ -35,7 +35,7 @@ class Server(QObject):
 
         key = "%s/%s" % (prefix,obj)
         expiration = int(settings.value("SecretExpiresAt","-1"))
-        if expiration > time.time() or expiration < 0:
+        if expiration < time.time() or expiration < 0:
             self.set_tokens()
         session = boto3.Session(
             aws_access_key_id=settings.value("AccessKeyId"),
