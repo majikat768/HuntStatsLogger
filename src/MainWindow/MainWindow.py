@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(msg)
 
     def closeEvent(self, a0):
+        self.mainframe.server.upload_file()
         if self.mainframe.settingsWindow:
             self.mainframe.settingsWindow.close()
         if self.mainframe.mapWindow:

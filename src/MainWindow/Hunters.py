@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QGroupBox, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QScrollArea, QLineEdit, QPushButton, QMainWindow
+from PyQt6.QtWidgets import QWidget, QGroupBox, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QScrollArea, QLineEdit, QPushButton, QMainWindow, QDialog
 from PyQt6.QtCore import Qt
 from resources import *
 from DbHandler import *
@@ -129,6 +129,7 @@ class Hunters(QScrollArea):
 
     def ShowResults(self, data, name):
         resultsWindow = QMainWindow(self)
+        resultsWindow.setWindowFlag(Qt.WindowType.Popup)
         results = QWidget()
         results.layout = QVBoxLayout()
         results.setLayout(results.layout)
@@ -175,6 +176,10 @@ class Hunters(QScrollArea):
 
         resultsWindow.setCentralWidget(results)
         resultsWindow.show()
+        resultsWindow.move(
+            int(self.window().pos().x() + self.window().width()/2 - resultsWindow.width()/2),
+            int(self.window().pos().y() + self.window().height()/2 - resultsWindow.height()/2),
+        )
 
     def SameTeamCount(self, data):
         teamnums = {}

@@ -6,3 +6,4 @@ huntstats.db
 logs/
 .venv/
 settings.ini
+aws.json

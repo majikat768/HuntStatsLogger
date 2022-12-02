@@ -10,6 +10,7 @@ from resources import *
 from MainWindow.Hunts.Hunts import Hunts
 from MainWindow.Hunters import Hunters
 from MainWindow.Chart.Chart import Chart
+from Server import Server,startThread
 
 
 class MainFrame(QWidget):
@@ -31,6 +32,13 @@ class MainFrame(QWidget):
         self.initButtons()
         self.offset = QPoint()
 
+        self.server = Server()
+        self.serverThread = QThread(parent=self)
+        self.server.moveToThread(self.serverThread)
+        self.serverThread.finished.connect(self.serverThread.quit)
+        self.serverThread.finished.connect(self.server.deleteLater)
+        self.serverThread.finished.connect(self.serverThread.deleteLater)
+
         self.setStatus("ready.")
         if settings.value("xml_path", "") == "":
             pass
@@ -39,6 +47,12 @@ class MainFrame(QWidget):
         if (settings.value("xml_path", "") != ""):
             self.StartLogger()
 
+        '''
+        if settings.value("sync_files","False").lower() == "true":
+            if settings.value("AccessToken","") == "" or settings.value("RefreshToken","") == "" or settings.value("IdToken","") == "":
+                self.server.init_user()
+            self.server.login_user()
+        '''
         self.update()
 
     def initButtons(self):

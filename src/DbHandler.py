@@ -3,7 +3,7 @@ from resources import *
 
 
 def json_to_db(obj):
-    print('inserting record into database')
+    log('inserting record into database')
     teams = obj['teams']
     hunters = obj['hunters']
     entries = obj['entries']
@@ -31,15 +31,15 @@ def insert_row(conn, table, row):
         cursor.execute(query, (vals))
         conn.commit()
     except Exception as e:
-        print('insert_row')
-        print(e)
+        log('insert_row')
+        log(e)
         if 'syntax error' in str(e):
             problem = str(e).split("\"")[1]
             for key in row:
                 if problem in key:
                     row.pop(key)
                     break
-            print('\tsyntax error repaired')
+            log('\tsyntax error repaired')
             insert_row(conn, table,row)
 
 
@@ -55,13 +55,13 @@ def tables_exist():
         conn.close()
         return nTables == len(tables)
     except Exception as e:
-        print('tables_exist err')
-        print(e)
+        log('tables_exist err')
+        log(e)
         conn.close()
         return False
 
 def create_tables():
-    print('creating tables')
+    log('creating tables')
     conn = sqlite3.connect(database)
     cursor = conn.cursor()
     cursor.executescript(open(resource_path('assets/schema.sql'),'r').read())
@@ -79,9 +79,9 @@ def execute_query(query,opts=None):
             cursor.execute(query)
         return cursor.fetchall()
     except Exception as e:
-        print('execute_query')
-        print('requested query: %s' % query)
-        print(e)
+        log('execute_query err')
+        log('requested query: %s' % query)
+        log(e)
         return []
 
 def GetTotalHuntCount():
@@ -141,8 +141,8 @@ def GetHunts(earliest=0):
     try:
         return [ { cols[i][1] : hunt[i] for i in range(len(cols)) } for hunt in vals]
     except Exception as e:
-        print('dbhandler.gethunts')
-        print(e)
+        log('dbhandler.gethunts')
+        log(e)
         return []
 
 def GetHunt(ts):
@@ -152,8 +152,8 @@ def GetHunt(ts):
         vals = vals[0]
         return { cols[i][1] : vals[i] for i in range(len(cols)) }
     except Exception as e:
-        print('dbhandler.gethunt')
-        print(e)
+        log('dbhandler.gethunt')
+        log(e)
         return {}
 
 def GetLastHuntTimestamp():
@@ -169,9 +169,10 @@ def GetHuntEntries(ts):
         return [ { cols[i][1] : entry[i] for i in range(len(cols)) } for entry in vals]
 
     except Exception as e:
-        print('dbhandler.getentries')
-        print(e)
+        log('dbhandler.getentries')
+        log(e)
         return {}
+
 def GetHuntAccolades(ts):
     vals = execute_query("select * from 'accolades' where timestamp is %s" % ts) 
     cols = execute_query("pragma table_info('accolades')")
@@ -179,8 +180,8 @@ def GetHuntAccolades(ts):
         return [ { cols[i][1] : entry[i] for i in range(len(cols)) } for entry in vals]
 
     except Exception as e:
-        print('dbhandler.getaccolades')
-        print(e)
+        log('dbhandler.getaccolades')
+        log(e)
         return {}
 
 def GetKillsByMatch():
@@ -191,8 +192,8 @@ def GetKillsByMatch():
             for k in kData:
                 data.append({cols[i] : k[i] for i in range(len(cols))})
         except Exception as e:
-            print('dbhandler.getkillsbymatch')
-            print(e)
+            log('dbhandler.getkillsbymatch')
+            log(e)
 
         res = {}
         for d in data:
@@ -210,8 +211,8 @@ def GetDeathsByMatch():
             for d in dData:
                 data.append({cols[i] : d[i] for i in range(len(cols))})
         except Exception as e:
-            print('dbhandler.getdeathsbymatch')
-            print(e)
+            log('dbhandler.getdeathsbymatch')
+            log(e)
         res = {}
         for d in data:
             ts = d['ts']
@@ -228,8 +229,8 @@ def GetAssistsByMatch():
             for a in aData:
                 data.append({cols[i] : a[i] for i in range(len(cols))})
         except Exception as e:
-            print('dbhandler.getassistsbymatch')
-            print(e)
+            log('dbhandler.getassistsbymatch')
+            log(e)
         res = {}
         for d in data:
             ts = d['ts']
@@ -247,8 +248,8 @@ def GetTeams(timestamp):
             teams.append({tCols[i][1] : team[i] for i in range(len(tCols))})
 
     except Exception as e:
-        print("dbhandler.getteams")
-        print(e)
+        log("dbhandler.getteams")
+        log(e)
     return teams
 
 def GetHunterByName(name):
@@ -265,8 +266,8 @@ def GetHunterByProfileId(pid):
         for v in vals:
             res.append({cols[i][1] : v[i] for i in range(len(cols))})
     except Exception as e:
-        print('dbhandler.gethunterbyname')
-        print(e)
+        log('dbhandler.gethunterbyname')
+        log(e)
     return res
 
 def GetHunterKills(pid):
@@ -277,8 +278,8 @@ def GetHunterKills(pid):
         for v in vals:
             res.append({cols[i] : v[i] for i in range(len(cols))})
     except Exception as e:
-        print('dbhandler.gethunterkills')
-        print(e)
+        log('dbhandler.gethunterkills')
+        log(e)
     return res
 
 def GetHunters(timestamp):
@@ -290,8 +291,8 @@ def GetHunters(timestamp):
             hunters.append({hCols[i][1] : hunter[i] for i in range(len(hCols))})
         return hunters
     except Exception as e:
-        print('dbhandler.gethunters')
-        print(e)
+        log('dbhandler.gethunters')
+        log(e)
         return []
 
 def GetAllMmrs(name = settings.value('steam_name')):

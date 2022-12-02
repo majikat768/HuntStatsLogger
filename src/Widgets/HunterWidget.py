@@ -19,8 +19,6 @@ class HunterWidget(QWidget):
         self.layout.addWidget(self.level)
         self.layout.addStretch()
 
-        print(self.layout.children())
-
     def update(self):
         self.name.setText(settings.value("steam_name"))
         self.level.setText("level %s" % settings.value("HunterLevel","-1"))

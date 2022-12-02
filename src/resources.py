@@ -12,6 +12,7 @@ app_data_path = os.path.join(QStandardPaths.writableLocation(
     QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
 icon_size = 24
 
+aws_app_id = "6vfc0lcpnk6vehi3tf9h0shq7"
 if not os.path.exists(app_data_path):
     os.makedirs(app_data_path, exist_ok=True)
 
@@ -19,10 +20,24 @@ json_dir = os.path.join(app_data_path, 'json')
 if not os.path.exists(json_dir):
     os.makedirs(json_dir, exist_ok=True)
 
+logs_dir = os.path.join(app_data_path,'logs')
+if not os.path.exists(logs_dir):
+    os.makedirs(logs_dir, exist_ok=True)
+
+log_file = os.path.join(logs_dir,'log.txt')
+
+
 settings = QSettings(os.path.join(
     app_data_path, 'settings.ini'), QSettings.Format.IniFormat)
 database = os.path.join(app_data_path, 'huntstats.db')
 
+def log(str):
+    with open(log_file,'a') as f:
+        line = "%d\t%s\n" % (int(time.time()),str)
+        f.write(line)
+        print(str)
+    if os.stat(log_file).st_size > 1024 * 512:
+        os.rename(log_file,os.path.join(logs_dir,"log_%d.txt" % int(time.time())))
 
 def resource_path(relative_path):
     try:
@@ -41,8 +56,8 @@ def unix_to_datetime(timestamp):
     try:
         return datetime.fromtimestamp(timestamp).strftime('%H:%M %m/%d/%y')
     except Exception as e:
-        print('unix_to_datetime')
-        print(e)
+        log('unix_to_datetime error')
+        log(e)
         return -1
 
 

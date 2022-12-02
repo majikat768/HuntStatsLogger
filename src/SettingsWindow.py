@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QMainWindow,QWidget,QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QPushButton,QLabel, QFileDialog, QSizePolicy, QLineEdit, QComboBox, QCheckBox, QSpacerItem, QApplication
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
+from DbHandler import execute_query
+from Server import *
 from resources import *
 
 class SettingsWindow(QMainWindow):
@@ -15,6 +17,31 @@ class SettingsWindow(QMainWindow):
 
         self.initUI()
 
+    def initSyncOptions(self):
+        self.syncFilesWidget = QWidget()
+        self.syncFilesWidget.layout = QGridLayout()
+        self.syncFilesWidget.setLayout(self.syncFilesWidget.layout)
+
+        self.syncFilesCheck = QCheckBox("Sync files")
+        self.syncFilesCheck.setChecked(settings.value("sync_files","False").lower() == "true")
+        self.syncFilesCheck.stateChanged.connect(self.toggleFileSync)
+        self.syncFilesWidget.layout.addWidget(self.syncFilesCheck,0,0)
+        self.syncFilesButton = QPushButton("Initialize file sync")
+        self.syncFilesButton.setEnabled(self.syncFilesCheck.isChecked())
+        self.syncFilesButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.syncFilesButton.clicked.connect(self.initSync)
+        self.syncFilesInfoButton = QPushButton(" ? ")
+        self.syncFilesInfoButton.setObjectName("icon") 
+        self.syncFilesButton.clicked.connect(self.SyncInfoDialog)
+        self.syncFilesInfoButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.syncFilesWidget.layout.addWidget(self.syncFilesButton,1,0)
+        self.syncFilesWidget.layout.addWidget(self.syncFilesInfoButton,0,1)
+        self.syncFilesWidget.layout.setColumnStretch(self.syncFilesWidget.layout.columnCount()-1,1)
+        self.main.layout.addWidget(self.syncFilesWidget)
+
+    def SyncInfoDialog(self):
+        pass
+
     def initUI(self):
         self.initSteamOptions()
         self.main.layout.addItem(QSpacerItem(0,16,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed))
@@ -27,6 +54,8 @@ class SettingsWindow(QMainWindow):
         self.sysTrayCheck.setChecked(settings.value("show_sys_tray","False").lower() == "true")
         self.sysTrayCheck.stateChanged.connect(self.toggleSysTray)
         self.main.layout.addWidget(self.sysTrayCheck)
+
+        self.initSyncOptions()
 
         self.main.layout.addItem(QSpacerItem(0,16,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed))
         self.initKdaRange()
@@ -57,6 +86,34 @@ class SettingsWindow(QMainWindow):
         else:
             w.showSysTray = False
             settings.setValue("show_sys_tray",False)
+
+    def toggleFileSync(self):
+        if self.syncFilesCheck.isChecked():
+            print("sync on")
+            settings.setValue("sync_files",True)
+            self.syncFilesButton.setEnabled(True)
+            self.syncFilesButton.setText("Initialise file sync")
+        else:
+            settings.setValue("sync_files",False)
+            self.syncFilesButton.setEnabled(False)
+            self.syncFilesButton.setText("Not syncing.")
+    
+    def initSync(self):
+        self.syncFilesButton.setText("Initializing..."),
+        self.syncFilesButton.setEnabled(False)
+        self.Server = Server(parent=self)
+        startThread(self,self.Server,started=[self.Server.init_user],progress=[self.login])
+
+    def login(self):
+        self.syncFilesButton.setText("Connecting to server..."),
+        self.Server = Server(parent=self)
+        startThread(
+            self,self.Server,started=[self.Server.login_user],
+            progress=[
+                lambda : self.syncFilesButton.setText("Ready.")
+            ]
+        )
+
 
     def initKdaRange(self):
         self.KdaRangeLabel = QLabel("Calculate KDA from the last...")
@@ -125,9 +182,12 @@ class SettingsWindow(QMainWindow):
         if self.steamNameInput.isEnabled():
             if(len(self.steamNameInput.text()) > 0):
                 settings.setValue("steam_name",self.steamNameInput.text())
-                print('steam name updated')
-                print(settings.value('steam_name'))
+                log('steam name updated')
+                log(settings.value('steam_name'))
                 self.steamNameInput.setText(settings.value("steam_name"))
+                pid = execute_query("select profileid from 'hunters' where blood_line_name is '%s'" % settings.value("steam_name"))
+                pid = -1 if len(pid) == 0 else pid[0][0]
+                settings.setValue("profileid",pid)
                 self.parent().update()
             self.steamNameInput.setDisabled(True)
         else:
@@ -137,10 +197,8 @@ class SettingsWindow(QMainWindow):
         suffix = "user/profiles/default/attributes.xml"
         hunt_dir = QFileDialog.getExistingDirectory(self,"Select folder",settings.value('hunt_dir','.'))
         xml_path = os.path.join(hunt_dir,suffix)
-        print(hunt_dir)
-        print(xml_path)
         if not os.path.exists(xml_path):
-            print('attributes.xml not found.')
+            log('attributes.xml not found.')
             return
         settings.setValue('hunt_dir',hunt_dir)
         settings.setValue('xml_path',xml_path)

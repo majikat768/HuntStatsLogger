@@ -1,4 +1,5 @@
 from datetime import datetime
+from Server import Server, startThread
 import sqlite3
 import hashlib
 import json
@@ -42,9 +43,9 @@ class Logger(QObject):
         p = 0
         while True:
             if not os.path.exists(settings.value("xml_path")):
+                time.sleep(1)
                 continue
             if file_changed(last_change):
-                print('change detected')
                 self.mainframe.setStatus("file change detected")
                 last_change = os.stat(settings.value("xml_path")).st_mtime
                 ts = int(os.stat(settings.value("xml_path")).st_mtime)
@@ -58,19 +59,20 @@ class Logger(QObject):
                 try:
                     new_data = build_json_from_xml(ts)
                     record_exists = execute_query("select * from 'games' where game_id is '%s'" % new_data['game']['game_id'])
-                    if len(record_exists) > 0:
-                        print('record exists')
-                    else:
+                    if len(record_exists) <= 0:
+                        log('change detected')
                         self.mainframe.setStatus("writing new record to json file....")
                         with open(outfile,'w') as f:
                             json.dump(new_data,f)
+                        if str(settings.value("sync_files","false")).lower() == "true":
+                            self.mainframe.server.upload_file(file=outfile,file_type="json")
                         self.mainframe.setStatus("writing new record to database....")
                         json_to_db(new_data)
                         last_hunt = last_change
                         self.progress.emit()
                 except Exception as e:
-                    print('building json error')
-                    print(e)
+                    log('building json error')
+                    log(e)
                     continue
 
             if last_hunt > 0:
@@ -84,9 +86,10 @@ class Logger(QObject):
 
             if not self.running:
                 break
+        self.finished.emit()
 
 def generate_checksum(obj):
-    print('generating checksum')
+    #print('generating checksum')
     common_data = {
         "MissionBagBoss_0": obj['game']['MissionBagBoss_0'],
         "MissionBagBoss_1": obj['game']['MissionBagBoss_1'],
@@ -166,13 +169,13 @@ def clean_data(obj):
 
         return new_obj
     except Exception as e:
-        print('clean_data')
-        print(e)
+        log('clean_data')
+        log(e)
         return obj
 
 
 def build_json_from_xml(ts):
-    print('building json object')
+    #print('building json object')
     with open(settings.value("xml_path"),'r',encoding='utf-8') as xf:
         teams = {}
         hunters = {}
@@ -238,7 +241,7 @@ def build_json_from_xml(ts):
                     accolades[accolade_num][cat] = val
             elif "UnlockRank" in line:
                 if settings.value("HunterLevel","") != "" and int(val) < int(settings.value("HunterLevel")):
-                    print("prestiged")
+                    log("prestiged")
                 settings.setValue("HunterLevel",val)
         
         return clean_data({

@@ -70,8 +70,6 @@ class TeamDetails(QGroupBox):
         maxIconWidth = 0
         qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
         clearLayout(self.killsData.layout)
-        for i in  range(self.killsData.layout.count()):
-            print(self.killsData.layout.itemAt(i))
         team_kills = kills['team_kills']
         your_kills = kills['your_kills']
         your_deaths = kills['your_deaths']
@@ -130,15 +128,20 @@ class TeamDetails(QGroupBox):
             tab.setSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-            teamLabel = QLabel("Team %d<br>" % i)
+            teamLabel = QLabel("Team %d" % i)
             teamMmr = team['mmr']
             teamMmrLabel = QLabel("Team MMR: %d" % teamMmr)
+            teamRandom = (team['isinvite'].lower() == "false" and team['numplayers'] > 1)
+            teamRandomLabel = QLabel("Randoms" if teamRandom else "")
             nHunters = team['numplayers']
-            nHuntersLabel = QLabel("Hunters: %d" % nHunters)
+            nHuntersLabel = QLabel("%d hunters" % nHunters)
 
             tab.layout.addWidget(teamLabel, 0, 0)
             tab.layout.addWidget(teamMmrLabel, 1, 0)
-            tab.layout.addWidget(nHuntersLabel, 2, 0)
+            tab.layout.addWidget(teamRandomLabel,0,2)
+            tab.layout.addWidget(nHuntersLabel, 1, 2)
+            tab.layout.addWidget(QLabel(),2,0)
+            tab.layout.addWidget(QLabel(),4,0)
 
             teamhunters = HuntersOnTeam(hunters, team)
             hadbounty = 0
@@ -152,7 +155,7 @@ class TeamDetails(QGroupBox):
             title = "%s hunters" % len(teamhunters)
             for j in range(len(teamhunters)):
                 hunterWidget = self.GetHunterWidget(teamhunters[j])
-                tab.layout.addWidget(hunterWidget, 4, j)
+                tab.layout.addWidget(hunterWidget, 5, j)
                 tab.layout.setAlignment(hunterWidget,Qt.AlignmentFlag.AlignTop)
 
                 if not hadKills:
