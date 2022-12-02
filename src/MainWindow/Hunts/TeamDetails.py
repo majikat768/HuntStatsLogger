@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel, QFrame
                              QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from DbHandler import execute_query
-from Popup import Popup
+from Widgets.Popup import Popup
 from resources import *
 
 icon_size = 16

@@ -126,6 +126,7 @@ class Chart(QScrollArea):
         self.plot.addItem(winLoss.bountyBars)
         self.plot.addItem(winLoss.quickplayBars)
         self.plot.addItem(winLoss.survivalBars)
+        self.plot.setLabel('left','Win/Loss')
         self.plot.setLimits(xMin=0, xMax=100,yMin=0, yMax=height)
         self.plot.setXRange(0,100)
         self.plot.setYRange(0,height)

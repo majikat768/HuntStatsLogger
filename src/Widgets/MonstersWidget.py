@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy, QPushButton
 from PyQt6.QtCore import QEvent
 from resources import clearLayout
-from Popup import Popup
+from Widgets.Popup import Popup
 
 class MonstersWidget(QWidget):
     def __init__(self, parent=None):

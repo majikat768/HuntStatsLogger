@@ -1,15 +1,17 @@
 import pyqtgraph
-from PyQt6.QtGui import QColor, QBrush, QPen
-from PyQt6.QtCore import QPointF
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
+from PyQt6.QtGui import QColor, QBrush, QPen, QCursor
+from PyQt6.QtCore import QPointF, QRectF
 from DbHandler import *
 from resources import *
+from Widgets.Popup import Popup
 
 
 class WinLoss():
     def __init__(self) -> None:
         self.brushes = [
-            QColor("#6600ff00"),
-            QColor("#ccff0000")
+            QColor("#c800ff00"),
+            QColor("#c8ff0000")
         ]
         self.pen = QPen(QColor("#000000"))
         self.update()
@@ -17,19 +19,17 @@ class WinLoss():
     def update(self):
         self.data = self.GetData()
 
-        self.bountyBars = pyqtgraph.BarGraphItem(
+        self.bountyBars = Bars(
             x0 = [10,20],
             x1 = [20,30],
-            width=10,
             height=[
                 self.data['winRate']['bounty']['wins'],
                 self.data['winRate']['bounty']['losses']
             ],
             brushes=self.brushes,
-            pen=self.pen
+            pens=[self.pen]*2
         )
-        self.bountyBars.setToolTip("Bounty")
-        self.quickplayBars = pyqtgraph.BarGraphItem(
+        self.quickplayBars = Bars(
             x0 = [40,50],
             x1 = [50,60],
             height=[
@@ -37,10 +37,10 @@ class WinLoss():
                 self.data['winRate']['qp']['losses']
             ],
             brushes=self.brushes,
-            pen=self.pen
+            pens=[self.pen]*2
         )
 
-        self.survivalBars = pyqtgraph.BarGraphItem(
+        self.survivalBars = Bars(
             x0 = [70,80],
             x1 = [80,90],
             height=[
@@ -48,13 +48,13 @@ class WinLoss():
                 self.data['survivalRate']['died']
             ],
             brushes=self.brushes,
-            pen=self.pen
+            pens=[self.pen]*2
         )
 
         self.labels = [[
-            (20,"Bounty Hunt"),
-            (50,"Quick Play"),
-            (80, "Survived")
+            (20,"Bounty Hunt\n(extract at least 1 token)"),
+            (50,"Quick Play\n(soul survivor)"),
+            (80, "Survived\n(Bounty)")
         ]]
 
 
@@ -122,3 +122,70 @@ class WinLoss():
             'died':total - survived,
             'total':total
         }
+
+# for this to work I have to make sure the constructor contains:
+# x0 [], x1 [], height [], brushes [], pens []
+class Bars(pyqtgraph.BarGraphItem):
+    def __init__(self, **opts):
+        super().__init__(**opts)
+        self.setAcceptHoverEvents(True)
+        self.setToolTip(None)
+        self.isHovered = False
+
+        self.bars = []
+        self.pens = opts['pens']
+        self.brushes = opts['brushes']
+        self.defaultBrushes = opts['brushes']
+        self.width = opts['x1'][0] - opts['x0'][0]
+        self.heights = opts['height']
+        self.total = sum(self.heights)
+        self.popup = None
+        for i in range(len(opts['x0'])):
+            self.bars.append(QRectF(
+                opts['x0'][i],
+                0,
+                self.width,
+                opts['height'][i]
+            ))
+
+    def hoverEnterEvent(self,ev):
+        return None#super().hoverEnterEvent(ev)
+
+    def hoverMoveEvent(self,ev):
+        contained = False
+        for i in range(len(self.bars)):
+            b = self.bars[i]
+            if b.contains(ev.pos()):
+                contained = True
+                if self.popup == None or not self.popup.isVisible():
+                    w = self.getViewWidget().window()
+                    self.brushes[i].setAlpha(255)
+                    val = self.heights[i]
+                    perc = (val / self.total) * 100
+                    txt = "%d\n%.2f%%" % (val,perc)
+                    info = QWidget()
+                    info.layout = QVBoxLayout()
+                    info.setLayout(info.layout)
+                    info.layout.addWidget(QLabel(txt))
+                    self.popup = Popup(info,QCursor.pos().x()+16,QCursor.pos().y()-32)
+                    self.popup.show()
+                    w.raise_()
+                    w.activateWindow()
+                    self.setOpts()
+            else:
+                self.brushes[i].setAlpha(200)
+                self.setOpts()
+        if not contained:
+            try:
+                self.popup.close()
+            except:
+                self.popup = None
+        self.scene().update()
+        return None#super().hoverEnterEvent(ev)
+
+    def hoverLeaveEvent(self,ev):
+        try:
+            self.popup.close()
+        except:
+            self.popup = None
+        return super().hoverEnterEvent(ev)
