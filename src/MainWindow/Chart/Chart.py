@@ -135,12 +135,14 @@ class Chart(QScrollArea):
         kills = KillsPerHunt()
         xmax = (len(kills.ticks[0])+1)*3*kills.width
         self.plot.addItem(kills.bars)
+        self.plot.addItem(kills.bountyline)
+        self.plot.addItem(kills.qpline)
         self.plot.getAxis("bottom").setTicks(kills.ticks)
-        self.plot.setLimits(xMin=0, xMax=xmax,yMin=0, yMax=kills.maxHeight+30)
+        self.plot.setLimits(xMin=0, xMax=xmax,yMin=0, yMax=max(kills.bountyline.value(),kills.qpline.value())+30)
         self.plot.setXRange(0,xmax)
-        self.plot.setYRange(0,kills.maxHeight+30)
+        self.plot.setYRange(0,max(kills.bountyline.value(),kills.qpline.value())+30)
         self.plot.setLabel('left', 'Hunts')
-        self.plot.setLabel('bottom', 'kills')
+        self.plot.setLabel('bottom', 'Kills Per Hunt')
         self.legend.addItem(kills.bountyLegendItem, name="Bounty Hunt")
         self.legend.addItem(kills.qpLegendItem, name="Quick Play")
         for i in range(10):

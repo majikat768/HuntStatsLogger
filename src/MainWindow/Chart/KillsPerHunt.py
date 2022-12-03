@@ -44,6 +44,23 @@ class KillsPerHunt():
         for i in range(len(x0)//2):
             self.ticks[0].append(((i+1)*self.width*3-self.width,str(i)))
         self.bars.hoverable = False
+        totalBounty = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'false'")
+        totalBounty = 0 if len(totalBounty) == 0 else totalBounty[0][0]
+        totalQp = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'true'")
+        totalQp = 0 if len(totalQp) == 0 else totalQp[0][0]
+        self.bountyline = pyqtgraph.InfiniteLine(
+            pos=totalBounty, angle=0, pen=pyqtgraph.mkPen("#ff000088", width=2))
+        self.bountyline.label = pyqtgraph.InfLineLabel(self.bountyline, text="%d total Bounty Hunts" % (
+            totalBounty), movable=False, position=0.7,anchors=[(0,0),(0,0)])
+        self.qpline = pyqtgraph.InfiniteLine(
+            pos=totalQp, angle=0, pen=pyqtgraph.mkPen("#00ffff88", width=2))
+        self.qpline.label = pyqtgraph.InfLineLabel(self.qpline, text="%d total Quick Plays" % (
+            totalQp), movable=False, position=0.7,anchors=[(0,0),(0,0)])
+
+        self.bars.setZValue(2)
+        self.qpline.setZValue(1)
+        self.bountyline.setZValue(1)
+
 
 '''
 {1: {'bounty': 51, 'qp': 38}, 0: {'bounty': 139, 'qp': 79}, 2: {'bounty': 14, 'qp': 12}, 4: {'bounty': 3, 'qp': 2}, 3: {'bounty': 8, 'qp': 1}}
