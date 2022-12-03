@@ -6,6 +6,7 @@ import os, time
 from MainWindow.Chart.MmrData import MmrData
 from MainWindow.Chart.KdaData import KdaData
 from MainWindow.Chart.WinLoss import WinLoss
+from MainWindow.Chart.KillsPerHunt import KillsPerHunt
 
 class Chart(QScrollArea):
     def __init__(self, parent=None):
@@ -15,11 +16,13 @@ class Chart(QScrollArea):
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
         self.setWidget(self.main)
-        self.options = [
-            "MMR",
-            "KDA",
-            "Win/Loss"
-        ]
+        self.options = {
+            "MMR":self.setMmr,
+            "KDA":self.setKda,
+            "Win/Loss":self.setWinLoss,
+            "Kills Per Hunt":self.setKills
+
+        }
 
         self.initUI()
         self.update()
@@ -33,7 +36,7 @@ class Chart(QScrollArea):
         self.dropdownWidget.setLayout(self.dropdownWidget.layout)
 
         self.dataSelect = QComboBox()
-        self.dataSelect.addItems(self.options)
+        self.dataSelect.addItems(self.options.keys())
         self.dataSelect.activated.connect(self.update)
 
         self.updateButton = QPushButton("refresh")
@@ -72,13 +75,7 @@ class Chart(QScrollArea):
         self.plot.clear()
         self.legend.clear()
         self.plot.getAxis("bottom").setTicks([[]])
-        self.plot.enableAutoRange()
-        if opt == "MMR":
-            self.setMmr()
-        elif opt == "KDA":
-            self.setKda()
-        elif opt == "Win/Loss":
-            self.setWinLoss()
+        self.options[opt]()
         self.legend.getViewBox().setMaximumHeight(self.legend.boundingRect().height())
         self.plot.getAxis("bottom").showLabel()
 
@@ -131,6 +128,21 @@ class Chart(QScrollArea):
         self.plot.setXRange(0,100)
         self.plot.setYRange(0,height)
         self.plot.getAxis("bottom").setTicks(winLoss.labels)
+        for i in range(10):
+            QApplication.processEvents()
+
+    def setKills(self):
+        kills = KillsPerHunt()
+        xmax = (len(kills.ticks[0])+1)*3*kills.width
+        self.plot.addItem(kills.bars)
+        self.plot.getAxis("bottom").setTicks(kills.ticks)
+        self.plot.setLimits(xMin=0, xMax=xmax,yMin=0, yMax=kills.maxHeight+30)
+        self.plot.setXRange(0,xmax)
+        self.plot.setYRange(0,kills.maxHeight+30)
+        self.plot.setLabel('left', 'Hunts')
+        self.plot.setLabel('bottom', 'kills')
+        self.legend.addItem(kills.bountyLegendItem, name="Bounty Hunt")
+        self.legend.addItem(kills.qpLegendItem, name="Quick Play")
         for i in range(10):
             QApplication.processEvents()
 
