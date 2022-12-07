@@ -18,6 +18,8 @@ class Server(QObject):
         self.mainframe = parent
 
     def upload_file(self,file=log_file, file_type="logs"):
+        if str(settings.value("sync_files","false")).lower() == 'false':
+            return
         print("uploading file")
         pid = settings.value("profileid","0")
         obj = os.path.basename(file)

@@ -31,16 +31,19 @@ def insert_row(conn, table, row):
         cursor.execute(query, (vals))
         conn.commit()
     except Exception as e:
-        log('insert_row')
-        log(e)
         if 'syntax error' in str(e):
+            print('insert_row')
+            print(e)
             problem = str(e).split("\"")[1]
             for key in row:
                 if problem in key:
                     row.pop(key)
                     break
-            log('\tsyntax error repaired')
+            print('\tsyntax error repaired')
             insert_row(conn, table,row)
+        else:
+            log(e)
+            log('insert_row')
 
 
 def tables_exist():

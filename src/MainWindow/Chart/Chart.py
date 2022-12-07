@@ -25,7 +25,6 @@ class Chart(QScrollArea):
         }
 
         self.initUI()
-        self.update()
 
         self.bounty = None
 
@@ -168,6 +167,8 @@ class Chart(QScrollArea):
             directory=os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DesktopLocation),name),
             filter="PNG (*.png)"
         )[0]
-
-        scrn = QApplication.primaryScreen().grabWindow(self.graphWindow.winId())
+        if len(file) <= 0:
+            return
+        
+        scrn = QApplication.primaryScreen().grabWindow(self.plotWindow.winId())
         scrn.save(file)

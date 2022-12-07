@@ -12,17 +12,23 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.setObjectName("MainWindow")
         self.setWindowTitle("Hunt Stats Logger")
-        self.mainframe = MainFrame(self)
-        self.setCentralWidget(self.mainframe)
-        self.setStatusBar(QStatusBar())
-        self.statusBar().font().setPixelSize(16)
-        self.statusBar().setSizeGripEnabled(True)
 
         if settings.value("window_position", "") != "":
             self.move(settings.value("window_position"))
         if settings.value("window_size", "") != "":
             size = settings.value("window_size")
             self.resize(size.width(),size.height())
+
+        self.mainframe = MainFrame(self)
+        self.setCentralWidget(self.mainframe)
+        self.setStatusBar(QStatusBar())
+        self.statusBar().font().setPixelSize(16)
+        self.statusBar().setSizeGripEnabled(True)
+
+        self.show()
+
+        self.mainframe.update()
+
         self.offset = QPoint()
         self.mousePressed = False
         self.isMini = False
@@ -36,7 +42,6 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(msg)
 
     def closeEvent(self, a0):
-        self.mainframe.server.upload_file()
         if self.mainframe.settingsWindow:
             self.mainframe.settingsWindow.close()
         if self.mainframe.mapWindow:
@@ -52,6 +57,8 @@ class MainWindow(QMainWindow):
             self.sysTrayIco.hide()
             self.deleteLater()
             sys.exit()
+        if settings.value("sync_files","false").lower() == "true":
+            self.mainframe.server.upload_file()
         return super().closeEvent(a0)
 
     def minify(self):

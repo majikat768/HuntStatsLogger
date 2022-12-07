@@ -145,8 +145,6 @@ class Hunts(QScrollArea):
 
         self.HuntSelect.activated.connect(self.updateDetails)
 
-        self.updateHuntSelection()
-
     def updateHuntSelection(self):
         self.HuntSelect.clear()
         timeRange = int(settings.value("dropdown_range", str(7*24*60*60)))
@@ -174,30 +172,34 @@ class Hunts(QScrollArea):
 def getKillData(ts):
     your_kills = {i+1: 0 for i in range(6)}
     your_deaths = {i+1: 0 for i in range(6)}
+    team_kills = {i+1: 0 for i in range(6)}
 
     your_total_kills = execute_query(
         "select downedbyme+killedbyme,mmr from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0)" % ts)
     your_total_deaths = execute_query(
         "select downedme+killedme,mmr from 'hunters' where timestamp is %d and (downedme > 0 or killedme > 0)" % ts)
+    team_total_kills = execute_query(
+        "select downedbyteammate+killedbyteammate,mmr from 'hunters' where timestamp is %d and (downedbyteammate > 0 or killedbyteammate > 0)" % ts)
 
     for k in your_total_kills:
         mmr = mmr_to_stars(k[1])
         your_kills[mmr] += k[0]
+        team_kills[mmr] += k[0]
     for d in your_total_deaths:
         mmr = mmr_to_stars(d[1])
         your_deaths[mmr] += d[0]
+    for k in team_total_kills:
+        mmr = mmr_to_stars(k[1])
+        team_kills[mmr] += k[0]
 
     entries = GetHuntEntries(ts)
-    team_kills = {i+1: 0 for i in range(6)}
     assists = 0
     for entry in entries:
         cat = entry['category']
         if 'players_killed' in cat:
             if 'assist' in cat:
                 assists += entry['amount']
-            elif 'mm rating' in entry['descriptorName']:
-                stars = int(entry['descriptorName'].split(' ')[4])
-                team_kills[stars] += entry['amount']
+
     return {
         "your_kills": your_kills,
         "team_kills": team_kills,
