@@ -22,6 +22,17 @@ def json_to_db(obj):
     insert_row(conn, "games", game)
     conn.close()
 
+def add_column(table, column):
+    conn = sqlite3.connect(database)
+    cursor = conn.cursor()
+    query = "alter table %s add column %s" % (table,column)
+    try:
+        cursor.execute(query)
+        conn.commit()
+    except Exception as e:
+        print('add_column')
+        print(e)
+
 def insert_row(conn, table, row):
     cursor = conn.cursor()
     cols = [i for i in row.keys()]
@@ -41,6 +52,13 @@ def insert_row(conn, table, row):
                     break
             print('\tsyntax error repaired')
             insert_row(conn, table,row)
+        elif 'has no column' in str(e):
+            if 'MissionBagWasDeathlessUsed' in str(e):
+                add_column('games','MissionBagWasDeathlessUsed')
+                insert_row(conn, table,row)
+            else:
+                log(e)
+                log('insert_row')
         else:
             log(e)
             log('insert_row')
