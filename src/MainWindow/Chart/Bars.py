@@ -20,10 +20,12 @@ class Bars(pyqtgraph.BarGraphItem):
         self.heights = opts['height']
         self.total = sum(self.heights)
         self.popup = None
+        if 'y0' not in opts:
+            opts['y0'] = [0]*len(opts['x0'])
         for i in range(len(opts['x0'])):
             self.bars.append(QRectF(
                 opts['x0'][i],
-                0,
+                opts['y0'][i],
                 self.width,
                 opts['height'][i]
             ))

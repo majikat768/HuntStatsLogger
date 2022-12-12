@@ -64,8 +64,10 @@ class Logger(QObject):
                         self.mainframe.setStatus("writing new record to json file....")
                         with open(outfile,'w') as f:
                             json.dump(new_data,f)
-                        if str(settings.value("sync_files","false")).lower() == "true":
-                            self.mainframe.server.upload_file(file=outfile,file_type="json")
+
+                        #if str(settings.value("sync_files","false")).lower() == "true":
+                            #self.mainframe.server.upload_file(file=outfile,file_type="json")
+
                         self.mainframe.setStatus("writing new record to database....")
                         json_to_db(new_data)
                         last_hunt = last_change

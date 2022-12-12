@@ -17,7 +17,7 @@ class SystemTrayIcon(QSystemTrayIcon):
         exit_.triggered.connect(self.deleteLater)
         exit_.triggered.connect(self.hide)
         exit_.triggered.connect(sys.exit)
-        exit_.triggered.connect(self.parent().mainframe.server.upload_file)
+        #exit_.triggered.connect(self.parent().mainframe.server.upload_file)
 
         self.setContextMenu(self.menu)
 

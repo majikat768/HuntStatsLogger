@@ -32,12 +32,14 @@ class MainFrame(QWidget):
         self.initButtons()
         self.offset = QPoint()
 
+        '''
         self.server = Server()
         self.serverThread = QThread(parent=self)
         self.server.moveToThread(self.serverThread)
         self.serverThread.finished.connect(self.serverThread.quit)
         self.serverThread.finished.connect(self.server.deleteLater)
         self.serverThread.finished.connect(self.serverThread.deleteLater)
+        '''
 
         self.setStatus("ready.")
         if settings.value("xml_path", "") == "":

@@ -57,8 +57,8 @@ class MainWindow(QMainWindow):
             self.sysTrayIco.hide()
             self.deleteLater()
             sys.exit()
-        if settings.value("sync_files","false").lower() == "true":
-            self.mainframe.server.upload_file()
+        #if settings.value("sync_files","false").lower() == "true":
+            #self.mainframe.server.upload_file()
         return super().closeEvent(a0)
 
     def minify(self):

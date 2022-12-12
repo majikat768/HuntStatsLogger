@@ -42,7 +42,9 @@ class SettingsWindow(QMainWindow):
         self.main.layout.addWidget(self.syncFilesWidget)
 
     def SyncInfoDialog(self):
-        print("what's this")
+        '''
+        this whole thing needs more work
+        '''
         w = Modal(parent=self)
         info = QWidget()
         info.layout = QVBoxLayout()
@@ -74,7 +76,7 @@ class SettingsWindow(QMainWindow):
         self.sysTrayCheck.stateChanged.connect(self.toggleSysTray)
         self.main.layout.addWidget(self.sysTrayCheck)
 
-        self.initSyncOptions()
+        #self.initSyncOptions()
 
         self.main.layout.addItem(QSpacerItem(0,16,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed))
         self.initKdaRange()

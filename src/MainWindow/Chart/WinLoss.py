@@ -9,48 +9,52 @@ class WinLoss():
             QColor("#c800ff00"),
             QColor("#c8ff0000")
         ]
-        self.pen = QPen(QColor("#000000"))
+        self.pen = None#QPen(QColor("#000000"))
         self.update()
 
     def update(self):
         self.data = self.GetData()
 
         self.bountyBars = Bars(
-            x0 = [10,20],
-            x1 = [20,30],
+            x0 = [10,10],
+            x1 = [20,20],
             height=[
-                self.data['winRate']['bounty']['wins'],
-                self.data['winRate']['bounty']['losses']
+                self.data['winRate']['bounty']['winPrc'],
+                self.data['winRate']['bounty']['lossPrc']
             ],
+            y0 = [0,self.data['winRate']['bounty']['winPrc']],
             brushes=self.brushes,
             pens=[self.pen]*2
         )
+
         self.quickplayBars = Bars(
-            x0 = [40,50],
-            x1 = [50,60],
+            x0 = [30,30],
+            x1 = [40,40],
             height=[
-                self.data['winRate']['qp']['wins'],
-                self.data['winRate']['qp']['losses']
+                self.data['winRate']['qp']['winPrc'],
+                self.data['winRate']['qp']['lossPrc']
             ],
+            y0 = [0,self.data['winRate']['qp']['winPrc']],
             brushes=self.brushes,
             pens=[self.pen]*2
         )
 
         self.survivalBars = Bars(
-            x0 = [70,80],
-            x1 = [80,90],
+            x0 = [50,50],
+            x1 = [60,60],
             height=[
-                self.data['survivalRate']['survived'],
-                self.data['survivalRate']['died']
+                self.data['survivalRate']['winPrc'],
+                self.data['survivalRate']['lossPrc']
             ],
+            y0 = [0,self.data['survivalRate']['winPrc']],
             brushes=self.brushes,
             pens=[self.pen]*2
         )
 
         self.labels = [[
-            (20,"Bounty Hunt\n(extract at least 1 token)"),
-            (50,"Quick Play\n(soul survivor)"),
-            (80, "Survived\n(Bounty)")
+            (15,"Bounty Hunt\n(extract at least 1 token)"),
+            (35,"Quick Play\n(soul survivor)"),
+            (55, "Survived\n(Bounty)")
         ]]
 
 
@@ -98,11 +102,15 @@ class WinLoss():
             'bounty': {
                 'wins':bountyWins,
                 'losses':totalBounty - bountyWins,
+                'winPrc':float(bountyWins/totalBounty)*100,
+                'lossPrc':(1.0-float(bountyWins/totalBounty))*100,
                 'total': totalBounty
             },
             'qp': {
                 'wins':qpWins,
                 'losses':totalQp - qpWins,
+                'winPrc':float(qpWins/totalQp)*100,
+                'lossPrc':(1.0-float(qpWins/totalQp))*100,
                 'total':totalQp
             }
         }
@@ -116,5 +124,7 @@ class WinLoss():
         return {
             'survived':survived,
             'died':total - survived,
+            'winPrc':float(survived/total)*100,
+            'lossPrc':(1.0-float(survived/total))*100,
             'total':total
         }
