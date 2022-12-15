@@ -199,6 +199,12 @@ class SettingsWindow(QMainWindow):
     def setDropdownRange(self):
         settings.setValue("dropdown_range",self.dropdownRangeDropBox.currentData())
 
+    '''
+    potential bug here:
+    one could assume Steam names are not unique,
+    so in the case one is in a Hunt with another Hunter of the same name,
+    profileid could be incorrect.
+    '''
     def ChangeSteamName(self):
         if self.steamNameInput.isEnabled():
             if(len(self.steamNameInput.text()) > 0):

@@ -41,6 +41,8 @@ class TeamDetails(QGroupBox):
 
         self.body = QSplitter(Qt.Orientation.Horizontal)
         self.body.setChildrenCollapsible(False)
+        handleStyle = "QSplitter::handle:horizontal{image: url(\"%s\");}" % (resource_path("assets/icons/h_handle.png").replace("\\","/"));
+        self.body.setStyleSheet(handleStyle);
 
         self.killsData = QGroupBox()
         self.killsData.setStyleSheet("QGroupBox{border:1px solid #44ffffff;}")
@@ -271,7 +273,7 @@ class TeamDetails(QGroupBox):
         hunterWidget.setLayout(hunterWidget.layout)
         hunterWidget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        name = hunter['blood_line_name']
+        name = hunter['blood_line_nam']
         pid = hunter['profileid']
         n_games = execute_query(
             "select count(*) from 'hunters' where profileid is %d" % pid)
