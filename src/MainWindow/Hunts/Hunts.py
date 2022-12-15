@@ -42,8 +42,8 @@ class Hunts(QScrollArea):
         '''
         currentIndex = self.HuntSelect.currentIndex()
         currentTs = self.HuntSelect.currentData()
-        currentMmr = execute_query("select mmr from 'hunters' where blood_line_name is '%s' and timestamp is %d" % (
-            settings.value("steam_name"), currentTs))
+        currentMmr = execute_query("select mmr from 'hunters' where profileid is '%s' and timestamp is %d" % (
+            settings.value("profileid"), currentTs))
         currentMmr = 0 if len(currentMmr) == 0 else currentMmr[0][0]
         if currentIndex == 0:
             predictedMmr = predictNextMmr(currentMmr, currentTs)
@@ -55,8 +55,8 @@ class Hunts(QScrollArea):
             nextTs = self.HuntSelect.currentData()
             self.HuntSelect.setCurrentIndex(currentIndex)
 
-            nextMmr = execute_query("select mmr from 'hunters' where blood_line_name is '%s' and timestamp is %d" % (
-                settings.value("steam_name"), nextTs))
+            nextMmr = execute_query("select mmr from 'hunters' where profileid is '%s' and timestamp is %d" % (
+                settings.value("profileid"), nextTs))
             nextMmr = 0 if len(nextMmr) == 0 else nextMmr[0][0]
             mmrChange = nextMmr - currentMmr
             mmrOutput = "Your MMR change:<br>%d -> %d<br>%+d" % (
@@ -162,6 +162,8 @@ class Hunts(QScrollArea):
             nKills = "%d kills" % sum(getKillData(ts)['team_kills'].values())
             ln = "%s - %s - %s %s - %s" % (dt, gameType, nTeams,
                                            "teams" if gameType == "Bounty Hunt" else "hunters", nKills)
+            icon = QIcon(deadIcon if dead else livedIcon)
+
             self.HuntSelect.addItem(
                 QIcon(deadIcon if dead else livedIcon), ln, ts)
 

@@ -32,7 +32,7 @@ class MonstersWidget(QWidget):
                 else:
                     if overflow == None:
                         overflow = QPushButton(" > > ")
-                        overflow.setObjectName("overflow")
+                        overflow.setObjectName("link")
                         overflow.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
                         overflow.installEventFilter(self)
                         overflow.data = {}

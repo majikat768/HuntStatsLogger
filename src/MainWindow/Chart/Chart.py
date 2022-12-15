@@ -119,7 +119,6 @@ class Chart(QScrollArea):
         #self.plot.getAxis("bottom").setTickSpacing()
         xrange = self.plot.getAxis("bottom").range[1]
         self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,xrange)]])
-        self.plot.showGrid(x=False)
         self.plot.getAxis("bottom").setStyle(tickAlpha=0.1)
 
     def setWinLoss(self):

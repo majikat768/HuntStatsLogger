@@ -111,8 +111,8 @@ def GetTotalHuntCount():
         return -1 
     return n[0][0]
 
-def GetCurrentMmr(name = settings.value("steam_name")):
-    mmr = execute_query("select mmr from 'hunters' where blood_line_name is '%s' order by timestamp desc" % name)
+def GetCurrentMmr(pid = settings.value("profileid")):
+    mmr = execute_query("select mmr from 'hunters' where profileid is '%s' and timestamp is %d" % (pid, GetLastHuntTimestamp()))
     if len(mmr) == 0:
         return -1
     mmr = mmr[0][0]
@@ -120,8 +120,8 @@ def GetCurrentMmr(name = settings.value("steam_name")):
         return -1
     return mmr
 
-def GetBestMmr(name = settings.value("steam_name")):
-    mmr = execute_query("select max(mmr) from 'hunters' where blood_line_name is '%s'" % name)
+def GetBestMmr(pid = settings.value("profileid")):
+    mmr = execute_query("select max(mmr) from 'hunters' where profileid is '%s'" % pid)
     if len(mmr) == 0:
         return -1
     mmr = mmr[0][0]
@@ -130,16 +130,16 @@ def GetBestMmr(name = settings.value("steam_name")):
     return mmr
 
 def GetTopKiller():
-    vals = execute_query("select downedme+killedme as kills, blood_line_name, mmr from 'hunters' order by kills desc limit 1")
-    cols = ['kills','name','mmr']
+    vals = execute_query("select downedme+killedme as kills, blood_line_name, profileid, mmr from 'hunters' order by kills desc limit 1")
+    cols = ['kills','name','pid','mmr']
     if len(vals) > 0:
         res = { cols[i] : vals[0][i] for i in range(len(cols))}
         return res
     return {}
 
 def GetTopKilled():
-    vals = execute_query("select downedbyme+killedbyme as kills, blood_line_name, mmr from 'hunters' order by kills desc limit 1")
-    cols = ['kills','name','mmr']
+    vals = execute_query("select downedbyme+killedbyme as kills, blood_line_name, profileid, mmr from 'hunters' order by kills desc limit 1")
+    cols = ['kills','name','pid','mmr']
     if len(vals) > 0:
         res = { cols[i] : vals[0][i] for i in range(len(cols))}
         return res
@@ -147,7 +147,7 @@ def GetTopKilled():
 
 def GetTopNHunters(n):
     cols = ['frequency','name', 'profileid', 'mmr','killedme','killedbyme']
-    vals = execute_query("select count(profileid) as frequency, blood_line_name, profileid, mmr, killedme+downedme as killedme, killedbyme+downedbyme as killedbyme from 'hunters' where blood_line_name is not '%s' group by profileid order by frequency desc limit %d" % (settings.value("steam_name"), n))
+    vals = execute_query("select count(profileid) as frequency, blood_line_name, profileid, mmr, killedme+downedme as killedme, killedbyme+downedbyme as killedbyme from 'hunters' where profileid is not '%s' group by profileid order by frequency desc limit %d" % (settings.value("profileid"), n))
     results = []
     if len(vals) > 0:
         for v in vals:
@@ -316,8 +316,8 @@ def GetHunters(timestamp):
         log(e)
         return []
 
-def GetAllMmrs(name = settings.value('steam_name')):
-    vals = execute_query("select 'hunters'.timestamp, 'hunters'.mmr, 'games'.MissionBagIsQuickPlay as qp from 'hunters' join 'games' on 'hunters'.timestamp = 'games'.timestamp where blood_line_name is '%s' order by 'hunters'.timestamp asc" % name)
+def GetAllMmrs(pid = settings.value('profileid')):
+    vals = execute_query("select 'hunters'.timestamp, 'hunters'.mmr, 'games'.MissionBagIsQuickPlay as qp from 'hunters' join 'games' on 'hunters'.timestamp = 'games'.timestamp where profileid is '%s' order by 'hunters'.timestamp asc" % pid)
     res = {}
     for v in vals:
         res[v[0]] = {
@@ -339,7 +339,11 @@ def GetGameTypes():
     return res
 
 
-def predictNextMmr(currentMmr = GetCurrentMmr(), currentTs = GetLastHuntTimestamp()):
+def predictNextMmr(currentMmr = None, currentTs = None):
+    if not currentMmr:
+        currentMmr = GetCurrentMmr()
+    if not currentTs:
+        currentTs = GetLastHuntTimestamp()
     predictedMmr = 0
     predictedChange = 0
     your_total_kills = execute_query("select downedbyme+killedbyme,mmr from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0)" % currentTs)

@@ -22,11 +22,15 @@ SettingsWindow {
 }
 
 #icon {
-	border:1px solid #44ffcc;
+	border:1px solid #cc44ffcc;
 	padding:4px;
 	margin:0px;
 }
 
+#BountyHeading {
+	font-size:16px;
+	font-style: bold;
+}
 #TeamStack {
 	border: 0px solid #ffffff;
 	background:transparent;
@@ -58,8 +62,8 @@ SettingsWindow {
 }
 
 #EventPointsLabel {
-	color:#44cc88;
-	font-style:italic;
+	color:#dd6600;
+	font-style:bold italic;
 }
 
 #HunterTitle {
@@ -103,13 +107,10 @@ QMainWindow {
 }
 
 QSplitter::handle:pressed {
-	curso
 }
 QSplitter::handle:horizontal {
-	image: url("assets/icons/h_handle.png");
 }
 QSplitter::handle:vertical {
-	image: url("assets/icons/v_handle.png");
 }
 
 QGroupBox {

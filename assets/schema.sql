@@ -104,4 +104,4 @@ CREATE TABLE IF NOT EXISTS accolades (
         game_id,
         accolade_num
     )
-)
+);

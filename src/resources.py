@@ -98,11 +98,14 @@ blankIcon = resource_path('assets/icons/blank.png')
 tab = " "*4
 
 
-def get_icon(path):
+def get_icon(path,x=icon_size,y=icon_size,border=True):
     pm = QPixmap(path)
     i = QLabel()
-    i.setPixmap(pm.scaled(icon_size, icon_size))
-    i.setObjectName("icon")
+    i.setPixmap(pm.scaled(x, y))
+    if border:
+        i.setObjectName("icon")
+    else:
+        i.setObjectName("icon_borderless")
     #i.setStyleSheet("QLabel{border:1px solid white;}")
     i.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
     return i

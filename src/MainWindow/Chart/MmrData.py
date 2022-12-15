@@ -8,7 +8,7 @@ from resources import *
 class MmrData():
     def __init__(self) -> None:
         data = []
-        mmrs = GetAllMmrs(name=settings.value('steam_name'))
+        mmrs = GetAllMmrs(pid=settings.value('profileid'))
         i = 0
         self.minMmr = 6001
         self.maxMmr = -1
