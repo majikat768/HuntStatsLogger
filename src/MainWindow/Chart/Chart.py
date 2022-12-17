@@ -98,7 +98,7 @@ class Chart(QScrollArea):
         self.plot.setXRange(
             max(-1, len(mmr.line.xData)-20), len(mmr.line.xData)+5)
         xrange = self.plot.getAxis("bottom").range[1]
-        self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,xrange)]])
+        self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,int(xrange))]])
 
     def setKda(self):
         kda = KdaData()
