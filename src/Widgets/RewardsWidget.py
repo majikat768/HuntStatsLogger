@@ -13,7 +13,7 @@ class RewardsWidget(QWidget):
 
         iconNames = ["hunt_dollars","blood_bonds","xp","event_points"]
         for i in range(len(iconNames)):
-            icon = get_icon(resource_path("assets/icons/%s.png"%iconNames[i]),x=icon_size,y=icon_size)
+            icon = get_icon(resource_path("assets/icons/rewards/%s.png"%iconNames[i]),x=icon_size,y=icon_size)
             icon.setObjectName("icon");
             icon.setStyleSheet("QLabel{border:0px;}")
             self.layout.addWidget(icon,i,0)

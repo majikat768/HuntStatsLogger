@@ -32,7 +32,7 @@ SettingsWindow {
 	font-style: bold;
 }
 #TeamStack {
-	border: 0px solid #ffffff;
+	border: 1px solid #ffffff;
 	background:transparent;
 }
 

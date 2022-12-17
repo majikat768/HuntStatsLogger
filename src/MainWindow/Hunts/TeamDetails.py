@@ -19,11 +19,8 @@ class TeamDetails(QGroupBox):
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.layout)
 
-        self.teamStackScroll = QScrollArea()
         self.teamStack = QStackedWidget()
         self.teamStack.setObjectName("TeamStack")
-        self.teamStackScroll.setWidget(self.teamStack)
-        self.teamStackScroll.setWidgetResizable(True)
 
         self.teamList = QTreeWidget()
         self.teamList.setIndentation(0)
@@ -53,7 +50,7 @@ class TeamDetails(QGroupBox):
         self.leftColumn.layout.addWidget(self.teamList)
         self.leftColumn.layout.addWidget(self.killsData)
         self.body.addWidget(self.leftColumn)
-        self.body.addWidget(self.teamStackScroll)
+        self.body.addWidget(self.teamStack)
         self.layout.addWidget(self.body)
         self.body.setStretchFactor(0,1)
         self.body.setStretchFactor(1,3)
@@ -233,8 +230,6 @@ class TeamDetails(QGroupBox):
         self.teamList.setCurrentItem(self.teamList.itemAt(0,0))
         self.teamList.setColumnWidth(1,maxIconWidth)
 
-        self.teamStackScroll.resize(self.teamStack.sizeHint())
-
     def switchTeamWidget(self, new,old):
         if new != None:
             self.teamStack.setCurrentWidget(new.view)
@@ -273,7 +268,7 @@ class TeamDetails(QGroupBox):
         hunterWidget.setLayout(hunterWidget.layout)
         hunterWidget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        name = hunter['blood_line_nam']
+        name = hunter['blood_line_name']
         pid = hunter['profileid']
         n_games = execute_query(
             "select count(*) from 'hunters' where profileid is %d" % pid)
