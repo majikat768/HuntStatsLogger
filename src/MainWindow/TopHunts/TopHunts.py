@@ -59,7 +59,7 @@ class TopHunts(QScrollArea):
         sort = self.sortingSelect.currentData()
         num = int(self.numResults.currentText())
 
-        hunts = GetHunts(earliest=time.time() - int(settings.value("dropdown_range",0)))
+        hunts = GetHunts()
         if sort == 'your_kills':
             func = getYourKillCount
         elif sort == 'your_deaths':

@@ -24,8 +24,7 @@ class TeamKillsPerHunt():
             if n not in data.keys():
                 data[n] = 0
             data[n] += 1
-
-        for i in range(len(data.keys())):
+        for i in data.keys():
             x0.append(self.width+(i*2)*self.width)
         x1 = [i + self.width for i in x0]
         height = []
@@ -36,8 +35,8 @@ class TeamKillsPerHunt():
         
         brushes = [QColor("#c8ff0000")]*len(data.keys())
 
-        for i in range(len(x0)+1):
-            self.ticks[0].append((i*self.width*2-self.width//2,str(i)))
+        for i in range(len(data.keys())):
+            self.ticks[0].append((self.width*1.5 + i*self.width*2,str(i)))
         self.line = pyqtgraph.InfiniteLine(
             pos=totalHunts, angle=0, pen=pyqtgraph.mkPen("#ff000088", width=2))
         self.line.label = pyqtgraph.InfLineLabel(self.line, text="%d Total Bounty Hunts" % (
