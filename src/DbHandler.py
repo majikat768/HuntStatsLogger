@@ -279,6 +279,12 @@ def GetHunterByName(name):
         return GetHunterByProfileId(res[0][0])
     return []
 
+def GetNameByProfileId(pid):
+    vals = execute_query("select blood_line_name from 'hunters' where profileid is %d limit 1" % pid)
+    if len(vals) > 0:
+        return vals[0][0]
+    return ''
+
 def GetHunterByProfileId(pid):
     vals = execute_query("select * from 'hunters' where profileid is %d" % pid)
     cols = execute_query("pragma table_info('hunters')")
@@ -326,6 +332,10 @@ def GetAllMmrs(pid = settings.value('profileid')):
         }
     return res
 
+def GetTeamMmrs():
+    vals = execute_query("select timestamp, mmr from 'teams' where ownteam is 'true'")
+    return {v[0] : v[1] for v in vals}
+
 def GetGameTypes():
     earliest = 0
     timeRange = int(settings.value("kda_range","-1"))
@@ -338,6 +348,18 @@ def GetGameTypes():
         res[v[0]] = v[1]
     return res
 
+
+def GetTeamMembers(ts):
+    vals = execute_query(
+        "select 'hunters'.profileid,'hunters'.game_id, 'hunters'.timestamp, 'teams'.team_num from 'hunters' join 'teams' on (ownteam = 'true' and 'hunters'.game_id = 'teams'.game_id and 'hunters'.team_num = 'teams'.team_num) join 'games' on ('games'.MissionBagIsQuickPlay = 'false' and 'teams'.game_id = 'games'.game_id) where 'hunters'.timestamp = %d" % ts
+    )
+    if len(vals) == 0:
+        return {}
+    res = {'pid':[],'game_id':vals[0][1],'timestamp':vals[0][2],'team_num':vals[0][3]}
+    for v in vals:
+        res['pid'].append(v[0])
+    res['pid'] = sorted(res['pid'])
+    return res
 
 def predictNextMmr(currentMmr = None, currentTs = None):
     if not currentMmr:
@@ -392,3 +414,61 @@ def predictNextMmr(currentMmr = None, currentTs = None):
         predictedChange += change
     predictedMmr = currentMmr + predictedChange
     return predictedMmr
+
+def getAssists(ts):
+    entries = GetHuntEntries(ts)
+    assists = 0
+    for entry in entries:
+        cat = entry['category']
+        if 'players_killed' in cat:
+            if 'assist' in cat:
+                assists += entry['amount']
+    return assists
+
+def getYourKillCount(ts):
+    vals = execute_query(
+        "select downedbyme+killedbyme as killedbyme from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0)" % ts
+    )
+    return sum(sum(i) for i in vals)
+
+def getYourDeathCount(ts):
+    vals = execute_query(
+        "select downedme+killedme as deaths from 'hunters' where timestamp is %d and (downedme > 0 or killedme > 0)" % ts
+    )
+    return sum(sum(i) for i in vals)
+
+def getTeamKillCount(ts):
+    vals = execute_query(
+        "select downedbyteammate+killedbyteammate as killedbyteammate, downedbyme+killedbyme as killedbyme from 'hunters' where timestamp is %d and ((downedbyteammate > 0 or killedbyteammate > 0) or (downedbyme > 0 or killedbyme > 0))" % ts
+    )
+    return sum(sum(i) for i in vals)
+
+def getKillData(ts):
+    your_kills = {i+1: 0 for i in range(6)}
+    your_deaths = {i+1: 0 for i in range(6)}
+    team_kills = {i+1: 0 for i in range(6)}
+
+    cols = ["killedbyme","killedme","killedbyteammate","mmr"]
+    selection = "downedbyme+killedbyme as killedbyme,downedme+killedme as killedme,downedbyteammate+killedbyteammate as killedbyteammate, mmr"
+    condition = "timestamp is %d and ((downedbyme > 0 or killedbyme > 0) or (downedme > 0 or killedme > 0) or (downedbyteammate > 0 or killedbyteammate > 0))" % ts
+    vals = execute_query(
+        "select %s from 'hunters' where %s" % (selection, condition)
+    )
+    all_kills = []
+    for v in vals:
+        all_kills.append({cols[i] : v[i] for i in range(len(cols))})
+
+    for k in all_kills:
+        mmr = mmr_to_stars(k['mmr'])
+        your_kills[mmr] += k['killedbyme']
+        team_kills[mmr] += k['killedbyme']
+        team_kills[mmr] += k['killedbyteammate']
+        your_deaths[mmr] += k['killedme']
+
+    assists = getAssists(ts)
+    return {
+        "your_kills": your_kills,
+        "team_kills": team_kills,
+        "your_deaths": your_deaths,
+        "assists": assists
+    }

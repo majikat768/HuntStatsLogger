@@ -89,7 +89,17 @@ class SettingsWindow(QMainWindow):
         self.main.layout.addWidget(open_dir_button)
         self.main.layout.setAlignment(open_dir_button,Qt.AlignmentFlag.AlignHCenter)
 
+        hunt_dir_button = QPushButton(" Open Hunt Directory ")
+        hunt_dir_button.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Minimum)
+        hunt_dir_button.clicked.connect(self.open_hunt_dir)
+        self.main.layout.addWidget(hunt_dir_button)
+        self.main.layout.setAlignment(hunt_dir_button,Qt.AlignmentFlag.AlignHCenter)
+
         self.setCentralWidget(self.main)
+
+    def open_hunt_dir(self):
+        if len(settings.value("hunt_dir","")) > 0:
+            os.startfile(settings.value("hunt_dir"))
 
     def toggleMiniView(self):
         main = self.parent()

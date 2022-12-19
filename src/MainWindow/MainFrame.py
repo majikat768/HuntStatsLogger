@@ -8,8 +8,10 @@ from SettingsWindow import SettingsWindow
 from Logger import Logger
 from resources import *
 from MainWindow.Hunts.Hunts import Hunts
-from MainWindow.Hunters import Hunters
+from MainWindow.Hunters.Hunters import Hunters
 from MainWindow.Chart.Chart import Chart
+from MainWindow.TopHunts.TopHunts import TopHunts
+from MainWindow.MyTeams.MyTeams import MyTeams
 from Server import Server,startThread
 
 
@@ -64,12 +66,16 @@ class MainFrame(QWidget):
         mapsButton = QPushButton("Maps")
         mapsButton.clicked.connect(lambda : self.openWindow(self.mapWindow))
 
+        updateButton = QPushButton("Refresh Data")
+        updateButton.clicked.connect(self.update)
+
         self.buttons = QWidget()
         self.buttons.layout = QHBoxLayout()
         self.buttons.setLayout(self.buttons.layout)
 
         self.buttons.layout.addWidget(mapsButton)
         self.buttons.layout.addWidget(settingsButton)
+        self.buttons.layout.addWidget(updateButton)
 
         self.layout.addWidget(self.buttons)
 
@@ -81,17 +87,25 @@ class MainFrame(QWidget):
         self.huntsTab = Hunts(parent=self)
         self.huntersTab = Hunters(parent=self)
         self.chartTab = Chart(parent=self)
+        self.topHuntsTab = TopHunts(parent=self)
+        self.teamsTab = MyTeams(parent=self)
         self.tabs.addTab(self.huntsTab, "Hunts")
         self.tabs.addTab(self.huntersTab, "Hunters")
         self.tabs.addTab(self.chartTab, "Chart")
+        self.tabs.addTab(self.topHuntsTab, "Top Hunts")
+        self.tabs.addTab(self.teamsTab, "My Teams")
+
+
         self.layout.addWidget(self.tabs)
 
     def update(self):
-        # print('mainframe.update')
+        print('mainframe.update')
         self.header.update()
         self.huntsTab.update()
         self.huntersTab.update()
         self.chartTab.update()
+        self.topHuntsTab.update()
+        self.teamsTab.update()
         # self.window().adjustSize()
 
     def StartLogger(self):

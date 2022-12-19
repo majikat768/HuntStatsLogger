@@ -4,7 +4,8 @@ from pyqtgraph import PlotDataItem
 from MainWindow.Chart.ScatterItem import ScatterItem
 
 class KdaData():
-    def __init__(self):
+    def __init__(self,parent=None):
+        self.parent = parent
         kData = GetKillsByMatch()
         dData = GetDeathsByMatch()
         aData = GetAssistsByMatch()
@@ -45,9 +46,9 @@ class KdaData():
         self.line = PlotDataItem(data,pen="#ffffff88")
         self.qpPoints = ScatterItem(
             [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'true'],
-            pen="#000000",brush="#00ffff",name="Quick Play",tip="{data}<br>KDA: {y:.2f}".format
+            pen="#000000",brush="#00ffff",name="Quick Play",tip="{data}<br>KDA: {y:.2f}".format, parent=self.parent
         )
         self.bhPoints = ScatterItem(
             [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'false'],
-            pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="{data}<br>KDA: {y:.2f}".format
+            pen="#000000",brush="#ff0000",name="Bounty Hunt",tip="{data}<br>KDA: {y:.2f}".format,parent=self.parent
         )

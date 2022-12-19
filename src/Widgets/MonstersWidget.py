@@ -28,7 +28,7 @@ class MonstersWidget(QWidget):
                     label = QLabel("%d %s" % (kills,monster))
                     label.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
                     self.layout.addWidget(label)
-                    i += 1
+                    #i += 1
                 else:
                     if overflow == None:
                         overflow = QPushButton(" > > ")

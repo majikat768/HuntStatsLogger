@@ -32,7 +32,7 @@ SettingsWindow {
 	font-style: bold;
 }
 #TeamStack {
-	border: 1px solid #ffffff;
+	border: 1px solid #66ffffff;
 	background:transparent;
 }
 
@@ -44,16 +44,16 @@ SettingsWindow {
 	font-size:12px;
 }
 #link {
-	background-color: #0e0d23;
+	background-color: transparent;
 	color:cyan;
-	border: 1px solid #666666;
+	border: 0px;
 	font-family:Ubuntu mono;
+	text-decoration: underline;
 	padding:2px 16px;
 }
 #link:hover {
 	color: #dddddd;
-	background-color: #0e0d23;
-	border: 1px solid #444444;
+	text-decoration: none;
 }
 
 #Header {
@@ -94,6 +94,9 @@ SettingsWindow {
 	margin:0px;
 }
 
+#HuntWidget {
+	background: #88000000;
+}
 #HunterWidget {
 	background: #88000000;
 }
@@ -197,7 +200,7 @@ QScrollArea{
 QPushButton{
 	font-family:Ubuntu mono;
 	border-style: solid;
-    border-color:#aa000000;
+    border-color:#444444;
 	border-width: 2px;
 	border-style: solid;
 	color: #a9b7c6;
@@ -351,11 +354,11 @@ QTabWidget {
 QTabWidget::pane {
 		background-color:#1e282c;
 		border-style:transparent;
-}
-QTabWidget::QWidget {
+		border-bottom-left-radius:0px;
 }
 QTabBar {
 	background-color: transparent;
+	border:0px;
 	border-bottom: 1px solid #828790;
 }
 QTabBar::tab {

@@ -6,7 +6,8 @@ from resources import *
 
 
 class MmrData():
-    def __init__(self) -> None:
+    def __init__(self,parent=None) -> None:
+        self.parent = parent
         data = []
         mmrs = GetAllMmrs(pid=settings.value('profileid'))
         i = 0
@@ -31,12 +32,12 @@ class MmrData():
                 'y': pt['y'],
                 'data':pt['ts']
             } for pt in data if pt['qp'] == 'true'],
-            pen="#000000", brush="#00ffff", name="Quick Play", tip="MMR: {y:.0f}".format
+            pen="#000000", brush="#00ffff", name="Quick Play", tip="MMR: {y:.0f}".format,parent=self.parent
         )
         self.bhPoints = ScatterItem(
             [{'x': pt['x'], 'y': pt['y'], 'data':pt['ts']}
                 for pt in data if pt['qp'] == 'false'],
-            pen="#000000", brush="#ff0000", name="Bounty Hunt", tip=("MMR: {y:.0f}").format,
+            pen="#000000", brush="#ff0000", name="Bounty Hunt", tip=("MMR: {y:.0f}").format,parent=self.parent
         )
         lastTs = GetLastHuntTimestamp()
         spots = [{'x': GetTotalHuntCount(), 'y': prediction,

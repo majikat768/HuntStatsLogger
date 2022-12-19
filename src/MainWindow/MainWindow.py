@@ -27,8 +27,6 @@ class MainWindow(QMainWindow):
 
         self.show()
 
-        self.mainframe.update()
-
         self.offset = QPoint()
         self.mousePressed = False
         self.isMini = False

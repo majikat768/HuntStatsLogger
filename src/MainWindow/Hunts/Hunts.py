@@ -34,13 +34,14 @@ class Hunts(QScrollArea):
         self.main.layout.addWidget(self.teamDetails)
         self.setWidget(self.main)
         #self.main.setCollapsible(0,False)
-        self.update()
 
     def calculateMmrChange(self):
         '''
         trying to reverse engineer how MMR is calculated, so that I can make an estimate.
         '''
         currentIndex = self.HuntSelect.currentIndex()
+        if currentIndex < 0:
+            return
         currentTs = self.HuntSelect.currentData()
         currentMmr = execute_query("select mmr from 'hunters' where profileid is '%s' and timestamp is %d" % (
             settings.value("profileid"), currentTs))
@@ -58,13 +59,15 @@ class Hunts(QScrollArea):
             nextMmr = execute_query("select mmr from 'hunters' where profileid is '%s' and timestamp is %d" % (
                 settings.value("profileid"), nextTs))
             nextMmr = 0 if len(nextMmr) == 0 else nextMmr[0][0]
+            predictChange = predictedMmr - currentMmr
             mmrChange = nextMmr - currentMmr
             mmrOutput = "Your MMR change:<br>%d -> %d<br>%+d" % (
                 currentMmr, nextMmr, mmrChange)
             return mmrOutput
 
-    def updateDetails(self):
-        ts = self.HuntSelect.currentData()
+    def updateDetails(self, ts=None):
+        if not ts:
+            ts = self.HuntSelect.currentData()
         if (ts == None):
             return
         hunt = GetHunt(ts)
@@ -133,7 +136,7 @@ class Hunts(QScrollArea):
         self.teamDetails.update(teams, hunters, hunt, killData,self.calculateMmrChange())
 
     def update(self):
-        # print('hunts.update')
+        print('hunts.update')
         self.updateHuntSelection()
         self.updateDetails()
 
@@ -143,7 +146,7 @@ class Hunts(QScrollArea):
         self.HuntSelect.view().setSpacing(4)
         self.HuntSelect.setStyleSheet('QComboBox{padding:8px;}')
 
-        self.HuntSelect.activated.connect(self.updateDetails)
+        self.HuntSelect.activated.connect(lambda : self.updateDetails())
 
     def updateHuntSelection(self):
         self.HuntSelect.clear()
@@ -170,41 +173,3 @@ class Hunts(QScrollArea):
     def initDetails(self):
         self.huntDetails = HuntDetails()
         self.teamDetails = TeamDetails()
-
-def getKillData(ts):
-    your_kills = {i+1: 0 for i in range(6)}
-    your_deaths = {i+1: 0 for i in range(6)}
-    team_kills = {i+1: 0 for i in range(6)}
-
-    your_total_kills = execute_query(
-        "select downedbyme+killedbyme,mmr from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0)" % ts)
-    your_total_deaths = execute_query(
-        "select downedme+killedme,mmr from 'hunters' where timestamp is %d and (downedme > 0 or killedme > 0)" % ts)
-    team_total_kills = execute_query(
-        "select downedbyteammate+killedbyteammate,mmr from 'hunters' where timestamp is %d and (downedbyteammate > 0 or killedbyteammate > 0)" % ts)
-
-    for k in your_total_kills:
-        mmr = mmr_to_stars(k[1])
-        your_kills[mmr] += k[0]
-        team_kills[mmr] += k[0]
-    for d in your_total_deaths:
-        mmr = mmr_to_stars(d[1])
-        your_deaths[mmr] += d[0]
-    for k in team_total_kills:
-        mmr = mmr_to_stars(k[1])
-        team_kills[mmr] += k[0]
-
-    entries = GetHuntEntries(ts)
-    assists = 0
-    for entry in entries:
-        cat = entry['category']
-        if 'players_killed' in cat:
-            if 'assist' in cat:
-                assists += entry['amount']
-
-    return {
-        "your_kills": your_kills,
-        "team_kills": team_kills,
-        "your_deaths": your_deaths,
-        "assists": assists
-    }

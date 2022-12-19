@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, QEvent, QRectF, QStandardPaths
 from PyQt6.QtGui import QColor
 import pyqtgraph
 import os, time
+from MainWindow.Chart.TeamMmrData import TeamMmrData
 from MainWindow.Chart.MmrData import MmrData
 from MainWindow.Chart.KdaData import KdaData
 from MainWindow.Chart.WinLoss import WinLoss
@@ -19,6 +20,8 @@ class Chart(QScrollArea):
         self.setWidget(self.main)
         self.options = {
             "MMR":self.setMmr,
+            "Team MMR":self.setTeamMmr,
+            "Own MMR / Team MMR":self.setBothMmrs,
             "KDA":self.setKda,
             "Win/Loss":self.setWinLoss,
             "Kills Per Hunt":self.setKills
@@ -70,6 +73,7 @@ class Chart(QScrollArea):
         self.main.layout.addWidget(self.screenshotButton)
 
     def update(self):
+        print("chart.update")
         opt = self.dataSelect.currentText()
         self.plot.clear()
         self.legend.clear()
@@ -80,8 +84,25 @@ class Chart(QScrollArea):
         for i in range(10):
             QApplication.processEvents()
 
+    def setBothMmrs(self):
+        self.setMmr()
+        self.setTeamMmr(color="#ffffff")
+
+    def setTeamMmr(self,color="#ff0000"):
+        mmr = TeamMmrData(color,parent=self)
+        self.plot.addItem(mmr.line)
+        self.plot.addItem(mmr.points)
+        for line in mmr.stars:
+            self.plot.addItem(line)
+        self.plot.setLabel('left','MMR')
+        self.plot.setLabel('bottom', 'Hunts')
+        self.legend.addItem(mmr.points,name=mmr.points.opts['name'])
+        self.plot.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(mmr.line.xData)+5)
+        xrange = int(self.plot.getAxis("bottom").range[1])
+        self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,int(xrange))]])
+
     def setMmr(self):
-        mmr = MmrData()
+        mmr = MmrData(parent=self)
         self.plot.addItem(mmr.line)
         self.plot.addItem(mmr.qpPoints)
         self.plot.addItem(mmr.bhPoints)
@@ -101,7 +122,7 @@ class Chart(QScrollArea):
         self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,int(xrange))]])
 
     def setKda(self):
-        kda = KdaData()
+        kda = KdaData(parent=self)
         self.plot.addItem(kda.line)
         self.plot.addItem(kda.qpPoints)
         self.plot.addItem(kda.bhPoints)
@@ -118,7 +139,7 @@ class Chart(QScrollArea):
             max(-1, len(kda.line.xData)-20), len(kda.line.xData)+5)
         #self.plot.getAxis("bottom").setTickSpacing()
         xrange = self.plot.getAxis("bottom").range[1]
-        self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,xrange)]])
+        self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,int(xrange))]])
         self.plot.getAxis("bottom").setStyle(tickAlpha=0.1)
 
     def setWinLoss(self):

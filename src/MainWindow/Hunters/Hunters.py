@@ -2,6 +2,9 @@ from PyQt6.QtWidgets import QWidget, QGroupBox, QGridLayout, QHBoxLayout, QVBoxL
 from PyQt6.QtCore import Qt
 from resources import *
 from DbHandler import *
+from MainWindow.Hunters.TopKills import TopKills
+from MainWindow.Hunters.FrequentHunters import FrequentHunters
+from MainWindow.Hunters.HunterSearch import HunterSearch
 from Widgets.Modal import Modal
 
 
@@ -15,34 +18,18 @@ class Hunters(QScrollArea):
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
 
-        self.initTopKills()
-        self.initFreqHunters()
-        self.initHunterSearch()
+        self.topKills = TopKills()
+        self.main.layout.addWidget(self.topKills)
+        self.freqHunters = FrequentHunters()
+        self.main.layout.addWidget(self.freqHunters)
+        self.search = HunterSearch()
+        self.main.layout.addWidget(self.search)
+        #self.initHunterSearch()
 
         #self.main.layout.setRowStretch(self.main.layout.rowCount()+1, 1)
         self.setWidget(self.main)
         self.main.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
-
-    def initTopKills(self):
-        self.TopBox = QWidget()
-        self.TopBox.layout = QHBoxLayout()
-        self.TopBox.setLayout(self.TopBox.layout)
-        self.TopKilledBox = QGroupBox("Top Killed")
-        self.TopKilledBox.layout = QVBoxLayout()
-        self.TopKilledBox.setLayout(self.TopKilledBox.layout)
-        self.TopKilledBox.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.TopKillerBox = QGroupBox("Top Killer")
-        self.TopKillerBox.layout = QVBoxLayout()
-        self.TopKillerBox.setLayout(self.TopKillerBox.layout)
-        self.TopKillerBox.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.TopBox.layout.addWidget(self.TopKillerBox)
-        self.TopBox.layout.addWidget(self.TopKilledBox)
-        self.TopBox.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.main.layout.addWidget(self.TopBox)
 
     def initFreqHunters(self):
         self.FreqHuntersBox = QGroupBox("Frequently Seen Hunters")
@@ -82,44 +69,9 @@ class Hunters(QScrollArea):
         self.main.layout.addWidget(self.SearchBox)
 
     def update(self):
-        self.updateTopKilled()
-        self.updateTopKiller()
-        self.updateFrequentHunters()
-
-    def updateTopKilled(self):
-        for i in reversed(range(self.TopKilledBox.layout.count())):
-            self.TopKilledBox.layout.itemAt(i).widget().setParent(None)
-        topKilled = GetTopKilled()
-        if len(topKilled.keys()) < 1:
-            return
-        name = topKilled['name']
-        kills = topKilled['kills']
-        self.TopKilledBox.layout.addWidget(QLabel('%s' % name))
-        self.TopKilledBox.layout.addWidget(
-            QLabel('Have killed them %d times.' % kills))
-        data = GetHunterByName(name)
-        sameTeamCount = self.SameTeamCount(data)
-        if sameTeamCount > -1:
-            self.TopKilledBox.layout.addWidget(
-                QLabel("You've been on their team %d times." % sameTeamCount))
-        self.TopKilledBox.adjustSize()
-
-    def updateTopKiller(self):
-        for i in reversed(range(self.TopKillerBox.layout.count())):
-            self.TopKillerBox.layout.itemAt(i).widget().setParent(None)
-        topKiller = GetTopKiller()
-        if len(topKiller.keys()) < 1:
-            return
-        name = topKiller['name']
-        kills = topKiller['kills']
-        self.TopKillerBox.layout.addWidget(QLabel('%s' % name))
-        self.TopKillerBox.layout.addWidget(
-            QLabel('Has killed you %d times.' % kills))
-        data = GetHunterByName(name)
-        sameTeamCount = self.SameTeamCount(data)
-        if sameTeamCount > -1:
-            self.TopKillerBox.layout.addWidget(
-                QLabel("You've been on their team %d times." % sameTeamCount))
+        print("hunters.update")
+        self.topKills.update()
+        self.freqHunters.update()
 
     def SubmitSearch(self):
         name = self.SearchBar.text()

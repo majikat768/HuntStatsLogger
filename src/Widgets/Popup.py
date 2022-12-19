@@ -14,3 +14,4 @@ class Popup(QMainWindow):
     def keepAlive(self,keep):
         if(keep):
             self.setWindowFlag(Qt.WindowType.Popup)
+

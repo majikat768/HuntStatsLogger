@@ -1,8 +1,8 @@
 import pyqtgraph
-from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout, QApplication
 from PyQt6.QtGui import QCursor
 from Widgets.Popup import Popup
-from resources import unix_to_datetime
+from resources import unix_to_datetime, GoToHuntPage
 
 class ScatterItem(pyqtgraph.ScatterPlotItem):
     def __init__(self, *args, **kargs):
@@ -16,14 +16,22 @@ class ScatterItem(pyqtgraph.ScatterPlotItem):
             kargs['symbol'] = 'o'
         if 'tip' in kargs:
             kargs['tip'] = None
+        if 'parent' in kargs:
+            self.parent = kargs.pop('parent')
+        else:
+            self.parent = None
         self.size = kargs['size']
         self.hoverSize = kargs['hoverSize']
         super().__init__(*args, **kargs)
         self.sigHovered.connect(self.mouseOver)
+        self.sigClicked.connect(self.handleClick)
 
         self.isHovered = False
+        self.stop = False
 
     def mouseOver(self,obj,pts,ev):
+        if self.stop:
+            return
         if len(pts) > 0:
             pt = pts[0]
             p1 = pt.pos()
@@ -38,9 +46,9 @@ class ScatterItem(pyqtgraph.ScatterPlotItem):
                 # not perfect, because technically one's MMR could be < 1000, or KDA could be > 1000....
                 # but probably won't be.
                 if pt.pos().y() > 1000:
-                    info.layout.addWidget(QLabel("%d" % pt.pos().y()))
+                    info.layout.addWidget(QLabel("%s\n%d" % (unix_to_datetime(pt.data()),pt.pos().y())))
                 else:
-                    info.layout.addWidget(QLabel("%.3f" % pt.pos().y()))
+                    info.layout.addWidget(QLabel("%s\n%.3f" % (unix_to_datetime(pt.data()),pt.pos().y())))
 
                 w = self.getViewWidget().window()
                 self.isHovered = True
@@ -48,7 +56,6 @@ class ScatterItem(pyqtgraph.ScatterPlotItem):
                 self.popup.show()
                 w.raise_()
                 w.activateWindow()
-                print(pt.data())
 
             elif self.isHovered and not ptHovered:
                 self.isHovered = False
@@ -57,5 +64,19 @@ class ScatterItem(pyqtgraph.ScatterPlotItem):
             self.isHovered = False
             try:
                 self.popup.close()
+                self.popup.deleteLater()
             except:
                 self.popup = None
+
+    def handleClick(self,obj,pts,ev):
+        if self.parent == None:
+            return
+        if len(pts) == 0:
+            return
+        self.stop = True
+        pt = pts[0]
+        mainframe = self.parent.window().mainframe
+        GoToHuntPage(pt.data(),mainframe)
+        self.popup.close()
+        self.popup = None
+        self.stop = False

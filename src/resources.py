@@ -6,7 +6,7 @@ from datetime import datetime
 
 from PyQt6.QtCore import QSettings, QStandardPaths
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QLabel, QSizePolicy, QWidgetItem, QSpacerItem
+from PyQt6.QtWidgets import QLabel, QSizePolicy, QWidgetItem, QSpacerItem, QApplication
 
 app_data_path = os.path.join(QStandardPaths.writableLocation(
     QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
@@ -118,3 +118,10 @@ def clearLayout(layout):
             layout.itemAt(i).widget().setParent(None)
         elif isinstance(item,QSpacerItem):
             layout.removeItem(item)
+
+def GoToHuntPage(timestamp,main):
+    tab = main.huntsTab
+    index = tab.HuntSelect.findData(timestamp)
+    tab.HuntSelect.setCurrentIndex(index)
+    main.tabs.setCurrentWidget(tab)
+    tab.updateDetails(ts=timestamp)
