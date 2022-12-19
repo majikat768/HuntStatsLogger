@@ -9,6 +9,7 @@ from MainWindow.Chart.MmrData import MmrData
 from MainWindow.Chart.KdaData import KdaData
 from MainWindow.Chart.WinLoss import WinLoss
 from MainWindow.Chart.KillsPerHunt import KillsPerHunt
+from MainWindow.Chart.TeamKillsPerHunt import TeamKillsPerHunt
 
 class Chart(QScrollArea):
     def __init__(self, parent=None):
@@ -24,7 +25,8 @@ class Chart(QScrollArea):
             "Own MMR / Team MMR":self.setBothMmrs,
             "KDA":self.setKda,
             "Win/Loss":self.setWinLoss,
-            "Kills Per Hunt":self.setKills
+            "Kills Per Hunt":self.setKills,
+            "Team Kills Per Hunt":self.setTeamKills
 
         }
 
@@ -178,7 +180,7 @@ class Chart(QScrollArea):
         self.plot.getAxis("bottom").setTicks(kills.ticks)
         self.plot.setLimits(xMin=0, xMax=xmax,yMin=0, yMax=ymax)
         self.plot.setXRange(0,xmax)
-        self.plot.setYRange(0,max(kills.bountyline.value(),kills.qpline.value())+30)
+        self.plot.setYRange(0,ymax)
         self.plot.setLabel('left', 'Hunts')
         self.plot.setLabel('bottom', 'Kills Per Hunt')
         self.legend.addItem(kills.bountyLegendItem, name="Bounty Hunt")
@@ -190,6 +192,20 @@ class Chart(QScrollArea):
         '''
         for i in range(10):
             QApplication.processEvents()
+
+    def setTeamKills(self):
+        kills = TeamKillsPerHunt()
+        self.plot.addItem(kills.bars)
+        self.plot.getAxis("bottom").setTicks(kills.ticks)
+        xmax = (len(kills.ticks[0])+1)*2*kills.width
+        ymax = kills.maxHeight+10
+        self.plot.setLimits(xMin=0, xMax=xmax,yMin=0, yMax=ymax)
+        self.plot.setXRange(0,xmax)
+        self.plot.setYRange(0,ymax)
+        self.plot.addItem(kills.line)
+        self.plot.setLabel('left', 'Hunts')
+        self.plot.setLabel('bottom', 'Team Kills Per Hunt')
+        #self.legend.addItem(kills.legendItem, name="Team Kills")
 
     def resizeEvent(self, a0):
         return super().resizeEvent(a0)

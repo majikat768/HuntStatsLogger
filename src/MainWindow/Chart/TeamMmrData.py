@@ -8,7 +8,7 @@ class TeamMmrData():
     def __init__(self,color="#ff0000",parent=None):
         self.parent = parent
         data = []
-        mmrs = GetTeamMmrs(pid=settings.value('profileid'))
+        mmrs = GetTeamMmrs()
         self.minMmr = 6001
         self.maxMmr = -1
         

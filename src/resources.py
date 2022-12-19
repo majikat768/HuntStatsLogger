@@ -78,11 +78,22 @@ def star_path():
     return os.path.join(resource_path('assets/icons'), 'star.png')
 
 
-def max(a, b):
+def max(a, b=None):
+    if b == None:
+        arr = list(a)
+        maximum = arr[0]
+        for i in arr:
+            maximum = max(maximum,i)
+        return maximum
     return a if a > b else b
 
-
-def min(a, b):
+def min(a, b=None):
+    if b == None:
+        arr = list(a)
+        minimum = arr[0]
+        for i in arr:
+            minimum = min(minimum,i)
+        return minimum
     return a if a < b else b
 
 

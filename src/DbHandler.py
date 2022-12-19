@@ -224,6 +224,26 @@ def GetKillsByMatch():
             res[ts]["kills"] += d["kills"]
         return res
 
+def GetTeamKillsByMatch():
+        kData = execute_query("select downedbyme + killedbyme as kills, downedbyteammate + killedbyteammate as team_kills, 'games'.timestamp from 'hunters' join 'games' on 'hunters'.game_id = 'games'.game_id where 'games'.MissionBagIsQuickPlay = 'false'")
+        cols = ["kills","team_kills","ts"]
+        data = []
+        try:
+            for k in kData:
+                data.append({cols[i] : k[i] for i in range(len(cols))})
+        except Exception as e:
+            log('dbhandler.getkillsbymatch')
+            log(e)
+
+        res = {}
+        for d in data:
+            ts = d['ts']
+            if ts not in res:
+                res[ts] = 0
+            res[ts] += d["kills"]
+            res[ts] += d["team_kills"]
+        return res
+
 def GetDeathsByMatch():
         dData = execute_query("select downedme + killedme, 'games'.MissionBagIsQuickPlay, 'games'.timestamp from 'hunters' join 'games' on 'hunters'.game_id = 'games'.game_id")
         cols = ["deaths","isQp","ts"]

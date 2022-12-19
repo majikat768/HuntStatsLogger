@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QScrollArea, QPushButton
+from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton
 from PyQt6.QtGui import QIcon
 from DbHandler import *
 from MainWindow.Chart.ScatterItem import ScatterItem
@@ -39,7 +39,10 @@ class MyTeams(QScrollArea):
         i = 0
         for t in sorted(count,key=lambda t : count[t]['count'],reverse=True):
             if count[t]['count'] > 1:
-                self.main.layout.addWidget(self.TeamWidget(count[t]))
+                w = self.TeamWidget(count[t])
+                if w == None:
+                    continue
+                self.main.layout.addWidget(w)
             i += 1
             if i > 10:
                 break
@@ -47,19 +50,26 @@ class MyTeams(QScrollArea):
         
 
     def TeamWidget(self,team):
+        if len(team['pid']) == 1:
+            return None
         w = QWidget()
         w.layout = QGridLayout()
         w.setLayout(w.layout)
         names = [GetNameByProfileId(pid) for pid in team['pid']]
-        if len(team['pid']) == 1:
-            w.layout.addWidget(QLabel("%s (solo)" % names[0]),0,0)
-        else:
-            w.layout.addWidget(QLabel("%s" % ", ".join(names)),0,0)
+        w.layout.addWidget(QLabel("%s" % ", ".join(names)),0,0)
         w.layout.addWidget(QLabel("Hunted together %d times" % team['count']),1,0)
 
         w.setObjectName("HuntWidget")
-        plot = self.TeamMmrChart(team)
-        w.layout.addWidget(plot,2,0)
+        plot,bestMmrs = self.TeamMmrChart(team)
+        bestWidget = QWidget()
+        bestWidget.layout = QGridLayout()
+        bestWidget.setLayout(bestWidget.layout)
+        i = 0
+        for pid in bestMmrs:
+            bestWidget.layout.addWidget(QLabel("%s's best: %d" % (GetNameByProfileId(pid),bestMmrs[pid])))
+            i += 1
+        w.layout.addWidget(bestWidget,0,1,len(bestMmrs.keys()),1)
+        w.layout.addWidget(plot,len(bestMmrs.keys()),0,1,2)
         return w
 
     def TeamMmrChart(self,team):
@@ -72,6 +82,7 @@ class MyTeams(QScrollArea):
         legend.anchor((0,0),(0,0))
         plotWindow.addItem(vb,1,0)
 
+        bestMmrs = {pid : 0 for pid in team['pid']}
         teamMmrs = {}
         teamData = []
         playersData = {pid : [] for pid in team['pid']}
@@ -89,6 +100,7 @@ class MyTeams(QScrollArea):
                         playersData[pid].append({'x':i,'y':mmr[0][0],'data':ts})
                         playerMmrs[pid][ts] = mmr[0][0]
             i += 1
+        bestMmrs = {pid : max(playerMmrs[pid].values()) for pid in team['pid']}
         teamPoints = ScatterItem(teamData,brush="#00ff00cc",pen=None,name="Team MMR",parent=self)
         playerPoints = []
         i = 0
@@ -110,7 +122,7 @@ class MyTeams(QScrollArea):
             legend.addItem(player,name=player.opts['name'])
         legend.getViewBox().setMaximumHeight(legend.boundingRect().height())
         plot.showGrid(x=True,y=True,alpha=0.4)
-        return plotWindow
+        return plotWindow, bestMmrs
 
 def toggle(widget : QWidget, btn : QPushButton):
     if widget.isVisible():

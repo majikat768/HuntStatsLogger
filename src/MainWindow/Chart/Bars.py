@@ -14,8 +14,9 @@ class Bars(pyqtgraph.BarGraphItem):
         self.isHovered = False
 
         self.bars = []
-        self.brushes = opts['brushes']
-        self.defaultBrushes = opts['brushes']
+        if 'brushes' in opts:
+            self.brushes = opts['brushes']
+            self.defaultBrushes = opts['brushes']
         self.width = opts['x1'][0] - opts['x0'][0]
         self.heights = opts['height']
         self.total = sum(self.heights)
@@ -47,16 +48,19 @@ class Bars(pyqtgraph.BarGraphItem):
                     self.brushes[i].setAlpha(255)
                     val = self.heights[i]
                     perc = (val / self.total) * 100
-                    txt = "%d\n%.2f%%" % (val,perc)
+                    txt = "%d Hunts\n%.2f%%" % (val,perc)
                     info = QWidget()
                     info.layout = QVBoxLayout()
                     info.setLayout(info.layout)
                     info.layout.addWidget(QLabel(txt))
                     self.popup = Popup(info,QCursor.pos().x()+16,QCursor.pos().y()-32)
                     self.popup.show()
+                    self.popup.current = b
                     w.raise_()
                     w.activateWindow()
                     self.setOpts()
+                elif self.popup.current != b:
+                    self.popup.close()
             else:
                 self.brushes[i].setAlpha(200)
                 self.setOpts()

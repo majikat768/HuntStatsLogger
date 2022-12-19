@@ -95,8 +95,10 @@ class WinLoss():
         qpWins = sum(data['quickplay'].values())
         totalBounty = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'false'")
         totalBounty = 0 if len(totalBounty) == 0 else totalBounty[0][0]
+        totalBounty = max(1,totalBounty)
         totalQp = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'true'")
         totalQp = 0 if len(totalQp) == 0 else totalQp[0][0]
+        totalQp = max(1,totalQp)
 
         wins = {
             'bounty': {
