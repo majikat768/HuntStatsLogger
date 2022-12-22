@@ -21,6 +21,14 @@ SettingsWindow {
     font-size:12px;
 }
 
+#toast {
+	background-color:#f3e779;
+	color: #646464;
+	border-radius:5px;
+	border:1px solid black;
+	margin:0px;
+	padding:0px;
+}
 #icon {
 	border:1px solid #cc44ffcc;
 	padding:4px;

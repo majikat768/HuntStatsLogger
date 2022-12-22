@@ -1,4 +1,5 @@
 import os
+import requests
 import math
 import sys
 import time
@@ -7,6 +8,11 @@ from datetime import datetime
 from PyQt6.QtCore import QSettings, QStandardPaths
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QLabel, QSizePolicy, QWidgetItem, QSpacerItem, QApplication
+
+is_exe = getattr(sys,'frozen',False) and hasattr(sys, '_MEIPASS')
+version = "v0.4.5"
+api_url = "https://api.github.com/repos/majikat768/HuntStatsLogger/releases"
+debug = True
 
 app_data_path = os.path.join(QStandardPaths.writableLocation(
     QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
@@ -43,6 +49,7 @@ def resource_path(relative_path):
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
+        sys.exc_info()
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)

@@ -8,11 +8,14 @@ from PyQt6.QtGui import QFontDatabase, QIcon
 from PyQt6.QtCore import Qt
 from resources import *
 
+from Widgets.Toast import Toast
+from UpdateCheck import init_toast, check_for_updates
 from MainWindow.MainWindow import MainWindow
 
 class App(QApplication):
     def __init__(self, argv=None):
         super().__init__(argv)
+
 
 if __name__ == '__main__':
     log('launching app')
@@ -34,6 +37,11 @@ if __name__ == '__main__':
 
     window = MainWindow()
     window.setBaseSize(1024, 768)
+
+    if is_exe or debug:
+        init_toast(window)
+        check_for_updates()
+
     window.show()
 
     app.setWindowIcon(QIcon(resource_path('assets/icons/hsl.ico')))

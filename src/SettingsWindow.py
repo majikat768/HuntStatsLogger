@@ -4,6 +4,7 @@ from PyQt6.QtGui import QIcon
 from DbHandler import execute_query
 from Server import *
 from resources import *
+from UpdateCheck import check_for_updates
 from Widgets.Modal import Modal
 
 class SettingsWindow(QMainWindow):
@@ -17,6 +18,11 @@ class SettingsWindow(QMainWindow):
         self.main.setLayout(self.main.layout)
 
         self.initUI()
+        if int(settings.value("profileid","-1")) < 0:
+            pid = execute_query("select profileid from 'hunters' where blood_line_name is '%s'" % settings.value("steam_name"))
+            pid = -1 if len(pid) == 0 else pid[0][0]
+            if pid > 0:
+                settings.setValue("profileid",pid)
 
     def initSyncOptions(self):
         self.syncFilesWidget = QWidget()
@@ -31,13 +37,8 @@ class SettingsWindow(QMainWindow):
         self.syncFilesButton.setEnabled(self.syncFilesCheck.isChecked())
         self.syncFilesButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.syncFilesButton.clicked.connect(self.initSync)
-        self.syncFilesInfoButton = QPushButton(" ? ")
-        self.syncFilesInfoButton.setObjectName("link") 
-        self.syncFilesInfoButton.clicked.connect(self.SyncInfoDialog)
-        self.syncFilesInfoButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.syncFilesWidget.layout.addWidget(self.syncFilesButton,1,0)
         self.syncFilesWidget.layout.addWidget(QLabel(),1,1)
-        self.syncFilesWidget.layout.addWidget(self.syncFilesInfoButton,0,2)
         self.syncFilesWidget.layout.setColumnStretch(1,1)
         self.main.layout.addWidget(self.syncFilesWidget)
 
@@ -49,16 +50,9 @@ class SettingsWindow(QMainWindow):
         info = QWidget()
         info.layout = QVBoxLayout()
         info.setLayout(info.layout)
-        text = "Selecting this option allows the app to automatically upload logfiles\nand data files to a remote server, viewable by the developer."
-        text += "\n\nThis can be helpful in debugging, and in developing more features."
-        text += "\n\nThe files which will be shared are in the Settings Folder"
-        text += "\nunder logs/ and json/ .\n"
         btn = QPushButton("Settings Folder")
         btn.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         btn.clicked.connect(lambda : os.startfile(app_data_path))
-        textLabel = QLabel(text)
-        textLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        info.layout.addWidget(textLabel,0,Qt.AlignmentFlag.AlignCenter)
         info.layout.addWidget(btn,0,Qt.AlignmentFlag.AlignCenter)
         w.addWidget(info)
         w.show()
@@ -94,6 +88,13 @@ class SettingsWindow(QMainWindow):
         hunt_dir_button.clicked.connect(self.open_hunt_dir)
         self.main.layout.addWidget(hunt_dir_button)
         self.main.layout.setAlignment(hunt_dir_button,Qt.AlignmentFlag.AlignHCenter)
+
+        if is_exe or debug:
+            update_button = QPushButton("Check for updates")
+            update_button.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Minimum)
+            update_button.clicked.connect(check_for_updates)
+            self.main.layout.addWidget(update_button)
+            self.main.layout.setAlignment(update_button,Qt.AlignmentFlag.AlignHCenter)
 
         self.setCentralWidget(self.main)
 
@@ -224,7 +225,8 @@ class SettingsWindow(QMainWindow):
                 self.steamNameInput.setText(settings.value("steam_name"))
                 pid = execute_query("select profileid from 'hunters' where blood_line_name is '%s'" % settings.value("steam_name"))
                 pid = -1 if len(pid) == 0 else pid[0][0]
-                settings.setValue("profileid",pid)
+                if pid > 0:
+                    settings.setValue("profileid",pid)
                 self.parent().update()
             self.steamNameInput.setDisabled(True)
         else:

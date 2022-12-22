@@ -10,6 +10,7 @@ from MainWindow.Chart.KdaData import KdaData
 from MainWindow.Chart.WinLoss import WinLoss
 from MainWindow.Chart.KillsPerHunt import KillsPerHunt
 from MainWindow.Chart.TeamKillsPerHunt import TeamKillsPerHunt
+from resources import debug
 
 class Chart(QScrollArea):
     def __init__(self, parent=None):
@@ -75,7 +76,8 @@ class Chart(QScrollArea):
         self.main.layout.addWidget(self.screenshotButton)
 
     def update(self):
-        print("chart.update")
+        if debug:
+            print("chart.update")
         opt = self.dataSelect.currentText()
         self.plot.clear()
         self.legend.clear()

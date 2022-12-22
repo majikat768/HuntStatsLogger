@@ -66,6 +66,8 @@ class TeamDetails(QGroupBox):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def update(self, teams, hunters, hunt, kills,mmrChange):
+        if debug:
+            print('teamdetails.update')
         maxIconWidth = 0
         qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
         clearLayout(self.killsData.layout)
@@ -273,7 +275,7 @@ class TeamDetails(QGroupBox):
         n_games = execute_query(
             "select count(*) from 'hunters' where profileid is %d" % pid)
         n_games = 0 if len(n_games) == 0 else n_games[0][0]
-        if name.lower() == settings.value("steam_name", "").lower():
+        if int(pid) == int(settings.value("profileid", "")):
             hunterWidget.ownTeam = True
         else:
             hunterWidget.ownTeam = False

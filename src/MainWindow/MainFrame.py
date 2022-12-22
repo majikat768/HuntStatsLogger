@@ -99,7 +99,8 @@ class MainFrame(QWidget):
         self.layout.addWidget(self.tabs)
 
     def update(self):
-        print('mainframe.update')
+        if debug:
+            print('mainframe.update')
         self.header.update()
         self.huntsTab.update()
         self.huntersTab.update()
