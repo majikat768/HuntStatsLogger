@@ -17,51 +17,11 @@ class SettingsWindow(QMainWindow):
         self.main.setLayout(self.main.layout)
 
         self.initUI()
-
-    def initSyncOptions(self):
-        self.syncFilesWidget = QWidget()
-        self.syncFilesWidget.layout = QGridLayout()
-        self.syncFilesWidget.setLayout(self.syncFilesWidget.layout)
-
-        self.syncFilesCheck = QCheckBox("Sync files")
-        self.syncFilesCheck.setChecked(settings.value("sync_files","False").lower() == "true")
-        self.syncFilesCheck.stateChanged.connect(self.toggleFileSync)
-        self.syncFilesWidget.layout.addWidget(self.syncFilesCheck,0,0)
-        self.syncFilesButton = QPushButton("Initialize file sync")
-        self.syncFilesButton.setEnabled(self.syncFilesCheck.isChecked())
-        self.syncFilesButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.syncFilesButton.clicked.connect(self.initSync)
-        self.syncFilesInfoButton = QPushButton(" ? ")
-        self.syncFilesInfoButton.setObjectName("link") 
-        self.syncFilesInfoButton.clicked.connect(self.SyncInfoDialog)
-        self.syncFilesInfoButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.syncFilesWidget.layout.addWidget(self.syncFilesButton,1,0)
-        self.syncFilesWidget.layout.addWidget(QLabel(),1,1)
-        self.syncFilesWidget.layout.addWidget(self.syncFilesInfoButton,0,2)
-        self.syncFilesWidget.layout.setColumnStretch(1,1)
-        self.main.layout.addWidget(self.syncFilesWidget)
-
-    def SyncInfoDialog(self):
-        '''
-        this whole thing needs more work
-        '''
-        w = Modal(parent=self)
-        info = QWidget()
-        info.layout = QVBoxLayout()
-        info.setLayout(info.layout)
-        text = "Selecting this option allows the app to automatically upload logfiles\nand data files to a remote server, viewable by the developer."
-        text += "\n\nThis can be helpful in debugging, and in developing more features."
-        text += "\n\nThe files which will be shared are in the Settings Folder"
-        text += "\nunder logs/ and json/ .\n"
-        btn = QPushButton("Settings Folder")
-        btn.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        btn.clicked.connect(lambda : os.startfile(app_data_path))
-        textLabel = QLabel(text)
-        textLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        info.layout.addWidget(textLabel,0,Qt.AlignmentFlag.AlignCenter)
-        info.layout.addWidget(btn,0,Qt.AlignmentFlag.AlignCenter)
-        w.addWidget(info)
-        w.show()
+        if int(settings.value("profileid","-1")) < 0 and len(settings.value("steam_name","")) > 0:
+            pid = execute_query("select profileid from 'hunters' where blood_line_name is %s'" % settings.value("steam_name"))
+            pid = -1 if len(pid) == 0 else pid[0][0]
+            if pid > 0:
+                settings.setValue("profileid",pid)
 
     def initUI(self):
         self.initSteamOptions()
@@ -75,8 +35,6 @@ class SettingsWindow(QMainWindow):
         self.sysTrayCheck.setChecked(settings.value("show_sys_tray","False").lower() == "true")
         self.sysTrayCheck.stateChanged.connect(self.toggleSysTray)
         self.main.layout.addWidget(self.sysTrayCheck)
-
-        #self.initSyncOptions()
 
         self.main.layout.addItem(QSpacerItem(0,16,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed))
         self.initKdaRange()
@@ -117,34 +75,6 @@ class SettingsWindow(QMainWindow):
         else:
             w.showSysTray = False
             settings.setValue("show_sys_tray",False)
-
-    def toggleFileSync(self):
-        if self.syncFilesCheck.isChecked():
-            print("sync on")
-            settings.setValue("sync_files",True)
-            self.syncFilesButton.setEnabled(True)
-            self.syncFilesButton.setText("Initialise file sync")
-        else:
-            settings.setValue("sync_files",False)
-            self.syncFilesButton.setEnabled(False)
-            self.syncFilesButton.setText("Not syncing.")
-    
-    def initSync(self):
-        self.syncFilesButton.setText("Initializing..."),
-        self.syncFilesButton.setEnabled(False)
-        self.Server = Server(parent=self)
-        startThread(self,self.Server,started=[self.Server.init_user],progress=[self.login])
-
-    def login(self):
-        self.syncFilesButton.setText("Connecting to server..."),
-        self.Server = Server(parent=self)
-        startThread(
-            self,self.Server,started=[self.Server.login_user],
-            progress=[
-                lambda : self.syncFilesButton.setText("Ready.")
-            ]
-        )
-
 
     def initKdaRange(self):
         self.KdaRangeLabel = QLabel("Calculate KDA from the last...")
@@ -224,7 +154,8 @@ class SettingsWindow(QMainWindow):
                 self.steamNameInput.setText(settings.value("steam_name"))
                 pid = execute_query("select profileid from 'hunters' where blood_line_name is '%s'" % settings.value("steam_name"))
                 pid = -1 if len(pid) == 0 else pid[0][0]
-                settings.setValue("profileid",pid)
+                if pid > 0:
+                    settings.setValue("profileid",pid)
                 self.parent().update()
             self.steamNameInput.setDisabled(True)
         else:

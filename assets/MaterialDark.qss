@@ -61,6 +61,15 @@ SettingsWindow {
 	background-color:#1e282c;
 }
 
+#toast {
+       background-color:#f3e779;
+       color: #646464;
+       border-radius:5px;
+       border:1px solid black;
+       margin:0px;
+       padding:0px;
+}
+
 #EventPointsLabel {
 	color:#dd6600;
 	font-style:bold italic;

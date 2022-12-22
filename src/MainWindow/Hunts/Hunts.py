@@ -136,7 +136,8 @@ class Hunts(QScrollArea):
         self.teamDetails.update(teams, hunters, hunt, killData,self.calculateMmrChange())
 
     def update(self):
-        print('hunts.update')
+        if debug:
+            print('hunts.update')
         self.updateHuntSelection()
         self.updateDetails()
 

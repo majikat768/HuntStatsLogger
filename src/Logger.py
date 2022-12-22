@@ -9,6 +9,7 @@ import xmltodict
 from PyQt6.QtCore import QObject, pyqtSignal
 from resources import *
 from DbHandler import *
+from Widgets.Toast import Toast
 
 def file_changed(ts):
     return os.stat(settings.value("xml_path")).st_mtime != ts
@@ -32,6 +33,7 @@ class Logger(QObject):
         if not tables_exist():
             create_tables()
         self.running = False
+        self.toast = Toast("New Hunt Recorded.",parent=self.mainframe.window())
         super().__init__()
 
     def run(self):
@@ -72,6 +74,7 @@ class Logger(QObject):
                         json_to_db(new_data)
                         last_hunt = last_change
                         self.progress.emit()
+                        self.toast.show()
                 except Exception as e:
                     log('building json error')
                     log(e)

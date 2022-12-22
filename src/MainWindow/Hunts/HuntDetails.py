@@ -29,6 +29,8 @@ class HuntDetails(QGroupBox):
 
 
     def update(self, qp, bounties, accolades, monsters_killed, targets):
+        if debug:
+            print("huntdetails.update")
         self.bounties.update(qp,bounties,targets)
         self.rewards.update(accolades)
         self.monsters.update(monsters_killed)

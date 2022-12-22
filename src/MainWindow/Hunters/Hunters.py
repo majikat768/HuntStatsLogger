@@ -69,7 +69,8 @@ class Hunters(QScrollArea):
         self.main.layout.addWidget(self.SearchBox)
 
     def update(self):
-        print("hunters.update")
+        if debug:
+            print("hunters.update")
         self.topKills.update()
         self.freqHunters.update()
 

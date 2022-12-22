@@ -54,7 +54,8 @@ class TopHunts(QScrollArea):
         self.main.layout.addWidget(self.opts)
 
     def update(self):
-        print('tophunts.update')
+        if debug:
+            print('tophunts.update')
         clearLayout(self.body.layout)
         sort = self.sortingSelect.currentData()
         num = int(self.numResults.currentText())

@@ -19,7 +19,8 @@ class MyTeams(QScrollArea):
         self.update()
 
     def update(self):
-        print('myteams.update')
+        if debug:
+            print('myteams.update')
         clearLayout(self.main.layout)
         hunts = GetHunts()
         teams = []
@@ -52,6 +53,7 @@ class MyTeams(QScrollArea):
     def TeamWidget(self,team):
         if len(team['pid']) == 1:
             return None
+        team['games'] = sorted(team['games'])
         w = QWidget()
         w.layout = QGridLayout()
         w.setLayout(w.layout)
