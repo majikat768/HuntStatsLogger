@@ -255,7 +255,7 @@ class TeamDetails(QGroupBox):
                 self.activateWindow()
             elif event.type() == QEvent.Type.Leave:
                 try:
-                    self.popup.close()
+                    self.popup.hide()
                 except:
                     self.popup = None
         return super().eventFilter(obj, event)

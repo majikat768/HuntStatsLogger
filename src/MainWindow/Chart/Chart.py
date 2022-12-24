@@ -155,12 +155,12 @@ class Chart(QScrollArea):
             )
         ) + 32
         '''
-        height = 120
+        height =  winLoss.ymax+10
 
         self.plot.addItem(winLoss.bountyBars)
         self.plot.addItem(winLoss.quickplayBars)
         self.plot.addItem(winLoss.survivalBars)
-        self.plot.setLabel('left','Win/Loss %')
+        self.plot.setLabel('left','# of Hunts')
         self.plot.setLimits(xMin=0, xMax=80,yMin=0, yMax=height)
         self.plot.setXRange(0,80)
         self.plot.setYRange(0,height)

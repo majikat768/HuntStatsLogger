@@ -9,7 +9,6 @@ import xmltodict
 from PyQt6.QtCore import QObject, pyqtSignal
 from resources import *
 from DbHandler import *
-from Widgets.Toast import Toast
 
 def file_changed(ts):
     return os.stat(settings.value("xml_path")).st_mtime != ts
@@ -33,7 +32,6 @@ class Logger(QObject):
         if not tables_exist():
             create_tables()
         self.running = False
-        self.toast = Toast("New Hunt Recorded.",parent=self.mainframe.window())
         super().__init__()
 
     def run(self):
@@ -73,10 +71,10 @@ class Logger(QObject):
                         self.mainframe.setStatus("writing new record to database....")
                         json_to_db(new_data)
                         last_hunt = last_change
+                        log('successfully recorded hunt')
                         self.progress.emit()
-                        self.toast.show()
                 except Exception as e:
-                    log('building json error')
+                    log('building json error, trying again')
                     log(e)
                     continue
 
@@ -180,7 +178,6 @@ def clean_data(obj):
 
 
 def build_json_from_xml(ts):
-    #print('building json object')
     with open(settings.value("xml_path"),'r',encoding='utf-8') as xf:
         teams = {}
         hunters = {}
@@ -248,7 +245,6 @@ def build_json_from_xml(ts):
                 if settings.value("HunterLevel","") != "" and int(val) < int(settings.value("HunterLevel")):
                     log("prestiged")
                 settings.setValue("HunterLevel",val)
-        
         return clean_data({
             "teams":teams,
             "hunters":hunters,

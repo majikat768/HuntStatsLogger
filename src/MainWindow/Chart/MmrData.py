@@ -41,7 +41,7 @@ class MmrData():
         )
         lastTs = GetLastHuntTimestamp()
         spots = [{'x': GetTotalHuntCount(), 'y': prediction,
-                  'data': -1}]
+                  'data': lastTs}]
 
         self.nextPoint = ScatterItem(
             spots, symbol='t1', pen="#ffffff", brush="#000000", tip=("Predicted MMR: %d" % (prediction)).format)

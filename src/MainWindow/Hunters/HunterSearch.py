@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QScrollArea, QLineEdit, QPushButton
 from PyQt6.QtCore import Qt
 from resources import settings, star_path, mmr_to_stars
-from DbHandler import GetTopNHunters, GetHunterKills, GetHunterByName, execute_query
+from DbHandler import GetTopNHunters, GetHunterKills, GetHunterByName, execute_query, getAllUsernames
 from Widgets.Modal import Modal
 
 class HunterSearch(QGroupBox):
@@ -38,11 +38,7 @@ class HunterSearch(QGroupBox):
             resultsWindow.addWidget(
                 QLabel("You've seen %s in %d hunts." % (name, len(data))))
 
-            allnamesarray = execute_query(
-                "select blood_line_name from 'hunters' where profileid is %d group by blood_line_name" % pid)
-            allnames = []
-            for n in allnamesarray:
-                allnames.append(n[0])
+            allnames = getAllUsernames(pid)
             kills = GetHunterKills(pid)
             killedby = 0
             killed = 0

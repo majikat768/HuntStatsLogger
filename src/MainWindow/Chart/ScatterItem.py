@@ -59,14 +59,13 @@ class ScatterItem(pyqtgraph.ScatterPlotItem):
 
             elif self.isHovered and not ptHovered:
                 self.isHovered = False
-                self.popup.close()
+                self.popup.hide()
         else:
             self.isHovered = False
             try:
-                self.popup.close()
-                self.popup.deleteLater()
+                self.popup.hide()
             except:
-                self.popup = None
+                return
 
     def handleClick(self,obj,pts,ev):
         if self.parent == None:
@@ -77,6 +76,6 @@ class ScatterItem(pyqtgraph.ScatterPlotItem):
         pt = pts[0]
         mainframe = self.parent.window().mainframe
         GoToHuntPage(pt.data(),mainframe)
-        self.popup.close()
+        self.popup.hide()
         self.popup = None
         self.stop = False

@@ -58,7 +58,7 @@ class MonstersWidget(QWidget):
                 self.activateWindow()
             elif event.type() == QEvent.Type.Leave:
                 try:
-                    self.popup.close()
+                    self.popup.hide()
                 except:
                     self.popup = None
                 pass

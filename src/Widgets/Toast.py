@@ -8,14 +8,16 @@ from resources import resource_path
 #
 
 class Toast(QWidget):
-    def __init__(self, text, duration=0, widgets=[],parent=None):
+    def __init__(self, text, duration=2, widgets=[],parent=None):
         super().__init__(parent)
         self.__initVal(parent, duration)
         self.__initUi(text,widgets)
 
         stylesheet = open(resource_path('./assets/MaterialDark.qss'), 'r').read()
         self.setStyleSheet(stylesheet)
+
     def show(self):
+        print('showtoast')
         if self.__timer.isActive():
             pass
         else:

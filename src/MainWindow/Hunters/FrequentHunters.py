@@ -1,12 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QGroupBox, QLabel, QScrollArea
+from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QGroupBox, QLabel, QScrollArea, QSpacerItem, QSizePolicy
 from PyQt6.QtCore import Qt
-from resources import settings, star_path, mmr_to_stars
-from DbHandler import GetTopNHunters, GetHunterByName, execute_query
+from resources import settings, star_path, mmr_to_stars, debug
+from DbHandler import GetTopNHunters, GetHunterByName, SameTeamCount, getAllUsernames
 
 class FrequentHunters(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Frequently Seen Hunters")
+        self.setTitle("Frequently Seen Hunters (Top 20)")
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
@@ -26,6 +26,8 @@ class FrequentHunters(QGroupBox):
         self.layout.addWidget(self.area)
 
     def update(self):
+        if debug:
+            print('frequenthunters.update')
         for i in reversed(range(self.main.layout.count())):
             self.main.layout.itemAt(i).widget().setParent(None)
         hunters = GetTopNHunters(20)
@@ -40,42 +42,31 @@ class FrequentHunters(QGroupBox):
             mmr = hunter['mmr']
             killedme = hunter['killedme']
             killedbyme = hunter['killedbyme']
-            sameTeamCount = self.SameTeamCount(data)
+            sameTeamCount = SameTeamCount(name)
+            pid = hunter['profileid']
+            allnames = getAllUsernames(pid)
             stars = QLabel("%s<br>%s" % ("<img src='%s'>" %
                            (star_path()) * mmr_to_stars(mmr), mmr))
             hWidget.layout.addWidget(QLabel('%s' % name), 0, 0)
             hWidget.layout.addWidget(stars, 1, 0)
             hWidget.layout.addWidget(QLabel("Seen in %d hunts." % freq), 0, 1)
+            row = 1
             if sameTeamCount > 0:
                 hWidget.layout.addWidget(
-                    QLabel("You've been on their team %d times." % sameTeamCount), 1, 1)
+                    QLabel("You've been on their team %d times." % sameTeamCount), row, 1)
+                row += 1
             killText = []
             if killedme > 0:
                 killText.append("Has killed you %d times." % killedme)
             if killedbyme > 0:
                 killText.append("You've killed them %d times." % killedbyme)
             if len(killText) > 0:
-                hWidget.layout.addWidget(QLabel("<br>".join(killText)), 2, 1)
+                hWidget.layout.addWidget(QLabel("<br>".join(killText)), row, 1)
+                row += 1
+            if len(allnames) > 1:
+                hWidget.layout.addWidget(QLabel("Other names:\n%s" % ("\n".join([n for n in allnames if n != name]))),row,1)
+                row += 1
 
             hWidget.layout.setRowStretch(hWidget.layout.rowCount(), 1)
             self.main.layout.addWidget(hWidget)
         pass
-
-    def SameTeamCount(self, data):
-        teamnums = {}
-        for d in data:
-            teamnums[d['game_id']] = d['team_num']
-        teams = []
-        for id in teamnums:
-            t = execute_query(
-                "select blood_line_name from 'hunters' where game_id is '%s' and team_num is %d" % (id, teamnums[id]))
-            team = []
-            for n in t:
-                team.append(n[0])
-            teams.append(team)
-        n = 0
-        me = settings.value("steam_name")
-        for team in teams:
-            if me in team:
-                n += 1
-        return n

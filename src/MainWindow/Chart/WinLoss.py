@@ -10,19 +10,27 @@ class WinLoss():
             QColor("#c8ff0000")
         ]
         self.pen = None#QPen(QColor("#000000"))
+        self.ymax = 10
         self.update()
 
     def update(self):
         self.data = self.GetData()
+        self.ymax = max(
+            self.data['winRate']['bounty']['total'],
+            max(
+                self.data['winRate']['qp']['total'],
+                self.data['survivalRate']['total']
+            )
+        )
 
         self.bountyBars = Bars(
             x0 = [10,10],
             x1 = [20,20],
             height=[
-                self.data['winRate']['bounty']['winPrc'],
-                self.data['winRate']['bounty']['lossPrc']
+                self.data['winRate']['bounty']['wins'],
+                self.data['winRate']['bounty']['losses']
             ],
-            y0 = [0,self.data['winRate']['bounty']['winPrc']],
+            y0 = [0,self.data['winRate']['bounty']['wins']],
             brushes=self.brushes,
             pens=[self.pen]*2
         )
@@ -31,10 +39,10 @@ class WinLoss():
             x0 = [30,30],
             x1 = [40,40],
             height=[
-                self.data['winRate']['qp']['winPrc'],
-                self.data['winRate']['qp']['lossPrc']
+                self.data['winRate']['qp']['wins'],
+                self.data['winRate']['qp']['losses']
             ],
-            y0 = [0,self.data['winRate']['qp']['winPrc']],
+            y0 = [0,self.data['winRate']['qp']['wins']],
             brushes=self.brushes,
             pens=[self.pen]*2
         )
@@ -43,10 +51,10 @@ class WinLoss():
             x0 = [50,50],
             x1 = [60,60],
             height=[
-                self.data['survivalRate']['winPrc'],
-                self.data['survivalRate']['lossPrc']
+                self.data['survivalRate']['survived'],
+                self.data['survivalRate']['died']
             ],
-            y0 = [0,self.data['survivalRate']['winPrc']],
+            y0 = [0,self.data['survivalRate']['survived']],
             brushes=self.brushes,
             pens=[self.pen]*2
         )
@@ -123,6 +131,7 @@ class WinLoss():
         survived = 0 if len(survived) == 0 else survived[0][0]
         total = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'false'")
         total = 0 if len(total) == 0 else total[0][0]
+        total = max(1,total)
         return {
             'survived':survived,
             'died':total - survived,

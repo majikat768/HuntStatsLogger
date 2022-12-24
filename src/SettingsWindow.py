@@ -18,7 +18,7 @@ class SettingsWindow(QMainWindow):
 
         self.initUI()
         if int(settings.value("profileid","-1")) < 0 and len(settings.value("steam_name","")) > 0:
-            pid = execute_query("select profileid from 'hunters' where blood_line_name is %s'" % settings.value("steam_name"))
+            pid = execute_query("select profileid from 'hunters' where blood_line_name is '%s'" % settings.value("steam_name"))
             pid = -1 if len(pid) == 0 else pid[0][0]
             if pid > 0:
                 settings.setValue("profileid",pid)
@@ -129,6 +129,7 @@ class SettingsWindow(QMainWindow):
         self.steamNameButton = QPushButton("Change Steam Name")
         self.steamNameButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.steamNameButton.clicked.connect(self.ChangeSteamName)
+        self.steamNameButton.clicked.connect(lambda : self.steamNameInput.setFocus())
         self.steamName.layout.addWidget(self.steamNameInput)
         self.steamName.layout.addWidget(self.steamNameButton)
         self.main.layout.addWidget(self.steamName)
@@ -152,10 +153,12 @@ class SettingsWindow(QMainWindow):
                 log('steam name updated')
                 log(settings.value('steam_name'))
                 self.steamNameInput.setText(settings.value("steam_name"))
-                pid = execute_query("select profileid from 'hunters' where blood_line_name is '%s'" % settings.value("steam_name"))
+                pid = execute_query("select profileid from 'hunters' where blood_line_name is '%s'" % self.steamNameInput.text())
                 pid = -1 if len(pid) == 0 else pid[0][0]
                 if pid > 0:
                     settings.setValue("profileid",pid)
+                for i in range(10):
+                    QApplication.processEvents()
                 self.parent().update()
             self.steamNameInput.setDisabled(True)
         else:

@@ -1,4 +1,5 @@
 import sqlite3
+import ctypes
 from resources import *
 
 
@@ -111,7 +112,9 @@ def GetTotalHuntCount():
         return -1 
     return n[0][0]
 
-def GetCurrentMmr(pid = settings.value("profileid")):
+def GetCurrentMmr(pid = None):
+    if pid == None or pid < 0:
+        pid = settings.value("profileid")
     mmr = execute_query("select mmr from 'hunters' where profileid is '%s' and timestamp is %d" % (pid, GetLastHuntTimestamp()))
     if len(mmr) == 0:
         return -1
@@ -120,7 +123,9 @@ def GetCurrentMmr(pid = settings.value("profileid")):
         return -1
     return mmr
 
-def GetBestMmr(pid = settings.value("profileid")):
+def GetBestMmr(pid = None):
+    if pid == None or pid < 0:
+        pid = settings.value("profileid")
     mmr = execute_query("select max(mmr) from 'hunters' where profileid is '%s'" % pid)
     if len(mmr) == 0:
         return -1
@@ -148,6 +153,7 @@ def GetTopKilled():
 def GetTopNHunters(n):
     cols = ['frequency','name', 'profileid', 'mmr','killedme','killedbyme']
     vals = execute_query("select count(profileid) as frequency, blood_line_name, profileid, mmr, killedme+downedme as killedme, killedbyme+downedbyme as killedbyme from 'hunters' where profileid is not '%s' group by profileid order by frequency desc limit %d" % (settings.value("profileid"), n))
+    #vals = execute_query("select count(profileid) as frequency, blood_line_name, profileid, mmr, killedme+downedme as killedme, killedbyme+downedbyme as killedbyme from 'hunters' group by profileid order by frequency desc limit %d" % (n))
     results = []
     if len(vals) > 0:
         for v in vals:
@@ -492,3 +498,19 @@ def getKillData(ts):
         "your_deaths": your_deaths,
         "assists": assists
     }
+
+
+def SameTeamCount(name):
+    res = execute_query("select count(*) from 'hunters' join 'teams' on 'teams'.ownteam = 'true' and 'hunters'.team_num = 'teams'.team_num and 'hunters'.timestamp = 'teams'.timestamp where 'hunters'.blood_line_name = '%s'" % name)
+    res = 0 if len(res) == 0 else res[0][0]
+    return res
+
+def getAllUsernames(pid):
+    allnamesarray = execute_query(
+        "select blood_line_name from 'hunters' where profileid is %d group by blood_line_name" % pid)
+    allnames = []
+    if len(allnamesarray) <= 0:
+        return allnames
+    for n in allnamesarray:
+        allnames.append(n[0])
+    return allnames

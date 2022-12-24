@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel
-from resources import settings
+from resources import settings, debug
 from DbHandler import GetTopKilled, GetTopKiller, GetHunterByName, execute_query
 
 class TopKills(QWidget):
@@ -24,6 +24,8 @@ class TopKills(QWidget):
         self.updateTopKiller()
 
     def updateTopKilled(self):
+        if debug:
+            print('topkilled.update')
         for i in reversed(range(self.killedBox.layout.count())):
             self.killedBox.layout.itemAt(i).widget().setParent(None)
         topKilled = GetTopKilled()
@@ -42,6 +44,8 @@ class TopKills(QWidget):
         self.killedBox.adjustSize()
 
     def updateTopKiller(self):
+        if debug:
+            print('topkiller.update')
         for i in reversed(range(self.killerBox.layout.count())):
             self.killerBox.layout.itemAt(i).widget().setParent(None)
         topKiller = GetTopKiller()

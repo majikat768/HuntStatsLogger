@@ -45,7 +45,7 @@ class KdaData():
 
         self.line = PlotDataItem(data,pen="#ffffff88")
         self.qpPoints = ScatterItem(
-            [{'x': pt['x'], 'y': pt['y'], 'data':unix_to_datetime(pt['ts'])} for pt in data if pt['qp'] == 'true'],
+            [{'x': pt['x'], 'y': pt['y'], 'data':pt['ts']} for pt in data if pt['qp'] == 'true'],
             pen="#000000",brush="#00ffff",name="Quick Play",tip="{data}<br>KDA: {y:.2f}".format, parent=self.parent
         )
         self.bhPoints = ScatterItem(

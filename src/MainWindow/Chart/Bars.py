@@ -1,11 +1,11 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
-from PyQt6.QtCore import QRectF
-from PyQt6.QtGui import QCursor, QColor
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsItem, QGraphicsRectItem, QGraphicsOpacityEffect, QGraphicsObject
+from PyQt6.QtCore import QRectF, QAbstractAnimation, QPropertyAnimation, QObject
+from PyQt6.QtGui import QCursor, QColor, QBrush
 import pyqtgraph
 from Widgets.Popup import Popup
 
-# for this to work I have to make sure the constructor contains:
 # x0 [], x1 [], height [], brushes []
+# y0 []
 class Bars(pyqtgraph.BarGraphItem):
     def __init__(self, **opts):
         super().__init__(**opts)
@@ -24,16 +24,17 @@ class Bars(pyqtgraph.BarGraphItem):
         if 'y0' not in opts:
             opts['y0'] = [0]*len(opts['x0'])
         for i in range(len(opts['x0'])):
-            self.bars.append(QRectF(
+            bar = Bar(
                 opts['x0'][i],
                 opts['y0'][i],
                 self.width,
                 opts['height'][i]
-            ))
+            )
+            self.bars.append(bar)
         self.hoverable = True
 
     def hoverEnterEvent(self,ev):
-        return None#super().hoverEnterEvent(ev)
+        return super().hoverEnterEvent(ev)
 
     def hoverMoveEvent(self,ev):
         if not self.hoverable:
@@ -43,6 +44,7 @@ class Bars(pyqtgraph.BarGraphItem):
             b = self.bars[i]
             if b.contains(ev.pos()):
                 contained = True
+                self.brushes[i].setAlpha(255)
                 if self.popup == None or not self.popup.isVisible():
                     w = self.getViewWidget().window()
                     self.brushes[i].setAlpha(255)
@@ -58,23 +60,34 @@ class Bars(pyqtgraph.BarGraphItem):
                     self.popup.current = b
                     w.raise_()
                     w.activateWindow()
-                    self.setOpts()
                 elif self.popup.current != b:
-                    self.popup.close()
+                    self.popup.hide()
             else:
                 self.brushes[i].setAlpha(200)
-                self.setOpts()
+        self.setOpts()
         if not contained:
             try:
-                self.popup.close()
+                self.popup.hide()
             except:
                 self.popup = None
         self.scene().update()
-        return None#super().hoverEnterEvent(ev)
+        return super().hoverEnterEvent(ev)
 
     def hoverLeaveEvent(self,ev):
+        for i in range(len(self.bars)):
+            self.brushes[i].setAlpha(200)
+        self.setOpts()
         try:
-            self.popup.close()
+            self.popup.hide()
         except:
-            self.popup = None
+            return
         return super().hoverEnterEvent(ev)
+
+class Bar(QGraphicsRectItem, QObject):
+    def __init__(self,*args):
+        super().__init__(*(args))
+        self.setAcceptHoverEvents(True)
+    
+    def hoverEnterEvent(self, event):
+        print('h')
+        return super().hoverEnterEvent(event)
