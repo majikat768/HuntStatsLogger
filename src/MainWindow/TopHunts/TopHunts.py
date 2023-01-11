@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QScrollArea, QPushButton, QComboBox
+from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QPushButton, QComboBox, QCheckBox
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
 from resources import *
@@ -16,12 +16,12 @@ class TopHunts(QScrollArea):
         self.main = QWidget()
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
-        self.initOptions()
 
         self.body = QWidget()
         self.body.layout = QVBoxLayout()
         self.body.setLayout(self.body.layout)
 
+        self.initOptions()
         self.main.layout.addWidget(self.body)
         self.setWidget(self.main)
 
@@ -51,6 +51,20 @@ class TopHunts(QScrollArea):
         self.submit.clicked.connect(self.update)
         self.opts.layout.addWidget(self.submit,1,2)
 
+        self.bhCheck = QCheckBox("Bounty Hunts")
+        self.bhCheck.setChecked(True)
+        self.bhCheck.stateChanged.connect(self.update)
+        self.qpCheck = QCheckBox("Quick Plays")
+        self.qpCheck.setChecked(True)
+        self.qpCheck.stateChanged.connect(self.update)
+        self.sortingSelect.currentTextChanged.connect(self.update)
+
+        self.checkWidget = QWidget()
+        self.checkWidget.layout = QHBoxLayout()
+        self.checkWidget.setLayout(self.checkWidget.layout)
+        self.checkWidget.layout.addWidget(self.bhCheck)
+        self.checkWidget.layout.addWidget(self.qpCheck)
+        self.opts.layout.addWidget(self.checkWidget)
         self.main.layout.addWidget(self.opts)
 
     def update(self):
@@ -60,7 +74,16 @@ class TopHunts(QScrollArea):
         sort = self.sortingSelect.currentData()
         num = int(self.numResults.currentText())
 
-        hunts = GetHunts()
+        allHunts = GetHunts()
+        if self.bhCheck.isChecked() and self.qpCheck.isChecked():
+            IsQuickPlay = 'all'
+        elif self.qpCheck.isChecked() and not self.bhCheck.isChecked():
+            IsQuickPlay = 'true'
+        elif not self.qpCheck.isChecked() and self.bhCheck.isChecked():
+            IsQuickPlay = 'false'
+        else:
+            return
+
         if sort == 'your_kills':
             func = getYourKillCount
         elif sort == 'your_deaths':
@@ -69,9 +92,13 @@ class TopHunts(QScrollArea):
             func = getTeamKillCount
         elif sort == 'assists':
             func = getAssists
-        for hunt in hunts:
-            ts = hunt['timestamp']
-            hunt[sort] = func(ts)
+
+        hunts = []
+        for hunt in allHunts:
+            if IsQuickPlay == 'all' or IsQuickPlay == hunt['MissionBagIsQuickPlay']:
+                ts = hunt['timestamp']
+                hunt[sort] = func(ts)
+                hunts.append(hunt)
         hunts = sorted(hunts,key= lambda i : i[sort],reverse=True)[:num]
 
         for hunt in hunts:

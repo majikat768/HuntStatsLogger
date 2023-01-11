@@ -252,3 +252,12 @@ def build_json_from_xml(ts):
             "accolades":accolades,
             "game":game
         })
+
+def elapsed(ss):
+    mm = ss//60
+    if mm < 60:
+        return "%d minutes since last Hunt" % mm
+    else:
+        hh = mm//60
+        mm = mm % 60
+        return "%d hours %d minutes since last Hunt" % (hh, mm)

@@ -26,6 +26,11 @@ SettingsWindow {
 	padding:4px;
 	margin:0px;
 }
+#icon_borderless {
+	border:1px solid #00000000;
+	padding:4px;
+	margin:0px;
+}
 
 #BountyHeading {
 	font-size:16px;
@@ -147,16 +152,21 @@ QListView::item:selected {
 QListView::item {
 	font-family: Courier New;
 }
+QTreeWidget {
+	color:#ffffff;
+}
 QTreeView::item:selected {
 	border: 1px solid #66ffffff;
 	color:#92cf9f;
 }
 QTreeView::item {
 	font-family: Courier New;
+	border:2px solid transparent;
 }
 QHeaderView::section {
 	background: transparent;
-	border:1px;
+	border:1px solid #66000000;
+	color:#ffffff;
 }
 QListWidget {
 	background: transparent;

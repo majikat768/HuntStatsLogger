@@ -1,7 +1,9 @@
 from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton
 from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import QEvent, Qt
 from DbHandler import *
 from MainWindow.Chart.ScatterItem import ScatterItem
+from MainWindow.MyTeams.TeamMmrChart import TeamMmrChart
 import hashlib
 import pyqtgraph
 
@@ -62,7 +64,8 @@ class MyTeams(QScrollArea):
         w.layout.addWidget(QLabel("Hunted together %d times" % team['count']),1,0)
 
         w.setObjectName("HuntWidget")
-        plot,bestMmrs = self.TeamMmrChart(team)
+        plot = TeamMmrChart(team)
+        bestMmrs = plot.bestMmrs
         bestWidget = QWidget()
         bestWidget.layout = QGridLayout()
         bestWidget.setLayout(bestWidget.layout)
@@ -74,58 +77,7 @@ class MyTeams(QScrollArea):
         w.layout.addWidget(plot,len(bestMmrs.keys()),0,1,2)
         return w
 
-    def TeamMmrChart(self,team):
-        plotWindow = pyqtgraph.GraphicsLayoutWidget()
-        plot = plotWindow.addPlot(0,0)
-        plot.getViewBox().installEventFilter(plotWindow)
-        vb = pyqtgraph.ViewBox()
-        legend = pyqtgraph.LegendItem(colCount=2)
-        legend.setParentItem(vb)
-        legend.anchor((0,0),(0,0))
-        plotWindow.addItem(vb,1,0)
-
-        bestMmrs = {pid : 0 for pid in team['pid']}
-        teamMmrs = {}
-        teamData = []
-        playersData = {pid : [] for pid in team['pid']}
-        playerMmrs = {pid : {} for pid in team['pid']}
-        i = 0
-        j = 0
-        for ts in team['games']:
-            teamMmr = execute_query("select mmr from 'teams' where timestamp = %s and ownteam = 'true'" % ts)
-            if len(teamMmr) > 0:
-                teamMmrs[ts] = teamMmr[0][0]
-                teamData.append({'x':i,'y':teamMmr[0][0], 'data':ts})
-                for pid in team['pid']: 
-                    mmr = execute_query("select mmr from 'hunters' where profileid = %s and timestamp = %s" % (pid, ts))
-                    if len(mmr) > 0:
-                        playersData[pid].append({'x':i,'y':mmr[0][0],'data':ts})
-                        playerMmrs[pid][ts] = mmr[0][0]
-            i += 1
-        bestMmrs = {pid : max(playerMmrs[pid].values()) for pid in team['pid']}
-        teamPoints = ScatterItem(teamData,brush="#00ff00cc",pen=None,name="Team MMR",parent=self)
-        playerPoints = []
-        i = 0
-        for pid in playersData:
-            playerPoints.append(ScatterItem(playersData[pid],pen=None,brush=colors[i],name=GetNameByProfileId(pid),parent=self))
-            i += 1
-        teamLine = pyqtgraph.PlotDataItem(teamData,pen="#ffffff66")
-        playerLines = [pyqtgraph.PlotDataItem(playersData[pid],pen="#ffffff66") for pid in playersData]
-
-        plot.addItem(teamPoints)
-        plot.addItem(teamLine)
-        for pts in playerPoints:
-            plot.addItem(pts)
-        for line in playerLines:
-            plot.addItem(line)
-        plotWindow.setFixedHeight(int(plot.size().width()/2))
-        legend.addItem(teamPoints,name=teamPoints.opts['name'])
-        for player in playerPoints:
-            legend.addItem(player,name=player.opts['name'])
-        legend.getViewBox().setMaximumHeight(legend.boundingRect().height())
-        plot.showGrid(x=True,y=True,alpha=0.4)
-        return plotWindow, bestMmrs
-
+    
 def toggle(widget : QWidget, btn : QPushButton):
     if widget.isVisible():
         widget.setHidden(True)

@@ -106,8 +106,8 @@ class Hunts(QScrollArea):
                 },
             }
 
-        for accolade in accolades:
-            cat = accolade['category']
+        for entry in entries:
+            cat = entry['category']
             if "killed_" in cat:
                 boss = cat.split("_")[2]
                 if boss in bounties:
@@ -116,8 +116,6 @@ class Hunts(QScrollArea):
                 boss = cat.split("_")[2]
                 if boss in bounties:
                     bounties[boss]["banished"] = 1
-        for entry in entries:
-            cat = entry['category']
             if 'wellsprings_found' in cat:
                 bounties['rifts_closed'] += 1
             if 'clues_found' in cat:

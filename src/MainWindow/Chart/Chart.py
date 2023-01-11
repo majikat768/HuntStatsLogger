@@ -28,13 +28,11 @@ class Chart(QScrollArea):
             "Win/Loss":self.setWinLoss,
             "Kills Per Hunt":self.setKills,
             "Team Kills Per Hunt":self.setTeamKills
-
         }
 
         self.initUI()
 
         self.bounty = None
-
 
     def initDropdown(self):
         self.dropdownWidget = QWidget()
@@ -55,7 +53,8 @@ class Chart(QScrollArea):
 
     def initPlot(self):
         self.plotWindow = pyqtgraph.GraphicsLayoutWidget()
-        self.plot = self.plotWindow.addPlot(0,0)
+        self.plot = pyqtgraph.PlotItem()
+        self.plotWindow.addItem(self.plot,0,0)
         vb = pyqtgraph.ViewBox()
         self.legend = pyqtgraph.LegendItem(colCount=2)
         self.legend.setParentItem(vb)
@@ -83,7 +82,6 @@ class Chart(QScrollArea):
         self.legend.clear()
         self.options[opt]()
         self.legend.getViewBox().setMaximumHeight(self.legend.boundingRect().height())
-        self.plot.getAxis("bottom").setStyle(hideOverlappingLabels=True)
         self.plot.showGrid(x=True,y=True,alpha=0.4)
         for i in range(10):
             QApplication.processEvents()
@@ -118,10 +116,10 @@ class Chart(QScrollArea):
         self.legend.addItem(mmr.qpPoints,name=mmr.qpPoints.opts['name'])
         self.legend.addItem(mmr.bhPoints,name=mmr.bhPoints.opts['name'])
         self.plot.setLimits(xMin=0, yMin=0, yMax=6000,
-                            xMax=len(mmr.line.xData)+5)
+                            xMax=len(mmr.line.xData)+2)
         self.plot.setYRange(mmr.minMmr - 400, mmr.maxMmr + 400)
         self.plot.setXRange(
-            max(-1, len(mmr.line.xData)-20), len(mmr.line.xData)+5)
+            max(-1, len(mmr.line.xData)-20), len(mmr.line.xData)+2)
         xrange = self.plot.getAxis("bottom").range[1]
         self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,int(xrange))]])
 
@@ -187,6 +185,7 @@ class Chart(QScrollArea):
         self.plot.setLabel('bottom', 'Kills Per Hunt')
         self.legend.addItem(kills.bountyLegendItem, name="Bounty Hunt")
         self.legend.addItem(kills.qpLegendItem, name="Quick Play")
+        self.plot.showGrid(x=True,y=False,alpha=0.4)
         '''
         self.plot.getAxis("left").setTicks([
             [(i,"%d" %(i)) for i in np.linspace(0,ymax,10)]

@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel, QFrame
                              QStyleOptionViewItem, QTreeWidget,
                              QTreeWidgetItem, QVBoxLayout, QWidget)
 
-from DbHandler import execute_query
+from DbHandler import execute_query, GetCurrentMmr
 from Widgets.Popup import Popup
 from resources import *
 
@@ -69,13 +69,13 @@ class TeamDetails(QGroupBox):
         if debug:
             print("teamdetails.update")
         maxIconWidth = 0
-        qp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
+        isQp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
         clearLayout(self.killsData.layout)
         team_kills = kills['team_kills']
         your_kills = kills['your_kills']
         your_deaths = kills['your_deaths']
         assists = kills['assists']
-        if not qp:
+        if not isQp:
             teamKills = QLabel(
                 "Team kills: %d<br>%s" % (
                     sum(team_kills.values()),
@@ -97,9 +97,7 @@ class TeamDetails(QGroupBox):
             )
         )
         self.killsData.layout.addWidget(yourKills)
-
-        yourAssists = QLabel("%d assists." % assists)
-        self.killsData.layout.addWidget(yourAssists)
+        self.killsData.layout.setAlignment(yourKills,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         yourDeaths = QLabel(
             "Your deaths: %d<br>%s" % (
@@ -111,38 +109,23 @@ class TeamDetails(QGroupBox):
             )
         )
         self.killsData.layout.addWidget(yourDeaths)
-        self.killsData.layout.addWidget(QLabel(mmrChange))
-        self.killsData.layout.addStretch()
+        self.killsData.layout.setAlignment(yourDeaths,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
+        yourAssists = QLabel("%d assists." % assists)
+        self.killsData.layout.addWidget(yourAssists)
+        self.killsData.layout.setAlignment(yourAssists,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+
+        mmrChangeLabel = QLabel(mmrChange)
+        self.killsData.layout.addWidget(mmrChangeLabel)
+        self.killsData.layout.setAlignment(mmrChangeLabel,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        self.killsData.layout.addStretch()
         self.teamList.clear()
         while self.teamStack.count() > 0:
             self.teamStack.removeWidget(self.teamStack.currentWidget())
 
-        isQp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
         teamItems = {}
         for i in range(len(teams)):
             team = teams[i]
-
-            tab = QWidget()
-            tab.layout = QGridLayout()
-            tab.setLayout(tab.layout)
-            tab.setSizePolicy(
-                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-
-            teamLabel = QLabel("Team %d" % i)
-            teamMmr = team['mmr']
-            teamMmrLabel = QLabel("Team MMR: %d" % teamMmr)
-            teamRandom = (team['isinvite'].lower() == "false" and team['numplayers'] > 1)
-            teamRandomLabel = QLabel("Randoms" if teamRandom else "")
-            nHunters = team['numplayers']
-            nHuntersLabel = QLabel("%d hunters" % nHunters)
-
-            tab.layout.addWidget(teamLabel, 0, 0)
-            tab.layout.addWidget(teamMmrLabel, 1, 0)
-            tab.layout.addWidget(teamRandomLabel,0,2)
-            tab.layout.addWidget(nHuntersLabel, 1, 2)
-            tab.layout.addWidget(QLabel(),2,0)
-            tab.layout.addWidget(QLabel(),4,0)
 
             teamhunters = HuntersOnTeam(hunters, team)
             hadbounty = 0
@@ -152,10 +135,32 @@ class TeamDetails(QGroupBox):
             hadWellspring = False
             soulSurvivor = False
 
-            title = "%s hunters - %d" % (len(teamhunters), teamMmr)
+
+            tab = QWidget()
+            tab.layout = QGridLayout()
+            tab.setLayout(tab.layout)
+            tab.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
+            teamMmr = team['mmr']
+            teamMmrLabel = QLabel("Team MMR: %d" % teamMmr)
+            teamRandom = (team['isinvite'].lower() == "false" and team['numplayers'] > 1)
+            teamRandomLabel = QLabel("Randoms" if teamRandom else "")
+            nHunters = team['numplayers']
+            if not isQp:
+                nHuntersLabel = QLabel("%d hunters" % nHunters)
+            else:
+                nHuntersLabel = QLabel(teamhunters[0]['blood_line_name'])
+
+            tab.layout.addWidget(nHuntersLabel, 0, 0)
+            tab.layout.addWidget(teamMmrLabel, 1, 0)
+            tab.layout.addWidget(teamRandomLabel,0,2)
+            if not isQp:
+                tab.layout.addWidget(QLabel(),2,0)
+
             title = "%s hunters" % len(teamhunters)
             for j in range(len(teamhunters)):
-                hunterWidget = self.GetHunterWidget(teamhunters[j])
+                hunterWidget = self.GetHunterWidget(teamhunters[j], isQp)
                 tab.layout.addWidget(hunterWidget, 5, j)
                 tab.layout.setAlignment(hunterWidget,Qt.AlignmentFlag.AlignTop)
 
@@ -172,13 +177,17 @@ class TeamDetails(QGroupBox):
                 if not soulSurvivor:
                     soulSurvivor = hunterWidget.soulSurvivor
                 name = teamhunters[j]['blood_line_name']
+                if len(name) > 15:
+                    name = name[:12] + '...'
                 if isQp:
                     title = name
             if bountyextracted:
                 tab.layout.addWidget(
                     QLabel("Extracted with the bounty."), 3, 0)
+            if soulSurvivor:
+                tab.layout.addWidget(
+                    QLabel("Soul Survivor."), 3, 0)
             tab.layout.setRowStretch(tab.layout.rowCount(), 1)
-            tab.layout.setColumnStretch(tab.layout.columnCount(), 1)
 
             self.teamStack.addWidget(tab)
             icons = []
@@ -231,6 +240,7 @@ class TeamDetails(QGroupBox):
             self.teamStack.addWidget(widget)
         self.teamList.setCurrentItem(self.teamList.itemAt(0,0))
         self.teamList.setColumnWidth(1,maxIconWidth)
+        self.teamList.setColumnWidth(3,0)
 
     def switchTeamWidget(self, new,old):
         if new != None:
@@ -261,12 +271,13 @@ class TeamDetails(QGroupBox):
         return super().eventFilter(obj, event)
 
 
-    def GetHunterWidget(self,hunter):
+    def GetHunterWidget(self,hunter, isQp):
         hunterWidget = QWidget()
         hunterWidget.layout = QVBoxLayout()
         hunterWidget.setLayout(hunterWidget.layout)
         hunterWidget.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        hunterWidget.setObjectName("HunterWidget")
         name = hunter['blood_line_name']
         pid = hunter['profileid']
         n_games = execute_query(
@@ -283,6 +294,7 @@ class TeamDetails(QGroupBox):
         mmrLabel = QLabel("%d" % mmr)
         stars = "<img src='%s'>" % (star_path())*mmr_to_stars(mmr)
         starsLabel = QLabel("%s" % stars)
+
         n_gamesLabel = QLabel()
         if n_games > 1:
             n_gamesLabel.setText("seen in %d games" % n_games)
@@ -309,7 +321,8 @@ class TeamDetails(QGroupBox):
             hunter['downedbyteammate']
         ]
 
-        hunterWidget.layout.addWidget(nameLabel)
+        if not isQp:
+            hunterWidget.layout.addWidget(nameLabel)
         hunterWidget.layout.addWidget(mmrLabel)
         hunterWidget.layout.addWidget(starsLabel)
         hunterWidget.layout.addWidget(n_gamesLabel)
@@ -360,6 +373,7 @@ class TeamDetails(QGroupBox):
                     name, hunter['downedbyteammate'])),
             icon.installEventFilter(self)
             iconWidget.layout.addWidget(icon)
+        iconWidget.layout.addWidget(get_icon(blankIcon,border=False))
         if bountypickedup or hunterWidget.hadWellspring or hunterWidget.soulSurvivor:
             icon = get_icon(bountyIcon)
             icon.data = []
@@ -390,8 +404,8 @@ def HuntersOnTeam(hunters, team):
             teamhunters.append(hunter)
     return teamhunters
 
-
 class ItemDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         option.decorationPosition = QStyleOptionViewItem.Position.Right
         super(ItemDelegate, self).paint(painter, option, index)
+
