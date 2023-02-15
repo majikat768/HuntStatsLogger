@@ -33,8 +33,11 @@ class MyTeams(QScrollArea):
         self.addTeamButton = QPushButton("Add new team to track")
         self.addTeamButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.addTeamButton.clicked.connect(self.AddNewTeam)
+        self.updateButton = QPushButton("Update")
+        self.updateButton.clicked.connect(self.update)
         self.buttons.layout.addWidget(self.updateTeamsButton)
         self.buttons.layout.addWidget(self.addTeamButton)
+        self.buttons.layout.addWidget(self.updateButton)
 
         self.setWidget(self.main)
         if len(settings.value("my_teams","")) > 0:
