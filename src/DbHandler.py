@@ -162,10 +162,15 @@ def GetTopNHunters(n):
             )
     return results
 
-def GetHunts(earliest=0):
+def GetHunts(earliest=0,IsQuickPlay = 'all'):
     if debug:
         print("dbHandler.GetHunts")
-    vals = execute_query("select * from 'games' where timestamp > %s order by timestamp desc" % earliest)
+    if IsQuickPlay == 'all':
+        vals = execute_query("select * from 'games' where timestamp > %s order by timestamp desc" % earliest)
+    elif IsQuickPlay == 'true':
+        vals = execute_query("select * from 'games' where timestamp > %s and MissionBagIsQuickPlay = 'true' order by timestamp desc" % earliest)
+    elif IsQuickPlay == 'false':
+        vals = execute_query("select * from 'games' where timestamp > %s and MissionBagIsQuickPlay = 'false' order by timestamp desc" % earliest)
     cols = execute_query("pragma table_info('games')")
     try:
         return [ { cols[i][1] : hunt[i] for i in range(len(cols)) } for hunt in vals]
@@ -379,8 +384,6 @@ def GetGameTypes():
 def GetTeamGames(pids : list):
     if len(pids) <= 1 or len(pids) > 3:
         return []
-    if debug:
-        print("dbhandler.getteamgames")
     if len(pids) == 2:
         res = execute_query("select h1.timestamp from hunters h1 inner join hunters h2 on h1.profileid = '%s' and h2.profileid = '%s' and h1.timestamp = h2.timestamp and h1.team_num = h2.team_num" % (pids[0],pids[1]))
         res = [r[0] for r in res]
@@ -438,11 +441,56 @@ def getAssists(ts):
                 assists += entry['amount']
     return assists
 
-def getYourKillCount(ts):
-    vals = execute_query(
-        "select downedbyme+killedbyme as killedbyme from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0)" % ts
-    )
+def getHuntsSortByKillCount(ts = -1, num = -1):
+    cols = execute_query("pragma table_info('games')")
+    cols = [c[1] for c in cols]
+    cols.append('your_kills')
+    vals = execute_query("select 'games'.*, sum(downedbyme+killedbyme) as kills from 'hunters' join 'games' on 'hunters'.timestamp = 'games'.timestamp where 'games'.timestamp > %s group by 'hunters'.timestamp order by kills desc %s" % (ts, "limit %d" % num if num > 0 else ""))
+    res = []
+    for v in vals:
+        res.append({cols[i] : v[i] for i in range(len(cols))})
+    return res
+
+def getHuntsSortByTeamKillCount(ts = -1, num = -1):
+    cols = execute_query("pragma table_info('games')")
+    cols = [c[1] for c in cols]
+    cols.append('team_kills')
+    vals = execute_query("select 'games'.*, sum(downedbyme+killedbyme+downedbyteammate+killedbyteammate) as kills from 'hunters' join 'games' on 'hunters'.timestamp = 'games'.timestamp where 'games'.timestamp > %s group by 'hunters'.timestamp order by kills desc %s" % (ts, "limit %d" % num if num > 0 else ""))
+    res = []
+    for v in vals:
+        res.append({cols[i] : v[i] for i in range(len(cols))})
+    return res
+
+def getYourKillCount(ts, max = -1):
+    if max > 0:
+        vals = execute_query(
+            "select downedbyme+killedbyme as killedbyme from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0) limit %d" % (ts, max)
+        )
+    else:
+        vals = execute_query(
+            "select downedbyme+killedbyme as killedbyme from 'hunters' where timestamp is %d and (downedbyme > 0 or killedbyme > 0)" % (ts)
+        )
     return sum(sum(i) for i in vals)
+
+def getHuntsSortByDeathCount(ts=-1, num=-1):
+    cols = execute_query("pragma table_info('games')")
+    cols = [c[1] for c in cols]
+    cols.append('your_deaths')
+    vals = execute_query("select 'games'.*, sum(downedme+killedme) as deaths from 'hunters' join 'games' on 'hunters'.timestamp = 'games'.timestamp where 'games'.timestamp > %s group by 'hunters'.timestamp order by deaths desc %s" % (ts, "limit %d" % num if num > 0 else ""))
+    res = []
+    for v in vals:
+        res.append({cols[i] : v[i] for i in range(len(cols))})
+    return res
+
+def getHuntsSortByAssistCount(ts=-1, num=-1):
+    cols = execute_query("pragma table_info('games')")
+    cols = [c[1] for c in cols]
+    cols.append('assists')
+    vals = execute_query("SELECT 'games'.*, 'entries'.amount FROM 'entries' join 'games' on 'entries'.timestamp = 'games'.timestamp where category like '%%assist%%' and 'games'.timestamp > %s order by amount desc %s" %(ts, "limit %d" % num if num > 0 else ""))
+    res = []
+    for v in vals:
+        res.append({cols[i] : v[i] for i in range(len(cols))})
+    return res
 
 def getYourDeathCount(ts):
     vals = execute_query(

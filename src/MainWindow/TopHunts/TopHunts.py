@@ -78,7 +78,6 @@ class TopHunts(QScrollArea):
         sort = self.sortingSelect.currentData()
         num = int(self.numResults.currentText())
 
-        allHunts = GetHunts()
         if self.bhCheck.isChecked() and self.qpCheck.isChecked():
             IsQuickPlay = 'all'
         elif self.qpCheck.isChecked() and not self.bhCheck.isChecked():
@@ -87,24 +86,28 @@ class TopHunts(QScrollArea):
             IsQuickPlay = 'false'
         else:
             return
+        #allHunts = GetHunts(IsQuickPlay = IsQuickPlay)
 
         if sort == 'your_kills':
-            func = getYourKillCount
+            func = getHuntsSortByKillCount
         elif sort == 'your_deaths':
-            func = getYourDeathCount
+            func = getHuntsSortByDeathCount
         elif sort == 'team_kills':
-            func = getTeamKillCount
+            func = getHuntsSortByTeamKillCount
         elif sort == 'assists':
-            func = getAssists
+            func = getHuntsSortByAssistCount
 
-        hunts = []
+        hunts = func(num=num)
+        '''
+        i = 0
         for hunt in allHunts:
+            i += 1
             if IsQuickPlay == 'all' or IsQuickPlay == hunt['MissionBagIsQuickPlay']:
                 ts = hunt['timestamp']
-                hunt[sort] = func(ts)
+                hunt[sort] = func(ts,num)
                 hunts.append(hunt)
         hunts = sorted(hunts,key= lambda i : i[sort],reverse=True)[:num]
-
+        '''
         for hunt in hunts:
             widget = self.HuntWidget(hunt)
             self.body.layout.addWidget(widget)
@@ -120,7 +123,7 @@ class TopHunts(QScrollArea):
         w.main = QWidget()
         w.main.layout = QGridLayout()
         w.main.setLayout(w.main.layout)
-        headerBtn = QPushButton(unix_to_datetime(ts))
+        headerBtn = QPushButton(str(unix_to_datetime(ts)))
         headerBtn.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         headerBtn.setObjectName("link")
         w.layout.addWidget(headerBtn)
