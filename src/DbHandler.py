@@ -163,6 +163,8 @@ def GetTopNHunters(n):
     return results
 
 def GetHunts(earliest=0):
+    if debug:
+        print("dbHandler.GetHunts")
     vals = execute_query("select * from 'games' where timestamp > %s order by timestamp desc" % earliest)
     cols = execute_query("pragma table_info('games')")
     try:
@@ -374,8 +376,23 @@ def GetGameTypes():
         res[v[0]] = v[1]
     return res
 
+def GetTeamGames(pids : list):
+    if len(pids) <= 1 or len(pids) > 3:
+        return []
+    if debug:
+        print("dbhandler.getteamgames")
+    if len(pids) == 2:
+        res = execute_query("select h1.timestamp from hunters h1 inner join hunters h2 on h1.profileid = '%s' and h2.profileid = '%s' and h1.timestamp = h2.timestamp and h1.team_num = h2.team_num" % (pids[0],pids[1]))
+        res = [r[0] for r in res]
+        return res
+    if len(pids) == 3:
+        res = execute_query("select h1.timestamp from hunters h1 inner join hunters h2 inner join hunters h3 on h1.profileid = '%s' and h2.profileid = '%s' and h3.profileid = '%s' and h1.timestamp = h2.timestamp and h2.timestamp = h3.timestamp and h1.team_num = h2.team_num and h3.team_num = h3.team_num" % (pids[0],pids[1],pids[2]))
+        res = [r[0] for r in res]
+        return res
 
 def GetTeamMembers(ts):
+    if debug:
+        print("dbhandler.getTeamMembers")
     vals = execute_query(
         "select 'hunters'.profileid,'hunters'.game_id, 'hunters'.timestamp, 'teams'.team_num from 'hunters' join 'teams' on (ownteam = 'true' and 'hunters'.game_id = 'teams'.game_id and 'hunters'.team_num = 'teams'.team_num) join 'games' on ('games'.MissionBagIsQuickPlay = 'false' and 'teams'.game_id = 'games'.game_id) where 'hunters'.timestamp = %d" % ts
     )

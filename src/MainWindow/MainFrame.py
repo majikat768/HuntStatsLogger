@@ -12,11 +12,12 @@ from MainWindow.Hunters.Hunters import Hunters
 from MainWindow.Chart.Chart import Chart
 from MainWindow.TopHunts.TopHunts import TopHunts
 from MainWindow.MyTeams.MyTeams import MyTeams
-from Server import Server,startThread
 
 
 class MainFrame(QWidget):
     def __init__(self, parent=None) -> None:
+        if debug:
+            print("mainframe.__init__")
         super().__init__(parent)
         self.mousePressed = False
         self.logger = Logger(self)
@@ -34,14 +35,6 @@ class MainFrame(QWidget):
         self.initButtons()
         self.offset = QPoint()
 
-        '''
-        self.server = Server()
-        self.serverThread = QThread(parent=self)
-        self.server.moveToThread(self.serverThread)
-        self.serverThread.finished.connect(self.serverThread.quit)
-        self.serverThread.finished.connect(self.server.deleteLater)
-        self.serverThread.finished.connect(self.serverThread.deleteLater)
-        '''
 
         self.setStatus("ready.")
         if settings.value("xml_path", "") == "":
@@ -60,6 +53,8 @@ class MainFrame(QWidget):
         self.update()
 
     def initButtons(self):
+        if debug:
+            print("mainframe.initButtons")
         settingsButton = QPushButton("Settings")
         settingsButton.clicked.connect(lambda : self.openWindow(self.settingsWindow))
 
@@ -83,6 +78,8 @@ class MainFrame(QWidget):
         self.window().setStatus(msg)
 
     def initBody(self):
+        if debug:
+            print("mainframe.initBody")
         self.tabs = QTabWidget()
         self.huntsTab = Hunts(parent=self)
         self.huntersTab = Hunters(parent=self)

@@ -15,7 +15,6 @@ icon_size = 24
 debug = False
 is_exe = getattr(sys,'frozen',False) and hasattr(sys, '_MEIPASS')
 
-aws_app_id = "6vfc0lcpnk6vehi3tf9h0shq7"
 if not os.path.exists(app_data_path):
     os.makedirs(app_data_path, exist_ok=True)
 

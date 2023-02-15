@@ -1,9 +1,11 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton
+from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton, QLineEdit
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QEvent, Qt
 from DbHandler import *
 from MainWindow.Chart.ScatterItem import ScatterItem
 from MainWindow.MyTeams.TeamMmrChart import TeamMmrChart
+from MainWindow.MyTeams.AddNewTeam import AddNewTeamWindow
+from Widgets.Modal import Modal
 import hashlib
 import pyqtgraph
 
@@ -12,27 +14,47 @@ colors = ["#ff0000cc","#00ffffcc","#ffff00cc"]
 
 class MyTeams(QScrollArea):
     def __init__(self, parent):
+        if debug:
+            print("myTeams.__init__")
         super().__init__(parent)
         self.setWidgetResizable(True)
         self.main = QWidget()
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
-        self.setWidget(self.main)
-        self.update()
 
-    def update(self):
-        if debug:
-            print('myteams.update')
-        clearLayout(self.main.layout)
-        hunts = GetHunts()
+        self.buttons = QWidget()
+        self.buttons.layout = QHBoxLayout()
+        self.buttons.setLayout(self.buttons.layout)
+        self.buttons.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+
+        self.updateTeamsButton = QPushButton("Calculate my teams")
+        self.updateTeamsButton.clicked.connect(self.CalculateTeams)
+        self.updateTeamsButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.addTeamButton = QPushButton("Add new team to track")
+        self.addTeamButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.addTeamButton.clicked.connect(self.AddNewTeam)
+        self.buttons.layout.addWidget(self.updateTeamsButton)
+        self.buttons.layout.addWidget(self.addTeamButton)
+
+        self.setWidget(self.main)
+        if len(settings.value("my_teams","")) > 0:
+            my_teams = eval(settings.value("my_teams","[]"))
+
+    def AddNewTeam(self):
+        newTeamDialog = AddNewTeamWindow(parent = self.window())
+        newTeamDialog.show()
+
+    def CalculateTeams(self):
+        all_teams = []
         teams = []
+        hunts = GetHunts()
         for hunt in hunts:
             team = GetTeamMembers(hunt['timestamp'])
-            if len(team) > 0:
-                teams.append(team)
+            if len(team) > 1:
+                all_teams.append(team)
 
         count = {}
-        for team in teams:
+        for team in all_teams:
             team_id = hashlib.md5(str(team['pid']).encode('utf-8')).hexdigest()
             team['team_id'] = team_id
             if team_id not in count:
@@ -40,6 +62,7 @@ class MyTeams(QScrollArea):
             count[team_id]['count'] += 1
             count[team_id]['games'].append(team['timestamp'])
         i = 0
+        '''
         for t in sorted(count,key=lambda t : count[t]['count'],reverse=True):
             if count[t]['count'] > 1:
                 w = self.TeamWidget(count[t])
@@ -49,11 +72,36 @@ class MyTeams(QScrollArea):
             i += 1
             if i > 10:
                 break
+        '''
+        for t in sorted(count,key=lambda t : count[t]['count'],reverse=True):
+            if len(count[t]['pid']) <= 1:
+                continue
+            elif count[t]['count'] > 1:
+                teams.append(count[t]['pid'])
+            i += 1
+            if i >= 5:
+                break
+        settings.setValue("my_teams",str(teams))
+        self.update()
+
+    def update(self):
+        if debug:
+            print('myteams.update')
+        clearLayout(self.main.layout)
+        self.main.layout.addWidget(self.buttons)
+        teams = eval(settings.value("my_teams","[]"))
+
+        for pids in teams:
+            team = {'pid':pids,'games':GetTeamGames(pids)}
+            w = self.TeamWidget(team)
+            if w == None:
+                continue
+            self.main.layout.addWidget(w)
         self.main.layout.addStretch()
         
 
     def TeamWidget(self,team):
-        if len(team['pid']) == 1:
+        if len(team['pid']) <= 1 or len(team['games']) < 1:
             return None
         team['games'] = sorted(team['games'])
         w = QWidget()
@@ -61,7 +109,7 @@ class MyTeams(QScrollArea):
         w.setLayout(w.layout)
         names = [GetNameByProfileId(pid) for pid in team['pid']]
         w.layout.addWidget(QLabel("%s" % ", ".join(names)),0,0)
-        w.layout.addWidget(QLabel("Hunted together %d times" % team['count']),1,0)
+        w.layout.addWidget(QLabel("Hunted together %d times" % len(team['games'])),1,0)
 
         w.setObjectName("HuntWidget")
         plot = TeamMmrChart(team)

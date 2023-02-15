@@ -9,6 +9,8 @@ sortOpts = ["your_kills","team_kills","your_deaths","assists"]
 
 class TopHunts(QScrollArea):
     def __init__(self, parent=None):
+        if debug:
+            print("topHunts.__init__")
         super().__init__(parent)
         self.setWidgetResizable(True)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -28,6 +30,8 @@ class TopHunts(QScrollArea):
         self.main.layout.addStretch()
 
     def initOptions(self):
+        if debug:
+            print("topHunts.initOptions")
         self.opts = QWidget()
         self.opts.layout = QGridLayout()
         self.opts.setLayout(self.opts.layout)

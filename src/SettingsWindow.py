@@ -2,7 +2,6 @@ from PyQt6.QtWidgets import QMainWindow,QWidget,QVBoxLayout, QHBoxLayout, QGridL
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from DbHandler import execute_query
-from Server import *
 from resources import *
 from Widgets.Modal import Modal
 

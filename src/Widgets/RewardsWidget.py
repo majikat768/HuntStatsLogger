@@ -12,10 +12,14 @@ class RewardsWidget(QWidget):
             QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         iconNames = ["hunt_dollars","blood_bonds","xp","event_points"]
+        self.icons = {name : get_icon(resource_path("assets/icons/rewards/%s.png"%name),x=icon_size,y=icon_size) for name in iconNames}
         for i in range(len(iconNames)):
-            icon = get_icon(resource_path("assets/icons/rewards/%s.png"%iconNames[i]),x=icon_size,y=icon_size)
+            icon = self.icons[iconNames[i]]
             icon.setObjectName("icon");
             icon.setStyleSheet("QLabel{border:0px;}")
+            #sp = icon.sizePolicy()
+            #sp.setRetainSizeWhenHidden(True)
+            #icon.setSizePolicy(sp)
             self.layout.addWidget(icon,i,0)
 
         self.labels = { name : QLabel() for name in iconNames }
@@ -30,6 +34,12 @@ class RewardsWidget(QWidget):
         rewards = calculateRewards(accolades)
         for k in rewards:
             self.labels[k].setText("  %s: %d" % (getLabel(k), rewards[k]))
+            if k == "event_points" and rewards[k] == 0:
+                self.labels[k].setVisible(False)
+                self.icons[k].setVisible(False)
+            else:
+                self.labels[k].setVisible(True)
+                self.icons[k].setVisible(True)
 
 def getLabel(txt):
     words = txt.split("_")

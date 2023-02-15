@@ -10,6 +10,8 @@ from Widgets.Modal import Modal
 
 class Hunters(QScrollArea):
     def __init__(self, parent):
+        if debug:
+            print("hunters.__init__")
         super().__init__(parent)
         self.setWidgetResizable(True)
         self.setHorizontalScrollBarPolicy(
@@ -32,6 +34,8 @@ class Hunters(QScrollArea):
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
 
     def initFreqHunters(self):
+        if debug:
+            print("hunters.initFreq")
         self.FreqHuntersBox = QGroupBox("Frequently Seen Hunters")
         self.FreqHuntersBox.layout = QVBoxLayout()
         self.FreqHuntersBox.setLayout(self.FreqHuntersBox.layout)
@@ -52,6 +56,8 @@ class Hunters(QScrollArea):
         self.main.layout.addWidget(self.FreqHuntersBox)
 
     def initHunterSearch(self):
+        if debug:
+            print("hunters.hunterSearch")
         self.SearchBox = QGroupBox("Search Hunters")
         self.SearchBox.layout = QHBoxLayout()
         self.SearchBox.setLayout(self.SearchBox.layout)
@@ -145,6 +151,8 @@ class Hunters(QScrollArea):
         return n
 
     def updateFrequentHunters(self):
+        if debug:
+            print("hunters.updateFreqHunters")
         for i in reversed(range(self.FreqHuntersWidget.layout.count())):
             self.FreqHuntersWidget.layout.itemAt(i).widget().setParent(None)
         hunters = GetTopNHunters(20)

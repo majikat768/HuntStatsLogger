@@ -1,5 +1,4 @@
 from datetime import datetime
-from Server import Server, startThread
 import sqlite3
 import hashlib
 import json

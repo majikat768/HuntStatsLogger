@@ -9,6 +9,8 @@ from DbHandler import *
 
 class HuntDetails(QGroupBox):
     def __init__(self, title=None):
+        if debug:
+            print("HuntDetails.__init__")
         super().__init__(title)
         self.setObjectName("huntDetails")
         self.layout = QHBoxLayout()

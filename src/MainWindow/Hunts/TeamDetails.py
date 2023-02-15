@@ -14,6 +14,8 @@ icon_size = 16
 
 class TeamDetails(QGroupBox):
     def __init__(self, parent=None):
+        if debug:
+            print("TeamDetails.__init__")
         super().__init__(parent)
         self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)

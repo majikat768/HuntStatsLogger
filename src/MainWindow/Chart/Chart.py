@@ -14,6 +14,8 @@ from resources import debug
 
 class Chart(QScrollArea):
     def __init__(self, parent=None):
+        if debug:
+            print("chart.__init__")
         super().__init__(parent)
         self.setWidgetResizable(True)
         self.main = QWidget()
@@ -35,6 +37,8 @@ class Chart(QScrollArea):
         self.bounty = None
 
     def initDropdown(self):
+        if debug:
+            print("chart.initDropdown")
         self.dropdownWidget = QWidget()
         self.dropdownWidget.layout = QHBoxLayout()
         self.dropdownWidget.setLayout(self.dropdownWidget.layout)
@@ -52,6 +56,8 @@ class Chart(QScrollArea):
         self.main.layout.addWidget(self.dropdownWidget)
 
     def initPlot(self):
+        if debug:
+            print("chart.initPlot")
         self.plotWindow = pyqtgraph.GraphicsLayoutWidget()
         self.plot = pyqtgraph.PlotItem()
         self.plotWindow.addItem(self.plot,0,0)
@@ -64,6 +70,8 @@ class Chart(QScrollArea):
         self.main.layout.addWidget(self.plotWindow)
 
     def initUI(self):
+        if debug:
+            print("chart.initUI")
         self.initDropdown()
         self.initPlot()
 

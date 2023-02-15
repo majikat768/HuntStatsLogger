@@ -22,6 +22,8 @@ class Hunts(QScrollArea):
         self.initUI()
 
     def initUI(self):
+        if debug:
+            print('hunts.initUI')
         #self.main = QSplitter(Qt.Orientation.Vertical)
         self.main = QWidget()
         self.main.layout = QVBoxLayout()
@@ -140,6 +142,8 @@ class Hunts(QScrollArea):
         self.updateDetails()
 
     def initHuntSelection(self):
+        if debug:
+            print('hunts.initHuntSelection')
         self.HuntSelect = QComboBox()
         self.HuntSelect.setIconSize(QSize(24, 24))
         self.HuntSelect.view().setSpacing(4)
@@ -148,6 +152,8 @@ class Hunts(QScrollArea):
         self.HuntSelect.activated.connect(lambda : self.updateDetails())
 
     def updateHuntSelection(self):
+        if debug:
+            print('hunts.updateHuntSelection')
         self.HuntSelect.clear()
         timeRange = int(settings.value("dropdown_range", str(7*24*60*60)))
         earliest = 0
@@ -170,5 +176,7 @@ class Hunts(QScrollArea):
                 QIcon(deadIcon if dead else livedIcon), ln, ts)
 
     def initDetails(self):
+        if debug:
+            print("hunts.initDetails")
         self.huntDetails = HuntDetails()
         self.teamDetails = TeamDetails()

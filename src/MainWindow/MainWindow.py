@@ -13,6 +13,7 @@ class MainWindow(QMainWindow):
         self.setObjectName("MainWindow")
         self.setWindowTitle("Hunt Stats Logger")
 
+        # move window to last known position / size
         if settings.value("window_position", "") != "":
             self.move(settings.value("window_position"))
         if settings.value("window_size", "") != "":
