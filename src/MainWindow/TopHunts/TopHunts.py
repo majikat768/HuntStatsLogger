@@ -97,7 +97,7 @@ class TopHunts(QScrollArea):
         elif sort == 'assists':
             func = getHuntsSortByAssistCount
 
-        hunts = func(num=num)
+        hunts = func(num=num, isQp=IsQuickPlay)
         '''
         i = 0
         for hunt in allHunts:

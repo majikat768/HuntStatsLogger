@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton, QLineEdit
+from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton, QLineEdit, QFileDialog
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QEvent, Qt
 from DbHandler import *
@@ -93,7 +93,6 @@ class MyTeams(QScrollArea):
         clearLayout(self.main.layout)
         self.main.layout.addWidget(self.buttons)
         teams = eval(settings.value("my_teams","[]"))
-
         for pids in teams:
             team = {'pid':pids,'games':GetTeamGames(pids)}
             w = self.TeamWidget(team)
@@ -102,21 +101,33 @@ class MyTeams(QScrollArea):
             self.main.layout.addWidget(w)
         self.main.layout.addStretch()
         
+    def save_chart(self,w):
+        filename = "%s_mmr-chart.png" % w.names.lower().replace(' ','').replace(',','-')
+        file = QFileDialog.getSaveFileName(
+            parent = self.window(),
+            directory=os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DesktopLocation),filename),
+            filter="PNG (*.png)"
+        )[0]
+        if len(file) <= 0:
+            return
+        scrn = QApplication.primaryScreen().grabWindow(w.winId())
+        scrn.save(file)
 
     def TeamWidget(self,team):
         if len(team['pid']) <= 1 or len(team['games']) < 1:
             return None
         team['games'] = sorted(team['games'])
         w = QWidget()
+        w.setVisible(False)
         w.layout = QGridLayout()
         w.setLayout(w.layout)
-        names = [GetNameByProfileId(pid) for pid in team['pid']]
-        w.layout.addWidget(QLabel("%s" % ", ".join(names)),0,0)
+        w.names = ", ".join([GetNameByProfileId(pid) for pid in team['pid']])
+        w.layout.addWidget(QLabel("%s" % w.names),0,0)
         w.layout.addWidget(QLabel("Hunted together %d times" % len(team['games'])),1,0)
 
         w.setObjectName("HuntWidget")
-        plot = TeamMmrChart(team)
-        bestMmrs = plot.bestMmrs
+        w.plot = TeamMmrChart(team)
+        bestMmrs = w.plot.bestMmrs
         bestWidget = QWidget()
         bestWidget.layout = QGridLayout()
         bestWidget.setLayout(bestWidget.layout)
@@ -125,8 +136,27 @@ class MyTeams(QScrollArea):
             bestWidget.layout.addWidget(QLabel("%s's best: %d" % (GetNameByProfileId(pid),bestMmrs[pid])))
             i += 1
         w.layout.addWidget(bestWidget,0,1,len(bestMmrs.keys()),1)
-        w.layout.addWidget(plot,len(bestMmrs.keys()),0,1,2)
-        return w
+        w.layout.addWidget(w.plot,len(bestMmrs.keys()),0,1,2)
+        w.layout.setRowStretch(w.layout.rowCount(),1)
+
+        wContainer = QWidget()
+        wContainer.collapsed = True
+        wContainer.layout = QVBoxLayout()
+        wContainer.setLayout(wContainer.layout)
+        wContainer.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed)
+        showButton = QPushButton("%s" % w.names)
+        showButton.clicked.connect(lambda : w.setVisible(not w.isVisible()))
+        showButton.clicked.connect(lambda : w.screenshotButton.setVisible(not w.screenshotButton.isVisible()))
+
+        w.screenshotButton = QPushButton("Save as image")
+        w.screenshotButton.setVisible(False)
+        w.screenshotButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        w.screenshotButton.clicked.connect(lambda : self.save_chart(w))
+
+        wContainer.layout.addWidget(showButton)
+        wContainer.layout.addWidget(w)
+        wContainer.layout.addWidget(w.screenshotButton)
+        return wContainer
 
     
 def toggle(widget : QWidget, btn : QPushButton):
