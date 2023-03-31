@@ -27,6 +27,7 @@ def add_column(table, column):
     conn = sqlite3.connect(database)
     cursor = conn.cursor()
     query = "alter table %s add column %s" % (table,column)
+    log(query)
     try:
         cursor.execute(query)
         conn.commit()
@@ -54,18 +55,18 @@ def insert_row(conn, table, row):
             print('\tsyntax error repaired')
             insert_row(conn, table,row)
         elif 'has no column' in str(e):
-            if str(e) == 'MissionBagWasDeathlessUsed':
+            if 'MissionBagWasDeathlessUsed' in str(e):
                 add_column('games','MissionBagWasDeathlessUsed')
                 insert_row(conn, table,row)
-            elif str(e) == 'MissionBagAddNoBloodlineXp':
+            elif 'MissionBagAddNoBloodlineXp' in str(e):
                 add_column('games','MissionBagAddNoBloodlineXp')
                 insert_row(conn, table, row)
-            elif str(e) == 'MissionBagIsTutorial':
+            elif 'MissionBagIsTutorial' in str(e):
                 add_column('games','MissionBagIsTutorial')
                 insert_row(conn, table, row)
             else:
                 log(e)
-                log('insert_row')
+                log('insert_row; has no column')
         else:
             log(e)
             log('insert_row')
@@ -96,7 +97,7 @@ def create_tables():
     conn.close()
 
 def delete_hunt(ts):
-    print('delete game %s' % ts)
+    print('delete game %s\n%s' % (ts,unix_to_datetime(ts)))
     deleteGamesQuery = "delete from 'games' where timestamp = %s" % ts
     deleteTeamsQuery = "delete from 'teams' where timestamp = %s" % ts
     deleteHuntersQuery = "delete from 'hunters' where timestamp = %s" % ts
@@ -105,23 +106,8 @@ def delete_hunt(ts):
 
     conn = sqlite3.connect(database)
     cursor = conn.cursor()
-    cursor.execute('; '.join(deleteGamesQuery,deleteTeamsQuery,deleteHuntersQuery,deleteEntriesQuery,deleteAccoladesQuery))
-    print(cursor.fetchall())
+    cursor.executescript('; '.join(["begin",deleteGamesQuery,deleteTeamsQuery,deleteHuntersQuery,deleteEntriesQuery,deleteAccoladesQuery,"commit;"]))
     conn.commit()
-    cursor.execute(deleteTeamsQuery)
-    conn.commit()
-    cursor.execute(deleteHuntersQuery)
-    conn.commit()
-    cursor.execute(deleteEntriesQuery)
-    conn.commit()
-    cursor.execute(deleteAccoladesQuery)
-    conn.commit()
-    conn.close()
-    #print(execute_query(deleteGamesQuery))
-    #print(execute_query(deleteTeamsQuery))
-    #print(execute_query(deleteHuntersQuery))
-    #print(execute_query(deleteEntriesQuery))
-    #print(execute_query(deleteAccoladesQuery))
 
 def execute_query(query,opts=None):
     conn = sqlite3.connect(database)
