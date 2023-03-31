@@ -51,7 +51,7 @@ def resource_path(relative_path):
 
 
 def mmr_to_stars(mmr):
-    return 0 if mmr == -1 else 1 if mmr < 2000 else 2 if mmr < 2300 else 3 if mmr < 2600 else 4 if mmr < 2750 else 5 if mmr < 3000 else 6
+    return 0 if mmr == -1 else 1 if mmr <= 2000 else 2 if mmr <= 2300 else 3 if mmr <= 2600 else 4 if mmr <= 2750 else 5 if mmr <= 3000 else 6
 
 
 def unix_to_datetime(timestamp):
