@@ -1,5 +1,4 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QSizePolicy
-from PyQt6.QtGui import QPixmap, QColor, QPainter
 from DbHandler import execute_query
 from resources import settings
 from time import time

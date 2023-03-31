@@ -54,9 +54,15 @@ def insert_row(conn, table, row):
             print('\tsyntax error repaired')
             insert_row(conn, table,row)
         elif 'has no column' in str(e):
-            if 'MissionBagWasDeathlessUsed' in str(e):
+            if str(e) == 'MissionBagWasDeathlessUsed':
                 add_column('games','MissionBagWasDeathlessUsed')
                 insert_row(conn, table,row)
+            elif str(e) == 'MissionBagAddNoBloodlineXp':
+                add_column('games','MissionBagAddNoBloodlineXp')
+                insert_row(conn, table, row)
+            elif str(e) == 'MissionBagIsTutorial':
+                add_column('games','MissionBagIsTutorial')
+                insert_row(conn, table, row)
             else:
                 log(e)
                 log('insert_row')
@@ -89,7 +95,33 @@ def create_tables():
     cursor.executescript(open(resource_path('assets/schema.sql'),'r').read())
     conn.close()
 
+def delete_hunt(ts):
+    print('delete game %s' % ts)
+    deleteGamesQuery = "delete from 'games' where timestamp = %s" % ts
+    deleteTeamsQuery = "delete from 'teams' where timestamp = %s" % ts
+    deleteHuntersQuery = "delete from 'hunters' where timestamp = %s" % ts
+    deleteEntriesQuery = "delete from 'entries' where timestamp = %s" % ts
+    deleteAccoladesQuery = "delete from 'accolades' where timestamp = %s" % ts
 
+    conn = sqlite3.connect(database)
+    cursor = conn.cursor()
+    cursor.execute('; '.join(deleteGamesQuery,deleteTeamsQuery,deleteHuntersQuery,deleteEntriesQuery,deleteAccoladesQuery))
+    print(cursor.fetchall())
+    conn.commit()
+    cursor.execute(deleteTeamsQuery)
+    conn.commit()
+    cursor.execute(deleteHuntersQuery)
+    conn.commit()
+    cursor.execute(deleteEntriesQuery)
+    conn.commit()
+    cursor.execute(deleteAccoladesQuery)
+    conn.commit()
+    conn.close()
+    #print(execute_query(deleteGamesQuery))
+    #print(execute_query(deleteTeamsQuery))
+    #print(execute_query(deleteHuntersQuery))
+    #print(execute_query(deleteEntriesQuery))
+    #print(execute_query(deleteAccoladesQuery))
 
 def execute_query(query,opts=None):
     conn = sqlite3.connect(database)

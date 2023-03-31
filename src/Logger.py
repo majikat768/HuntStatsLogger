@@ -57,6 +57,9 @@ class Logger(QObject):
 
                 try:
                     new_data = build_json_from_xml(ts)
+                    if new_data is None:
+                        self.progress.emit()
+                        return
                     record_exists = execute_query("select * from 'games' where game_id is '%s'" % new_data['game']['game_id'])
                     if len(record_exists) <= 0:
                         log('change detected')
@@ -206,6 +209,8 @@ def build_json_from_xml(ts):
                             "timestamp": ts
                         }
                     category = '_'.join(keysplit[3:])
+                    if category == 'blood_line_name':
+                        val = val.replace('\'','_')
                     hunters[hunter_id][category] = val
                 elif "MissionBagTeam_" in key:
                     team_num = keysplit[1]
@@ -244,6 +249,8 @@ def build_json_from_xml(ts):
                 if settings.value("HunterLevel","") != "" and int(val) < int(settings.value("HunterLevel")):
                     log("prestiged")
                 settings.setValue("HunterLevel",val)
+        if teams == {} or hunters == {} or entries == {} or accolades == {} or game == {}:
+            return None
         return clean_data({
             "teams":teams,
             "hunters":hunters,

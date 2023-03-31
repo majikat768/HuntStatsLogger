@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QComboBox
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QComboBox, QPushButton
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon
 from DbHandler import *
@@ -34,8 +34,20 @@ class Hunts(QScrollArea):
         self.main.layout.addWidget(self.HuntSelect)
         self.main.layout.addWidget(self.huntDetails)
         self.main.layout.addWidget(self.teamDetails)
+
+        self.deleteHuntButton = QPushButton("Delete This Hunt")
+        self.deleteHuntButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.deleteHuntButton.clicked.connect(self.delete)
+        #self.main.layout.addWidget(self.deleteHuntButton)
         self.setWidget(self.main)
         #self.main.setCollapsible(0,False)
+
+    def delete(self):
+        currentIndex = self.HuntSelect.currentIndex()
+        if currentIndex < 0:
+            return
+        currentTs = self.HuntSelect.currentData()
+        delete_hunt(currentTs)
 
     def calculateMmrChange(self):
         '''
