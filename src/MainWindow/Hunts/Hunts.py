@@ -30,6 +30,10 @@ class Hunts(QScrollArea):
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
 
+        self.body = QWidget()
+        self.body.layout =QHBoxLayout()
+        self.body.setLayout(self.body.layout)
+
         self.initDetails()
         self.initHuntSelection()
         self.initTimeline()
@@ -37,7 +41,10 @@ class Hunts(QScrollArea):
         self.main.layout.addWidget(self.HuntSelect)
         self.main.layout.addWidget(self.huntDetails)
 
-        self.main.layout.addWidget(self.teamDetails)
+        self.body.layout.addWidget(self.timeline)
+        self.body.layout.addWidget(self.teamDetails)
+
+        self.main.layout.addWidget(self.body)
 
         self.deleteHuntButton = QPushButton("Delete This Hunt")
         self.deleteHuntButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)

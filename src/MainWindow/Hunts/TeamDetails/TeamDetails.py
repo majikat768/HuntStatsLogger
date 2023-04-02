@@ -14,7 +14,7 @@ from resources import *
 
 icon_size = 16
 
-class TeamDetails(QWidget):
+class TeamDetails(QGroupBox):
     def __init__(self, parent=None):
         if debug:
             print("TeamDetails.__init__")

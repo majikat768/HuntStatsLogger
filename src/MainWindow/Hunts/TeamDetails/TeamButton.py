@@ -5,6 +5,28 @@ from resources import clearLayout, get_icon, star_path, mmr_to_stars
 
 icon_size = 16
 
+default_stylesheet = "TeamButton {\
+                       font-size:12px;\
+                       background: #45000000;\
+                       border: 1px solid #a9b7c6;\
+                       border-radius: 4px;\
+                        margin:4px;\
+                    }\
+                    TeamButton:hover {\
+                        background: #45cccccc;\
+                        border-color: #a9d7d6;\
+                    }"
+selected_stylesheet = "TeamButton {\
+                       font-size:12px;\
+                       background-color:#452e383c;\
+                       border: 2px solid #a9b7c6;\
+                       margin:0px;\
+                       border-radius: 4px;\
+                    }\
+                    TeamButton:hover {\
+                        background: #45cccccc;\
+                        border-color: #a9d7d6;\
+                    }"
 class TeamButton(QPushButton):
     def __init__(self,teamMmr,text=None,parent=None):
         super().__init__(parent=parent)
@@ -38,38 +60,15 @@ class TeamButton(QPushButton):
         lbl.setFixedHeight(icon_size)
         self.layout.addWidget(lbl)
         self.layout.addStretch()
-        self.setFixedHeight(int(self.sizeHint().height()*1.5))
-        self.setFixedWidth(int(self.sizeHint().width()*2))
+        self.setMinimumHeight(int(self.sizeHint().height()*1.5))
+        self.parent.setMinimumHeight(int(self.sizeHint().height()*3))
+        self.setMinimumWidth(int(self.sizeHint().width()*2))
 
     def select(self):
-        self.setStyleSheet("\
-                           TeamButton {\
-                            font-size:12px;\
-                            background-color:#452e383c;\
-                            border: 2px solid #a9b7c6;\
-                            border-radius: 4px;\
-                            padding:16px 4px;\
-                        }\
-                        TeamButton:hover {\
-                            background: #45cccccc;\
-                            border-color: #a9d7d6;\
-                        }\
-                    ")
+        self.setStyleSheet(selected_stylesheet)
     
     def unselect(self):
-        self.setStyleSheet("\
-                           TeamButton {\
-                            font-size:12px;\
-                            background: #45000000;\
-                            border: 1px solid #a9b7c6;\
-                            border-radius: 4px;\
-                            padding:16px 4px;\
-                        }\
-                        TeamButton:hover {\
-                            background: #45cccccc;\
-                            border-color: #a9d7d6;\
-                        }\
-                    ")
+        self.setStyleSheet(default_stylesheet)
 
     def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
         self.func(self.widget)

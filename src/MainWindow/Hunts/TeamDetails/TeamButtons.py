@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QScrollArea, QSizePolicy, QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QScrollArea, QSizePolicy, QWidget, QHBoxLayout, QGroupBox
 from PyQt6.QtCore import Qt
 from MainWindow.Hunts.TeamDetails.TeamButton import TeamButton
 
@@ -8,11 +8,12 @@ class TeamButtons(QScrollArea):
         self.setWidgetResizable(True)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        self.main = QWidget()
+        self.main = QGroupBox("Teams")
         self.main.layout = QHBoxLayout()
         self.main.setLayout(self.main.layout)
 
-        self.setObjectName("TeamButtons")
+        self.main.setObjectName("TeamButtons")
+        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Fixed)
 
         self.setWidget(self.main)
 
