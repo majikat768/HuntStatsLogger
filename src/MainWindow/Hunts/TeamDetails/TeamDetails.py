@@ -1,18 +1,20 @@
 from PyQt6 import QtGui
 from PyQt6.QtCore import QEvent, Qt
-from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel, QFrame,
+from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel, QFrame, QPushButton,
                              QSizePolicy, QSplitter, QSplitterHandle, QScrollArea,
                              QStackedWidget, QStyledItemDelegate,
                              QStyleOptionViewItem, QTreeWidget,
                              QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from DbHandler import execute_query, GetCurrentMmr
+from MainWindow.Hunts.TeamDetails.TeamButton import TeamButton
+from MainWindow.Hunts.TeamDetails.TeamButtons import TeamButtons
 from Widgets.Popup import Popup
 from resources import *
 
 icon_size = 16
 
-class TeamDetails(QGroupBox):
+class TeamDetails(QWidget):
     def __init__(self, parent=None):
         if debug:
             print("TeamDetails.__init__")
@@ -23,109 +25,31 @@ class TeamDetails(QGroupBox):
 
         self.teamStack = QStackedWidget()
         self.teamStack.setObjectName("TeamStack")
+        self.teamStack.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
 
-        self.teamList = QTreeWidget()
-        self.teamList.setIndentation(0)
-        self.teamList.setItemsExpandable(False)
-        #self.teamList.setHeaderHidden(True)
-        self.teamList.setColumnCount(2)
-        #self.teamList.setItemDelegate(ItemDelegate())
-        self.teamList.currentItemChanged.connect(self.switchTeamWidget)
-        self.teamList.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
-        self.teamList.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.teamButtons = TeamButtons()
 
-        self.leftColumn = QWidget()
-        self.leftColumn.layout = QVBoxLayout()
-        self.leftColumn.setLayout(self.leftColumn.layout)
-
-        self.body = QSplitter(Qt.Orientation.Horizontal)
-        self.body.setChildrenCollapsible(False)
-        handleStyle = "QSplitter::handle:horizontal{image: url(\"%s\");}" % (resource_path("assets/icons/h_handle.png").replace("\\","/"));
-        self.body.setStyleSheet(handleStyle);
-
-        self.killsData = QGroupBox()
-        self.killsData.setStyleSheet("QGroupBox{border:1px solid #44ffffff;}")
-        self.killsData.layout = QVBoxLayout()
-        self.killsData.setLayout(self.killsData.layout)
-        self.killsData.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.MinimumExpanding)
-
-        self.leftColumn.layout.addWidget(self.teamList)
-        self.leftColumn.layout.addWidget(self.killsData)
-        self.body.addWidget(self.leftColumn)
-        self.body.addWidget(self.teamStack)
-        self.layout.addWidget(self.body)
-        self.body.setStretchFactor(0,1)
-        self.body.setStretchFactor(1,3)
-        self.teamList.setHeaderLabels(["",""])
-        self.teamList.header().setFixedHeight(4)
-        self.teamList.header().setObjectName("teamsHeader")
-
-        self.setStyleSheet("QGroupBox{border:0px;}")
-
-        self.body.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        self.layout.addWidget(self.teamButtons)
+        self.layout.addWidget(self.teamStack)
+        self.layout.addStretch()
 
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-    def update(self, teams, hunters, hunt, kills,mmrChange):
+    def update(self, teams, hunters, hunt):
         if debug:
             print("teamdetails.update")
         maxIconWidth = 0
         isQp = hunt['MissionBagIsQuickPlay'].lower() == 'true'
-        clearLayout(self.killsData.layout)
-        team_kills = kills['team_kills']
-        your_kills = kills['your_kills']
-        your_deaths = kills['your_deaths']
-        assists = kills['assists']
-        if not isQp:
-            teamKills = QLabel(
-                "Team kills: %d<br>%s" % (
-                    sum(team_kills.values()),
-                    '<br>'.join(["%sx %s" % (
-                        team_kills[stars],
-                        "<img src='%s'>" % (star_path())*stars
-                    ) for stars in team_kills.keys() if team_kills[stars] > 0])
-                )
-            )
-            self.killsData.layout.addWidget(teamKills)
 
-        yourKills = QLabel(
-            "Your kills: %d<br>%s" % (
-                sum(your_kills.values()),
-                '<br>'.join(["%sx %s" % (
-                    your_kills[stars],
-                    "<img src='%s'>" % (star_path())*stars
-                ) for stars in your_kills.keys() if your_kills[stars] > 0])
-            )
-        )
-        self.killsData.layout.addWidget(yourKills)
-        self.killsData.layout.setAlignment(yourKills,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-
-        yourDeaths = QLabel(
-            "Your deaths: %d<br>%s" % (
-                sum(your_deaths.values()),
-                '<br>'.join(["%sx %s" % (
-                    your_deaths[stars],
-                    "<img src='%s'>" % (star_path())*stars
-                ) for stars in your_deaths.keys() if your_deaths[stars] > 0])
-            )
-        )
-        self.killsData.layout.addWidget(yourDeaths)
-        self.killsData.layout.setAlignment(yourDeaths,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-
-        yourAssists = QLabel("%d assists." % assists)
-        self.killsData.layout.addWidget(yourAssists)
-        self.killsData.layout.setAlignment(yourAssists,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-
-        mmrChangeLabel = QLabel(mmrChange)
-        self.killsData.layout.addWidget(mmrChangeLabel)
-        self.killsData.layout.setAlignment(mmrChangeLabel,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        self.killsData.layout.addStretch()
-        self.teamList.clear()
         while self.teamStack.count() > 0:
             self.teamStack.removeWidget(self.teamStack.currentWidget())
 
+        clearLayout(self.teamButtons.main.layout)
         teamItems = {}
+        ownTeamButton = None
+        ownTeamWidget = None
+        ownTeamInserted = False
         for i in range(len(teams)):
             team = teams[i]
 
@@ -195,60 +119,33 @@ class TeamDetails(QGroupBox):
             icons = []
             if ownTeam:
                 icons.append(livedIcon)
+                ownTeamWidget = tab
             if hadKills:
                 icons.append(deadIcon)
             if hadWellspring or hadbounty:
                 icons.append(bountyIcon)
-            item = QTreeWidgetItem()
-            item.setText(0,title)
-            item.view = tab
-            # self.teamList.insertItem(i,item)
             teamItems[i] = {'title': title, 'widget': tab,'icons':icons, 'ownteam':ownTeam}
 
-        ownTeamInserted = False
-        maxIconWidth = 0
-        for i in range(len(teamItems)):
-            icons = teamItems[i]['icons']
-            widget = teamItems[i]['widget']
-            title = teamItems[i]['title']
-            item = QTreeWidgetItem()
-            item.view = widget
-            if teamItems[i]['ownteam']:
-                self.teamList.insertTopLevelItem(0,item)
-                ownTeamInserted = True
-            elif len(icons) > 0:
-                if not ownTeamInserted:
-                    self.teamList.insertTopLevelItem(0,item)
-                else:
-                    self.teamList.insertTopLevelItem(1,item)
+            button = TeamButton(teamMmr=teamMmr,text=title,parent=self.teamButtons)
+            button.ownTeam = ownTeam
+            button.icons = icons
+            button.setObjectName("TeamButton")
+            button.setWidget(tab,self.switchTeamWidget)
+            button.setIcons(icons)
+            button.ownTeam = ownTeam
+            if not ownTeam:
+                self.teamButtons.addButton(button)
             else:
-                self.teamList.insertTopLevelItem(self.teamList.topLevelItemCount(),item)
-             
-            iconLabel = QLabel()
-            pm = QPixmap(icon_size*(len(icons)+1),icon_size)
-            pm.fill(QtGui.QColor(0,0,0,0))
-            if len(icons) > 0:
-                painter = QtGui.QPainter(pm)
-                for j in range(len(icons)):
-                    icon = icons[j]
-                    painter.drawPixmap(j*icon_size,0,icon_size,icon_size,QPixmap(icon).scaled(icon_size,icon_size))
-                del painter
-                iconLabel.setPixmap(pm)
-            maxIconWidth = max(maxIconWidth,icon_size*len(icons)+icon_size)
-            #self.teamList.setItemWidget(item,0,label)
-            item.setText(0,title)
-            self.teamList.setItemWidget(item,1,iconLabel)
-            iconLabel.setAlignment(Qt.AlignmentFlag.AlignRight)
-            self.teamStack.addWidget(widget)
-        self.teamList.setCurrentItem(self.teamList.itemAt(0,0))
-        self.teamList.setColumnWidth(1,maxIconWidth)
-        self.teamList.setColumnWidth(3,0)
+                ownTeamButton = button
+        self.teamButtons.addButton(ownTeamButton)
+        ownTeamButton.select()
 
-    def switchTeamWidget(self, new,old):
-        if new != None:
-            self.teamStack.setCurrentWidget(new.view)
-        else:
-            self.teamStack.setCurrentWidget(old.view)
+        self.teamButtons.main.layout.addStretch()
+
+        self.teamStack.setCurrentWidget(ownTeamWidget)
+
+    def switchTeamWidget(self, tab):
+        self.teamStack.setCurrentWidget(tab)
 
     def eventFilter(self, obj, event) -> bool:
         if obj.objectName() == "icon":

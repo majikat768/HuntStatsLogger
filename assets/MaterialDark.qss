@@ -8,6 +8,11 @@ Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 */
 
 * {
+	padding:0px;
+	margin:0px;
+	border:1px solid red;
+}
+#timelineWidget > QWidget{
 }
 QWidget {
 	background:transparent;
@@ -250,6 +255,27 @@ QPushButton:hover{
 	color: #FFFFFF;
 	padding-bottom: 2px;
 	background-color: #0e0d23;
+}
+
+TeamButton {
+	font-size:12px;
+	background: #45000000;
+	border: 1px solid #a9b7c6;
+	border-radius: 4px;
+	padding:16px 4px;
+}
+
+TeamButton#Selected {
+	font-size:12px;
+	border: 2px solid #a9b7c6;
+	border-radius: 4px;
+	padding:16px 4px;
+	background-color:#452e383c;
+}
+
+#TeamButton:hover {
+	background: #45cccccc;
+	border-color: #a9d7d6;
 }
 QPushButton:pressed{
 	border-style: solid;

@@ -107,3 +107,15 @@ CREATE TABLE IF NOT EXISTS accolades (
         accolade_num
     )
 );
+
+CREATE TABLE IF NOT EXISTS timestamps (
+    game_id text,
+    timestamp_num integer,
+    timestamp text,
+    hunter text,
+    event text,
+    primary key (
+        game_id,
+        timestamp_num
+    )
+);

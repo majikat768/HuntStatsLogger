@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QComboBox, QPushButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QComboBox, QPushButton, QGroupBox
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon
 from DbHandler import *
 from MainWindow.Hunts.HuntDetails import HuntDetails
-from MainWindow.Hunts.TeamDetails import TeamDetails
+from MainWindow.Hunts.Timeline import Timeline
+from MainWindow.Hunts.TeamDetails.TeamDetails import TeamDetails
 
 
 BountyNames = {
@@ -31,14 +32,17 @@ class Hunts(QScrollArea):
 
         self.initDetails()
         self.initHuntSelection()
+        self.initTimeline()
+
         self.main.layout.addWidget(self.HuntSelect)
         self.main.layout.addWidget(self.huntDetails)
+
         self.main.layout.addWidget(self.teamDetails)
 
         self.deleteHuntButton = QPushButton("Delete This Hunt")
         self.deleteHuntButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.deleteHuntButton.clicked.connect(self.delete)
-        #self.main.layout.addWidget(self.deleteHuntButton)
+        self.main.layout.addWidget(self.deleteHuntButton)
         self.setWidget(self.main)
         #self.main.setCollapsible(0,False)
 
@@ -62,7 +66,7 @@ class Hunts(QScrollArea):
         currentMmr = 0 if len(currentMmr) == 0 else currentMmr[0][0]
         if currentIndex == 0:
             predictedMmr = predictNextMmr(currentMmr, currentTs)
-            mmrOutput = 'predicted MMR change:<br>%d -> %d<br>%+d' % (currentMmr, predictedMmr, predictedMmr-currentMmr)
+            mmrOutput = "estimate:<br>%+d MMR" % (predictedMmr-currentMmr)
             return mmrOutput
         else:
             predictedMmr = predictNextMmr(currentMmr, currentTs)
@@ -75,8 +79,7 @@ class Hunts(QScrollArea):
             nextMmr = 0 if len(nextMmr) == 0 else nextMmr[0][0]
             predictChange = predictedMmr - currentMmr
             mmrChange = nextMmr - currentMmr
-            mmrOutput = "Your MMR change:<br>%d -> %d<br>%+d" % (
-                currentMmr, nextMmr, mmrChange)
+            mmrOutput = "%+d MMR" % (mmrChange)
             return mmrOutput
 
     def updateDetails(self, ts=None):
@@ -84,6 +87,8 @@ class Hunts(QScrollArea):
             ts = self.HuntSelect.currentData()
         if (ts == None):
             return
+        self.timeline.update(ts)
+
         hunt = GetHunt(ts)
         entries = GetHuntEntries(ts)
         accolades = GetHuntAccolades(ts)
@@ -141,17 +146,18 @@ class Hunts(QScrollArea):
                     monsters_killed[monster] = 0
                 monsters_killed[monster] += entry['amount']
 
-        killData = getKillData(ts)
         targets = GetBounties(hunt)
         self.huntDetails.update(qp, bounties, accolades,
-                                monsters_killed, targets)
-        self.teamDetails.update(teams, hunters, hunt, killData,self.calculateMmrChange())
+                                monsters_killed, targets,ts,self.calculateMmrChange())
+        self.teamDetails.update(teams, hunters, hunt)
 
     def update(self):
         if debug:
             print('hunts.update')
         self.updateHuntSelection()
         self.updateDetails()
+        currentTs = self.HuntSelect.currentData()
+        self.timeline.update(currentTs)
 
     def initHuntSelection(self):
         if debug:
@@ -192,3 +198,6 @@ class Hunts(QScrollArea):
             print("hunts.initDetails")
         self.huntDetails = HuntDetails()
         self.teamDetails = TeamDetails()
+
+    def initTimeline(self):
+        self.timeline = Timeline(self)

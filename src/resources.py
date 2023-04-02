@@ -28,10 +28,16 @@ if not os.path.exists(logs_dir):
 
 log_file = os.path.join(logs_dir,'log.txt')
 
+database = None
 
 settings = QSettings(os.path.join(
     app_data_path, 'settings.ini'), QSettings.Format.IniFormat)
-database = os.path.join(app_data_path, 'huntstats.db')
+
+def set_database(str):
+    global database
+    database = str
+
+set_database(os.path.join(app_data_path, 'huntstats.db'))
 
 def log(str):
     with open(log_file,'a') as f:

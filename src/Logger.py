@@ -152,12 +152,21 @@ def clean_data(obj):
             if int(teamnum) < num_teams and int(hunternum) < int(teams[teamnum]["numplayers"]):
                 hunters[id] = obj['hunters'][id]
 
+        timestamps = {}
+        for id in obj['timestamps']:
+            hunter = obj['timestamps'][id]['hunter']
+            teamnum = hunter.split("_")[0]
+            hunternum = hunter.split("_")[1]
+            if int(teamnum) < num_teams and int(hunternum) < int(teams[teamnum]["numplayers"]):
+                timestamps[id] = obj['timestamps'][id]
+
         new_obj = {
             "teams":teams,
             "hunters":hunters,
             "entries":entries,
             "accolades":accolades,
-            "game":obj['game']
+            "game":obj['game'],
+            "timestamps":timestamps
         }
 
         checksum = generate_checksum(new_obj)
@@ -170,6 +179,8 @@ def clean_data(obj):
             new_obj['entries'][entrynum]['game_id'] = checksum
         for accoladenum in new_obj['accolades']:
             new_obj['accolades'][accoladenum]['game_id'] = checksum
+        for timestampnum in new_obj['timestamps']:
+            new_obj['timestamps'][timestampnum]['game_id'] = checksum
         new_obj['game']['game_id'] = checksum
 
         return new_obj
@@ -186,6 +197,7 @@ def build_json_from_xml(ts):
         entries = {}
         accolades = {}
         game = {"timestamp":ts}
+        timestamps = {}
 
         for line in xf:
             try:
@@ -195,10 +207,23 @@ def build_json_from_xml(ts):
             key = ln['Attr']['@name']
             val = ln['Attr']['@value']
             keysplit = key.split("_")
-            if "MissionBag" in line and "tooltip" not in key:
+            if "MissionBag" in line:
                 if val == "":
                     val = "-1"
-                if "MissionBagPlayer_" in key:
+                if "tooltip" in key and ":" in val:
+                    hunter = '_'.join([keysplit[1],keysplit[2]])
+                    timestamp = val.split("~")[-1]
+                    while len(timestamp.split(":")[0]) < 2:
+                        timestamp = '0' + timestamp
+                    event = keysplit[-1].split("tooltip")[-1]
+                    ts_num = len(timestamps)
+                    timestamps[ts_num] = {
+                        "timestamp_num":ts_num,
+                        "hunter":hunter,
+                        "timestamp":timestamp,
+                        "event":event
+                    }
+                elif "MissionBagPlayer_" in key and val != "-1":
                     team_num = int(keysplit[1])
                     hunter_num = int(keysplit[2])
                     hunter_id = '_'.join(keysplit[1:3])
@@ -233,7 +258,7 @@ def build_json_from_xml(ts):
                     if len(keysplit) > 2:
                         cat = '_'.join(keysplit[2:])
                         entries[entry_num][cat] = val
-                elif "Entry_" not in key:
+                elif "Entry_" not in key and "Player_" not in key:
                     game[key] = val
             elif "MissionAccoladeEntry" in line and "header" not in key and "iconPath" not in key:
                 accolade_num = keysplit[1]
@@ -256,7 +281,8 @@ def build_json_from_xml(ts):
             "hunters":hunters,
             "entries":entries,
             "accolades":accolades,
-            "game":game
+            "game":game,
+            "timestamps":timestamps
         })
 
 def elapsed(ss):

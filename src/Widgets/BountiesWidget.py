@@ -4,7 +4,7 @@ from resources import clearLayout
 class BountiesWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.layout = QHBoxLayout()
+        self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setSizePolicy(
             QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
@@ -20,7 +20,6 @@ class BountiesWidget(QWidget):
             widget.layout.addWidget(QLabel("closed %d rifts." % bounties['rifts_closed']))
             self.layout.addWidget(widget)
         else:
-            widgets = []
             for name in targets:
                 text = []
                 widget = QWidget()
@@ -39,15 +38,10 @@ class BountiesWidget(QWidget):
                 else:
                     text.append('')
 
-                widget.layout.addWidget(bossLabel)
+                self.layout.addWidget(bossLabel)
                 for line in text:
                     label = QLabel(line)
                     label.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-                    widget.layout.addWidget(label)
-                widget.layout.addStretch()
-                widgets.append(widget)
-            for i in range(len(widgets)):
-                widget = widgets[i]
-                self.layout.addWidget(widget)
-                if i < len(widgets)-2:
-                    self.layout.addStretch()
+                    self.layout.addWidget(label)
+                    #widget.layout.addWidget(label)
+                self.layout.addWidget(QLabel())
