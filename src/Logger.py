@@ -180,6 +180,8 @@ def clean_data(obj):
 
 
 def build_json_from_xml(ts):
+    if debug:
+        log('building json')
     with open(settings.value("xml_path"),'r',encoding='utf-8') as xf:
         teams = {}
         hunters = {}
@@ -249,8 +251,8 @@ def build_json_from_xml(ts):
                 if settings.value("HunterLevel","") != "" and int(val) < int(settings.value("HunterLevel")):
                     log("prestiged")
                 settings.setValue("HunterLevel",val)
-        if teams == {} or hunters == {} or entries == {} or accolades == {} or game == {}:
-            return None
+        #if teams == {} or hunters == {} or entries == {} or accolades == {} or game == {}:
+            #return None
         return clean_data({
             "teams":teams,
             "hunters":hunters,
