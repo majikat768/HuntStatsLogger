@@ -1,15 +1,16 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QLabel, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QGridLayout, QLabel, QSizePolicy, QGroupBox
 from resources import resource_path, get_icon
 
 icon_size = 24
 
-class RewardsWidget(QWidget):
+class RewardsWidget(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QGridLayout()
         self.setLayout(self.layout)
         self.setSizePolicy(
             QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.setTitle("Rewards")
 
         iconNames = ["hunt_dollars","blood_bonds","xp","event_points"]
         self.icons = {name : get_icon(resource_path("assets/icons/rewards/%s.png"%name),x=icon_size,y=icon_size) for name in iconNames}
@@ -41,7 +42,14 @@ class RewardsWidget(QWidget):
                 self.labels[k].setVisible(True)
                 self.icons[k].setVisible(True)
 
+        self.layout.setColumnStretch(self.layout.columnCount(),1)
+
 def getLabel(txt):
+    if "_" in txt:
+        words = [w[0].capitalize() for w in txt.split("_")]
+        return ''.join(words)
+    else:
+        return txt.upper()
     words = txt.split("_")
     for i in range(len(words)):
         words[i] = words[i].capitalize()

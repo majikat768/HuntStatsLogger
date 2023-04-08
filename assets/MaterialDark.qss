@@ -11,8 +11,6 @@ Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
 	padding:0px;
 	margin:0px;
 }
-#timelineWidget > QWidget{
-}
 QWidget {
 	background:transparent;
 }
@@ -27,7 +25,7 @@ SettingsWindow {
 
 #icon {
 	border:1px solid #cc44ffcc;
-	padding:4px;
+	padding:2px;
 	margin:0px;
 }
 #icon_borderless {
@@ -36,8 +34,19 @@ SettingsWindow {
 	margin:0px;
 }
 
+KillsWidget {
+	border:1px solid #44ffffff;
+	padding-right:24px;
+}
+Timeline > QScrollArea {
+	padding:4px 16px;
+}
+#EventWidget {
+	border: 1px solid #000000;
+	border-radius:4px;
+}
 #BountyHeading {
-	font-size:16px;
+	font-size:14px;
 	font-style: bold;
 }
 #TeamStack {
@@ -68,6 +77,8 @@ SettingsWindow {
 #Header {
 	border: 1px solid black;
 	background-color:#1e282c;
+	margin:0px;
+	padding:0px;
 }
 
 #toast {
@@ -91,14 +102,18 @@ SettingsWindow {
 #kdaTitle {
 	font-size:24px;
 }
+Header, Header * {
+	padding:0px;
+	margin:0px;
+}
 #titlebar {
 	background-color: #222222;
     border:1px solid black;
 }
-#teamDetails {
-	border:0px solid #000000;
+TeamDetails {
+	border:1px solid #07190b;
 	background-color: #44000000;
-	padding:16px;
+	padding:0px;
 }
 
 #huntDetails {
@@ -116,10 +131,18 @@ SettingsWindow {
 	background: #88000000;
 }
 #HunterWidget {
+	padding:0px;
 	background: #88000000;
+	border:1px solid #07190b;
 }
 #HunterWidget * {
 	background: #00000000;
+}
+
+#TeamWidget {
+	border:1px solid #44ffffff;
+	margin-bottom:18px;
+	padding:0px;
 }
 
 QMainWindow {
@@ -128,16 +151,22 @@ QMainWindow {
 }
 
 QSplitter::handle:pressed {
+	background: #2288ca88;
 }
 QSplitter::handle:horizontal {
 }
 QSplitter::handle:vertical {
+	background:#88688a68;
 }
 
 QGroupBox {
 	color:#cccc67;
 	font-size:16px;
 	background-color:transparent;
+	border:1px solid #44ffffff;
+	border-radius:2px;
+	padding-top:16px;
+	margin-top:8px;
 }
 QDialog {
 	background-color:#1e1d23;
@@ -256,15 +285,8 @@ QPushButton:hover{
 	background-color: #0e0d23;
 }
 
-#TeamButtons {
-	padding:0px;
-	margin:0px;
-	border:0px;
-}
-TeamButtons {
-	padding:0px;
-	margin:0px;
-	border:0px;
+QTableWidget:item {
+	margin:4px;
 }
 TeamButton {
 	font-size:12px;
@@ -272,6 +294,7 @@ TeamButton {
 	border: 1px solid #a9b7c6;
 	border-radius: 4px;
 	padding:16px 4px;
+	margin:0px;
 }
 
 #TeamButton:hover {
@@ -547,6 +570,7 @@ QDateEdit {
 }
 QComboBox {
 	font-family: courier new;
+	font-size:14px;
 	color: #a9b7c6;	
 	background: #0e0d13;
 	height:24px;

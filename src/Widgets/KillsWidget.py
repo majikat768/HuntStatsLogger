@@ -1,14 +1,16 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy, QGroupBox
 from PyQt6.QtCore import Qt
 from resources import clearLayout, star_path, debug
 from DbHandler import getKillData
 
-class KillsWidget(QWidget):
+class KillsWidget(QGroupBox):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Expanding)
+        self.setObjectName("KillsWidget")
+        self.setTitle("Kills")
 
     def update(self,isQp,ts,mmrChange):
         if debug:
@@ -30,6 +32,7 @@ class KillsWidget(QWidget):
                 )
             )
             self.layout.addWidget(teamKills)
+            self.layout.addWidget(QLabel())
 
         yourKills = QLabel(
             "Your kills: %d<br>%s" % (
@@ -41,6 +44,7 @@ class KillsWidget(QWidget):
             )
         )
         self.layout.addWidget(yourKills)
+        self.layout.addWidget(QLabel())
         self.layout.setAlignment(yourKills,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         yourDeaths = QLabel(
@@ -53,6 +57,7 @@ class KillsWidget(QWidget):
             )
         )
         self.layout.addWidget(yourDeaths)
+        self.layout.addWidget(QLabel())
         self.layout.setAlignment(yourDeaths,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         yourAssists = QLabel("%d assists." % assists)
@@ -63,3 +68,4 @@ class KillsWidget(QWidget):
         self.layout.addWidget(mmrChangeLabel)
         self.layout.setAlignment(mmrChangeLabel,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.layout.addStretch()
+        self.adjustSize()

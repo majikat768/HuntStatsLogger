@@ -5,6 +5,7 @@ from Widgets.BountiesWidget import BountiesWidget
 from Widgets.RewardsWidget import RewardsWidget
 from Widgets.MonstersWidget import MonstersWidget
 from Widgets.KillsWidget import KillsWidget
+from MainWindow.Hunts.Timeline import Timeline
 from DbHandler import *
 
 
@@ -21,10 +22,6 @@ class HuntDetails(QGroupBox):
         self.bounties = BountiesWidget()
         self.rewards = RewardsWidget()
         self.monsters = MonstersWidget()
-        self.kills = KillsWidget()
-        self.layout.addWidget(self.kills)
-        self.layout.setAlignment(self.kills, Qt.AlignmentFlag.AlignTop)
-        self.layout.addStretch()
         self.layout.addWidget(self.bounties)
         self.layout.setAlignment(self.bounties, Qt.AlignmentFlag.AlignTop)
         self.layout.addStretch()
@@ -41,4 +38,3 @@ class HuntDetails(QGroupBox):
         self.bounties.update(qp,bounties,targets)
         self.rewards.update(accolades)
         self.monsters.update(monsters_killed)
-        self.kills.update(qp,ts,mmrChange)

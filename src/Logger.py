@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 import sqlite3
 import hashlib
 import json
@@ -212,10 +213,10 @@ def build_json_from_xml(ts):
                     val = "-1"
                 if "tooltip" in key and ":" in val:
                     hunter = '_'.join([keysplit[1],keysplit[2]])
-                    timestamp = val.split("~")[-1]
+                    timestamp = re.findall("\d{1,2}:\d{2}",val)[-1]
+                    event = keysplit[-1].split("tooltip")[-1]
                     while len(timestamp.split(":")[0]) < 2:
                         timestamp = '0' + timestamp
-                    event = keysplit[-1].split("tooltip")[-1]
                     ts_num = len(timestamps)
                     timestamps[ts_num] = {
                         "timestamp_num":ts_num,
@@ -223,6 +224,20 @@ def build_json_from_xml(ts):
                         "timestamp":timestamp,
                         "event":event
                     }
+                    '''
+                    eventtimes = re.findall("\d{1,2}:\d{2}",val)[-1]
+                    event = keysplit[-1].split("tooltip")[-1]
+                    for timestamp in eventtimes:
+                        while len(timestamp.split(":")[0]) < 2:
+                            timestamp = '0' + timestamp
+                        ts_num = len(timestamps)
+                        timestamps[ts_num] = {
+                            "timestamp_num":ts_num,
+                            "hunter":hunter,
+                            "timestamp":timestamp,
+                            "event":event
+                        }
+                    '''
                 elif "MissionBagPlayer_" in key and val != "-1":
                     team_num = int(keysplit[1])
                     hunter_num = int(keysplit[2])
@@ -274,8 +289,8 @@ def build_json_from_xml(ts):
                 if settings.value("HunterLevel","") != "" and int(val) < int(settings.value("HunterLevel")):
                     log("prestiged")
                 settings.setValue("HunterLevel",val)
-        if teams == {} or hunters == {} or entries == {} or accolades == {} or game == {}:
-            return None
+        #if teams == {} or hunters == {} or entries == {} or accolades == {} or game == {}:
+            #return None
         return clean_data({
             "teams":teams,
             "hunters":hunters,

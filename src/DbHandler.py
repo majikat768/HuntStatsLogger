@@ -99,10 +99,10 @@ def create_tables():
     cursor.executescript(open(resource_path('assets/schema.sql'),'r').read())
     conn.close()
 
-def delete_hunt(ts):
-    print('delete game %s\n%s' % (ts,unix_to_datetime(ts)))
+def delete_hunt(id):
+    print('delete game %s' % (id))
     tables = ['games','hunters','teams','accolades','entries','timestamps']
-    queries = ["delete from %s where timestamp = %s" % (table,ts) for table in tables]
+    queries = ["delete from %s where game_id = '%s'" % (table,id) for table in tables]
     print(queries)
     query = "; ".join(queries)
     print(query)
@@ -155,6 +155,13 @@ def GetCurrentMmr(pid = None):
     if mmr == None:
         return -1
     return mmr
+
+def GetGameId(ts):
+    query = "select game_id from 'games' where timestamp is '%s'" % ts
+    res = execute_query(query)
+    if len(res) == 0:
+        return ''
+    return res[0][0]
 
 def GetBestMmr(pid = None):
     if pid == None or pid < 0:

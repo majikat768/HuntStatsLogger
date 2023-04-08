@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget,QGroupBox, QLabel, QVBoxLayout, QScrollArea, QSizePolicy
+from PyQt6.QtWidgets import QWidget,QGroupBox, QLabel, QVBoxLayout, QScrollArea, QSizePolicy, QApplication
 from PyQt6.QtCore import Qt
 from DbHandler import GetHuntTimestamps, GetHunterFromGame
 from resources import clearLayout
@@ -8,22 +8,32 @@ class Timeline(QScrollArea):
         super().__init__()
         self.setWidgetResizable(True)
         self.main = QWidget()
-        self.main.setObjectName("timelineWidget")
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
+        self.main.setObjectName("timelineWidget")
+        self.setStyleSheet("QScrollArea{padding 4px 24px;}")
+
         self.setWidget(self.main)
-        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Minimum)
+
+        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Expanding)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def update(self,ts):
         clearLayout(self.main.layout)
-        timestamps = GetHuntTimestamps(ts)
+        self.timestamps = GetHuntTimestamps(ts)
         width = -1
-        titleLabel = QLabel()
-        titleLabel.setStyleSheet("QLabel{font-size:16px;}")
+        titleLabel = QLabel("Timeline")
+        subtitleLabel = QLabel()
+        titleLabel.setStyleSheet("QLabel{font-size:16px;color:#cccc67;}")
         self.main.layout.addWidget(titleLabel)
+        self.main.layout.addWidget(subtitleLabel)
         self.main.layout.addWidget(QLabel())
-        for e in timestamps:
+        for e in self.timestamps:
+            eventWidget = QWidget()
+            eventWidget.setObjectName("EventWidget")
+            eventWidget.layout = QVBoxLayout()
+            eventWidget.setLayout(eventWidget.layout)
+
             timestamp = e['timestamp']
             event = e['event']
             team_num = e['hunter'].split("_")[0]
@@ -35,20 +45,28 @@ class Timeline(QScrollArea):
             eventLbl.setWordWrap(True)
             lbl = QLabel("%s<br>%s" % (timestamp,GetEventText(event,hunter)))
             lbl.setWordWrap(True)
-            self.main.layout.addWidget(tsLbl)
-            self.main.layout.addWidget(eventLbl)
+            eventWidget.layout.addWidget(tsLbl)
+            eventWidget.layout.addWidget(eventLbl)
             lbl.setSizePolicy(
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.MinimumExpanding)
-            self.main.layout.addWidget(QLabel())
+            #eventWidget.layout.addWidget(QLabel())
             if lbl.fontMetrics().boundingRect(lbl.text()).width() +32 > width:
                 width = lbl.fontMetrics().boundingRect(lbl.text()).width() + 32
+            if "byme" in event or "byteammate" in event:
+                eventWidget.setStyleSheet("#EventWidget{background:#22006600;}")
+            elif "me" in event or "teammate" in event:
+                eventWidget.setStyleSheet("#EventWidget{background:#22880000;}")
+            else:
+                eventWidget.setStyleSheet("#EventWidget{background:#22000088;}")
+
+            self.main.layout.addWidget(eventWidget)
+
         self.main.layout.addStretch()
-        if len(timestamps) == 0:
-            self.setFixedWidth(0)
-        else:
-            titleLabel.setText("Duration: %s" % timestamps[-1]['timestamp'])
-            self.setFixedWidth(200)
+        if len(self.timestamps) > 0:
+            subtitleLabel.setText("Duration: %s" % self.timestamps[-1]['timestamp'])
+        QApplication.processEvents()
+        self.setMinimumWidth(self.main.layout.sizeHint().width())
 
 def GetEventText(event,hunter):
     s = None
@@ -59,18 +77,18 @@ def GetEventText(event,hunter):
             s = "%s extracted with a bounty." 
     elif "downed" in event:
         if event == "downedbyteammate":
-            s = "%s was downed by your teammate." 
+            s = "Your teammate downed %s." 
         elif event == "downedbyme":
-            s = "%s was downed by you." 
+            s = "You downed %s." 
         if event == "downedteammate":
             s = "%s downed your teammate." 
         elif event == "downedme":
             s = "%s downed you." 
     elif "killed" in event:
         if event == "killedbyteammate":
-            s = "%s was killed by your teammate." 
+            s = "Your teammate killed %s." 
         elif event == "killedbyme":
-            s = "%s was killed by you." 
+            s = "You killed %s." 
         if event == "killedteammate":
             s = "%s killed your teammate." 
         elif event == "killedme":

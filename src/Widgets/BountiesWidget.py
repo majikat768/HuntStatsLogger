@@ -1,13 +1,14 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QSizePolicy, QGroupBox
 from resources import clearLayout
 
-class BountiesWidget(QWidget):
+class BountiesWidget(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setSizePolicy(
             QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.setTitle("Bounties")
 
     def update(self, qp, bounties, targets):
         clearLayout(self.layout)

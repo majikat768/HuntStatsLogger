@@ -1,10 +1,13 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QComboBox, QPushButton, QGroupBox
-from PyQt6.QtCore import QSize
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QScrollArea, QComboBox, QPushButton, QGroupBox, QSplitter
+from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon
 from DbHandler import *
-from MainWindow.Hunts.HuntDetails import HuntDetails
 from MainWindow.Hunts.Timeline import Timeline
 from MainWindow.Hunts.TeamDetails.TeamDetails import TeamDetails
+from Widgets.KillsWidget import KillsWidget
+from Widgets.BountiesWidget import BountiesWidget 
+from Widgets.RewardsWidget import RewardsWidget
+from Widgets.MonstersWidget import MonstersWidget
 
 
 BountyNames = {
@@ -25,31 +28,43 @@ class Hunts(QScrollArea):
     def initUI(self):
         if debug:
             print('hunts.initUI')
-        #self.main = QSplitter(Qt.Orientation.Vertical)
         self.main = QWidget()
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
 
-        self.body = QWidget()
-        self.body.layout =QHBoxLayout()
-        self.body.setLayout(self.body.layout)
+        self.left = QWidget()
+        self.left.layout = QVBoxLayout()
+        self.left.setLayout(self.left.layout)
 
+        self.body = QSplitter(Qt.Orientation.Horizontal)
+        self.body.setStyleSheet("QSplitter::handle:horizontal{image:url(\"%s\");}" % resource_path('assets/icons/h_handle.png').replace("\\","/"))
         self.initDetails()
+        self.initKillsData()
         self.initHuntSelection()
         self.initTimeline()
 
+
+        self.left.layout.addWidget(self.killsData)
+        self.left.layout.addWidget(self.bounties)
+        self.left.layout.addWidget(self.rewards)
+        self.left.layout.addWidget(self.monsters)
+        self.body.addWidget(self.left)
+        self.body.addWidget(self.teamDetails)
+        self.body.addWidget(self.timeline)
+
         self.main.layout.addWidget(self.HuntSelect)
-        self.main.layout.addWidget(self.huntDetails)
-
-        self.body.layout.addWidget(self.timeline)
-        self.body.layout.addWidget(self.teamDetails)
-
         self.main.layout.addWidget(self.body)
+
+        self.body.setSizes([
+            int(0.2*self.window().width()),
+            int(0.6*self.window().width()),
+            int(0.2*self.window().width())
+        ])
 
         self.deleteHuntButton = QPushButton("Delete This Hunt")
         self.deleteHuntButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.deleteHuntButton.clicked.connect(self.delete)
-        self.main.layout.addWidget(self.deleteHuntButton)
+        #self.main.layout.addWidget(self.deleteHuntButton)
         self.setWidget(self.main)
         #self.main.setCollapsible(0,False)
 
@@ -58,7 +73,8 @@ class Hunts(QScrollArea):
         if currentIndex < 0:
             return
         currentTs = self.HuntSelect.currentData()
-        delete_hunt(currentTs)
+        game_id = GetGameId(currentTs)
+        delete_hunt(game_id)
 
     def calculateMmrChange(self):
         '''
@@ -95,6 +111,10 @@ class Hunts(QScrollArea):
         if (ts == None):
             return
         self.timeline.update(ts)
+        if len(self.timeline.timestamps) == 0:
+            self.timeline.hide()
+        else:
+            self.timeline.show()
 
         hunt = GetHunt(ts)
         entries = GetHuntEntries(ts)
@@ -154,9 +174,11 @@ class Hunts(QScrollArea):
                 monsters_killed[monster] += entry['amount']
 
         targets = GetBounties(hunt)
-        self.huntDetails.update(qp, bounties, accolades,
-                                monsters_killed, targets,ts,self.calculateMmrChange())
+        self.rewards.update(accolades)
+        self.bounties.update(qp,bounties,targets)
+        self.monsters.update(monsters_killed)
         self.teamDetails.update(teams, hunters, hunt)
+        self.killsData.update(qp,ts,self.calculateMmrChange())
 
     def update(self):
         if debug:
@@ -203,8 +225,14 @@ class Hunts(QScrollArea):
     def initDetails(self):
         if debug:
             print("hunts.initDetails")
-        self.huntDetails = HuntDetails()
         self.teamDetails = TeamDetails()
+        self.monsters = MonstersWidget()
+        self.rewards = RewardsWidget()
+        self.bounties = BountiesWidget()
+
+    def initKillsData(self):
+        self.killsData = KillsWidget()
+        self.killsData.setObjectName("KillsWidget")
 
     def initTimeline(self):
         self.timeline = Timeline(self)

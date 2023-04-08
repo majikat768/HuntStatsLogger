@@ -113,8 +113,10 @@ teammateKilledIcon = resource_path('assets/icons/teammatekilled.png')
 killedTeammateIcon = resource_path('assets/icons/killedteammate.png')
 bountyIcon = resource_path('assets/icons/bounty.png')
 blankIcon = resource_path('assets/icons/blank.png')
+chevronRightIcon = resource_path('assets/icons/chevron-right.svg')
+chevronDownIcon = resource_path('assets/icons/chevron-down.svg')
 
-tab = " "*4
+teamTable = " "*4
 
 
 def get_icon(path,x=icon_size,y=icon_size,border=True):
