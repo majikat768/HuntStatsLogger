@@ -34,7 +34,7 @@ settings = QSettings(os.path.join(
 database = os.path.join(app_data_path, 'huntstats.db')
 
 def log(str):
-    with open(log_file,'a') as f:
+    with open(log_file,'a', encoding='utf-8') as f:
         line = "%d\t%s\n" % (int(time.time()),str)
         f.write(line)
         print(str)

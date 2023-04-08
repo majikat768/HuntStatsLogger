@@ -64,7 +64,7 @@ class Logger(QObject):
                     if len(record_exists) <= 0:
                         log('change detected')
                         self.mainframe.setStatus("writing new record to json file....")
-                        with open(outfile,'w') as f:
+                        with open(outfile,'w',encoding='utf-8') as f:
                             json.dump(new_data,f)
 
                         #if str(settings.value("sync_files","false")).lower() == "true":
