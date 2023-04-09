@@ -54,7 +54,7 @@ class Timeline(QScrollArea):
             if lbl.fontMetrics().boundingRect(lbl.text()).width() +32 > width:
                 width = lbl.fontMetrics().boundingRect(lbl.text()).width() + 32
             if "byme" in event or "byteammate" in event:
-                eventWidget.setStyleSheet("#EventWidget{background:#22006600;}")
+                eventWidget.setStyleSheet("#EventWidget{background:#22008800;}")
             elif "me" in event or "teammate" in event:
                 eventWidget.setStyleSheet("#EventWidget{background:#22880000;}")
             else:

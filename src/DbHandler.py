@@ -539,6 +539,24 @@ def getHuntsSortByTeamKillCount(ts = -1, num = -1, isQp='all'):
         res.append({cols[i] : v[i] for i in range(len(cols))})
     return res
 
+def getTimestampsSortByMaxTimestamp(ts=-1,num=-1,isQp='all'):
+    if isQp == 'false':
+        condition = "and 'games'.MissionBagIsQuickPlay is 'false'" 
+    elif isQp == 'true':
+        condition = "and 'games'.MissionBagIsQuickPlay is 'true'" 
+    else:
+        condition = ""
+
+    cols = execute_query("pragma table_info('games')")
+    cols = [c[1] for c in cols]
+    cols.append('duration')
+    vals = execute_query("SELECT 'games'.*, max('timestamps'.timestamp) as duration FROM 'timestamps' join 'games' on 'timestamps'.game_id = 'games'.game_id where 'games'.timestamp > %s %s group by 'timestamps'.game_id order by 'timestamps'.timestamp desc %s" % (ts, condition, "limit %d" % num if num > 0 else ""))
+    res = []
+    for v in vals:
+        res.append({cols[i] : v[i] for i in range(len(cols))})
+    return res
+
+
 def getHuntsSortByAssistCount(ts=-1, num=-1, isQp='all'):
     if isQp == 'false':
         condition = "and 'games'.MissionBagIsQuickPlay is 'false'" 

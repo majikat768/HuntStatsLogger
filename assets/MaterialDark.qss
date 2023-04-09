@@ -111,7 +111,7 @@ Header, Header * {
     border:1px solid black;
 }
 TeamDetails {
-	border:1px solid #07190b;
+	border:0px solid #07190b;
 	background-color: #44000000;
 	padding:0px;
 }
@@ -291,7 +291,7 @@ QTableWidget:item {
 TeamButton {
 	font-size:12px;
 	background: #45000000;
-	border: 1px solid #a9b7c6;
+	border: 1px solid #66a9b7c6;
 	border-radius: 4px;
 	padding:16px 4px;
 	margin:0px;
@@ -640,3 +640,38 @@ QSlider::sub-page:horizontal {
 QSlider::sub-page:vertical {
     background: #04b97f;
 }
+
+ QScrollBar:vertical {
+     background: #1e282c;
+     width: 15px;
+     margin: 22px 0 22px 0;
+ }
+ QScrollBar::handle:vertical {
+     background: #2e383c;
+     min-height: 20px;
+ }
+ QScrollBar::add-line:vertical {
+     border: 1px solid #676767;
+     background: #222222;
+     height: 20px;
+     subcontrol-position: bottom;
+     subcontrol-origin: margin;
+ }
+
+ QScrollBar::sub-line:vertical {
+     border: 1px solid #676767;
+     background: #324422;
+     height: 20px;
+     subcontrol-position: top;
+     subcontrol-origin: margin;
+ }
+ QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+     border: 1px solid #676767;
+     width: 3px;
+     height: 3px;
+     background: white;
+ }
+
+ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+     background: none;
+ }
