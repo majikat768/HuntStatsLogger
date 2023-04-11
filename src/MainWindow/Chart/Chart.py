@@ -109,7 +109,7 @@ class Chart(QScrollArea):
         self.legend.addItem(mmr.points,name=mmr.points.opts['name'])
         self.plot.setLimits(xMin=0,yMin=0,yMax=6000,xMax=len(mmr.line.xData)+5)
         xrange = int(self.plot.getAxis("bottom").range[1])
-        self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,int(xrange))]])
+        self.plot.getAxis("bottom").setTicks([])
 
     def setMmr(self):
         mmr = MmrData(parent=self)
@@ -129,7 +129,7 @@ class Chart(QScrollArea):
         self.plot.setXRange(
             max(-1, len(mmr.line.xData)-20), len(mmr.line.xData)+2)
         xrange = self.plot.getAxis("bottom").range[1]
-        self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,int(xrange))]])
+        self.plot.getAxis("bottom").setTicks([])
 
     def setKda(self):
         kda = KdaData(parent=self)
@@ -149,8 +149,7 @@ class Chart(QScrollArea):
             max(-1, len(kda.line.xData)-20), len(kda.line.xData)+5)
         #self.plot.getAxis("bottom").setTickSpacing()
         xrange = self.plot.getAxis("bottom").range[1]
-        self.plot.getAxis("bottom").setTicks([[(i,str(i)) for i in range(0,int(xrange))]])
-        self.plot.getAxis("bottom").setStyle(tickAlpha=0.1)
+        self.plot.getAxis("bottom").setTicks([])
 
     def setWinLoss(self):
         winLoss = WinLoss()

@@ -4,6 +4,8 @@ from resources import *
 from Widgets.BountiesWidget import BountiesWidget
 from Widgets.RewardsWidget import RewardsWidget
 from Widgets.MonstersWidget import MonstersWidget
+from Widgets.KillsWidget import KillsWidget
+from MainWindow.Hunts.Timeline import Timeline
 from DbHandler import *
 
 
@@ -20,17 +22,17 @@ class HuntDetails(QGroupBox):
         self.bounties = BountiesWidget()
         self.rewards = RewardsWidget()
         self.monsters = MonstersWidget()
-        self.layout.addWidget(self.rewards)
-        self.layout.setAlignment(self.rewards, Qt.AlignmentFlag.AlignTop)
-        self.layout.addStretch()
         self.layout.addWidget(self.bounties)
         self.layout.setAlignment(self.bounties, Qt.AlignmentFlag.AlignTop)
+        self.layout.addStretch()
+        self.layout.addWidget(self.rewards)
+        self.layout.setAlignment(self.rewards, Qt.AlignmentFlag.AlignTop)
         self.layout.addStretch()
         self.layout.addWidget(self.monsters)
         self.layout.setAlignment(self.monsters, Qt.AlignmentFlag.AlignTop)
 
 
-    def update(self, qp, bounties, accolades, monsters_killed, targets):
+    def update(self, qp, bounties, accolades, monsters_killed, targets,ts,mmrChange):
         if debug:
             print("huntdetails.update")
         self.bounties.update(qp,bounties,targets)

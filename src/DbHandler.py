@@ -10,6 +10,7 @@ def json_to_db(obj):
     entries = obj['entries']
     game = obj['game']
     accolades = obj['accolades']
+    timestamps = obj['timestamps']
 
     conn = sqlite3.connect(database)
     for teamnum in teams:
@@ -20,6 +21,8 @@ def json_to_db(obj):
         insert_row(conn, "entries", entries[entrynum])
     for accoladenum in accolades:
         insert_row(conn, "accolades", accolades[accoladenum])
+    for timestampnum in timestamps:
+        insert_row(conn, "timestamps", timestamps[timestampnum])
     insert_row(conn, "games", game)
     conn.close()
 
@@ -75,7 +78,7 @@ def insert_row(conn, table, row):
 def tables_exist():
     conn = sqlite3.connect(database)
     cursor = conn.cursor()
-    tables = ('games','hunters','entries','teams','accolades')
+    tables = ('games','hunters','entries','teams','accolades','timestamps')
     query = "select name from sqlite_master where type = 'table' and %s" % (" or ".join(["name = ?"] * len(tables)))
 
     try:
@@ -96,17 +99,17 @@ def create_tables():
     cursor.executescript(open(resource_path('assets/schema.sql'),'r').read())
     conn.close()
 
-def delete_hunt(ts):
-    print('delete game %s\n%s' % (ts,unix_to_datetime(ts)))
-    deleteGamesQuery = "delete from 'games' where timestamp = %s" % ts
-    deleteTeamsQuery = "delete from 'teams' where timestamp = %s" % ts
-    deleteHuntersQuery = "delete from 'hunters' where timestamp = %s" % ts
-    deleteEntriesQuery = "delete from 'entries' where timestamp = %s" % ts
-    deleteAccoladesQuery = "delete from 'accolades' where timestamp = %s" % ts
+def delete_hunt(id):
+    print('delete game %s' % (id))
+    tables = ['games','hunters','teams','accolades','entries','timestamps']
+    queries = ["delete from %s where game_id = '%s'" % (table,id) for table in tables]
+    print(queries)
+    query = "; ".join(queries)
+    print(query)
 
     conn = sqlite3.connect(database)
     cursor = conn.cursor()
-    cursor.executescript('; '.join(["begin",deleteGamesQuery,deleteTeamsQuery,deleteHuntersQuery,deleteEntriesQuery,deleteAccoladesQuery,"commit;"]))
+    cursor.executescript('; '.join(["begin",query,"commit;"]))
     conn.commit()
 
 def execute_query(query,opts=None):
@@ -124,6 +127,18 @@ def execute_query(query,opts=None):
         log(e)
         return []
 
+def GetHuntTimestamps(ts):
+    id = execute_query("select game_id from 'games' where timestamp is %s" % ts)
+    if len(id) == 0:
+        return []
+    id = id[0][0]
+    cols = execute_query("pragma table_info('timestamps')")
+    timestamps = execute_query("select * from 'timestamps' where game_id is '%s' order by timestamp asc" % id)
+    res = []
+    res = [{cols[j][1] : timestamps[i][j] for j in range(len(cols))} for i in range(len(timestamps))]
+    return res
+    
+
 def GetTotalHuntCount():
     n = execute_query("select count(*) from 'games'")
     if n == None or len(n) == 0:
@@ -140,6 +155,13 @@ def GetCurrentMmr(pid = None):
     if mmr == None:
         return -1
     return mmr
+
+def GetGameId(ts):
+    query = "select game_id from 'games' where timestamp is '%s'" % ts
+    res = execute_query(query)
+    if len(res) == 0:
+        return ''
+    return res[0][0]
 
 def GetBestMmr(pid = None):
     if pid == None or pid < 0:
@@ -323,6 +345,12 @@ def GetTeams(timestamp):
         log("dbhandler.getteams")
         log(e)
     return teams
+
+def GetHunterFromGame(hunter_num,team_num,game_id):
+    res = execute_query("select blood_line_name from 'hunters' where hunter_num is '%s' and team_num is '%s' and game_id is '%s'" % (hunter_num,team_num,game_id))
+    if len(res) == 0:
+        return ''
+    return res[0][0]
 
 def GetHunterByName(name):
     res = execute_query("select profileid from 'hunters' where blood_line_name is ? collate nocase limit 1", [name])
@@ -510,6 +538,24 @@ def getHuntsSortByTeamKillCount(ts = -1, num = -1, isQp='all'):
     for v in vals:
         res.append({cols[i] : v[i] for i in range(len(cols))})
     return res
+
+def getTimestampsSortByMaxTimestamp(ts=-1,num=-1,isQp='all'):
+    if isQp == 'false':
+        condition = "and 'games'.MissionBagIsQuickPlay is 'false'" 
+    elif isQp == 'true':
+        condition = "and 'games'.MissionBagIsQuickPlay is 'true'" 
+    else:
+        condition = ""
+
+    cols = execute_query("pragma table_info('games')")
+    cols = [c[1] for c in cols]
+    cols.append('duration')
+    vals = execute_query("SELECT 'games'.*, max('timestamps'.timestamp) as duration FROM 'timestamps' join 'games' on 'timestamps'.game_id = 'games'.game_id where 'games'.timestamp > %s %s group by 'timestamps'.game_id order by 'timestamps'.timestamp desc %s" % (ts, condition, "limit %d" % num if num > 0 else ""))
+    res = []
+    for v in vals:
+        res.append({cols[i] : v[i] for i in range(len(cols))})
+    return res
+
 
 def getHuntsSortByAssistCount(ts=-1, num=-1, isQp='all'):
     if isQp == 'false':

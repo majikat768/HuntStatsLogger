@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QVBoxLayout, QLabel, QWidget, QSizePolicy, QPushButton
+from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QGridLayout, QVBoxLayout, QLabel, QWidget, QSizePolicy, QPushButton
 from PyQt6.QtCore import Qt
 
 from resources import settings
@@ -10,37 +10,35 @@ from Widgets.HunterWidget import HunterWidget
 gameTypes = ["All Hunts","Bounty Hunt","Quick Play"]
 
 class Header(QGroupBox):
-    def __init__(self,parent=None, layout=QHBoxLayout()):
+    def __init__(self,parent=None, layout=QGridLayout()):
         super().__init__(parent)
-        self.layout = QHBoxLayout()
+        self.layout = layout
         self.setLayout(self.layout)
 
         self.setObjectName("Header")
-        self.main = QWidget()
-        self.main.layout = layout
-        self.main.setLayout(self.main.layout)
 
         self.initUI()
-        self.layout.addWidget(self.main)
-        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Maximum)
         self.update()
+        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Fixed)
 
     def initUI(self):
         self.kda = KdaWidget()
-        self.main.layout.addWidget(self.kda)
-        self.main.layout.addStretch()
+        self.layout.addWidget(self.kda.kdaLabel,0,0,1,1,Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.kda.values,1,0,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.kda.button,2,0,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         self.hunter = HunterWidget()
-        for i in range(self.hunter.layout.count()):
-            self.hunter.layout.itemAt(i).setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.main.layout.addWidget(self.hunter)
-        self.main.layout.addStretch()
+        self.layout.addWidget(self.hunter.name,0,1,1,1,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.hunter.huntsCount,1,1,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.hunter.level,2,1,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         self.mmr = MmrWidget()
-        for i in range(self.mmr.layout.count()):
-            self.mmr.layout.itemAt(i).setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.main.layout.addWidget(self.mmr)
+        self.layout.addWidget(self.mmr.starsLabel, 0,2,Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
+        self.layout.addWidget(self.mmr.mmrLabel, 1,2,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
+        self.layout.addWidget(self.mmr.bestLabel, 2,2,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
+        self.layout.setColumnStretch(1,1)
+        self.layout.setRowStretch(self.layout.rowCount(),1)
 
     def update(self):
         #print('header.update')

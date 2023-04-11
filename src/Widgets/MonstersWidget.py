@@ -1,15 +1,16 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy, QPushButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy, QPushButton, QGroupBox
 from PyQt6.QtCore import QEvent
 from resources import clearLayout
 from Widgets.Popup import Popup
 
-class MonstersWidget(QWidget):
+class MonstersWidget(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setSizePolicy(
             QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.setTitle("Monsters")
 
     def update(self, monsters_killed):
         clearLayout(self.layout)

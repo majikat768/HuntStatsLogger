@@ -4,7 +4,7 @@ from PyQt6.QtGui import QIcon
 from resources import *
 from DbHandler import *
 
-sortOpts = ["your_kills","team_kills","your_deaths","assists"]
+sortOpts = ["your_kills","team_kills","your_deaths","assists", "duration"]
 #todo = ["xp","event_points","monster_kills","hunt_dollars"]
 
 class TopHunts(QScrollArea):
@@ -96,6 +96,8 @@ class TopHunts(QScrollArea):
             func = getHuntsSortByTeamKillCount
         elif sort == 'assists':
             func = getHuntsSortByAssistCount
+        elif sort == 'duration':
+            func = getTimestampsSortByMaxTimestamp
 
         hunts = func(num=num, isQp=IsQuickPlay)
         '''
@@ -184,7 +186,7 @@ class TopHunts(QScrollArea):
         w.main.layout.addWidget(QLabel("%d assists." % assists),0,4,Qt.AlignmentFlag.AlignTop)
         
         sort = self.sortingSelect.currentData()
-        w.layout.addWidget(QLabel("%s: %d" % (getLabel(sort),data[sort])))
+        w.layout.addWidget(QLabel("%s: %s" % (getLabel(sort),str(data[sort]))))
         w.layout.addWidget(w.main)
         w.layout.addWidget(MatchButton)
 
