@@ -73,7 +73,11 @@ class TeamDetails(QScrollArea):
             stars = "<img src='%s'>" % (star_path())*mmr_to_stars(teamMmr)
             starsLabel = QLabel("%s" % stars)
             teamRandom = (team['isinvite'].lower() == "false" and team['numplayers'] > 1)
-            teamRandomLabel = QLabel("Randoms" if teamRandom else "Invite" if team['numplayers'] > 1 else "Solo")
+            teamRandomStr = "Randoms" if teamRandom else "Invite" if team['numplayers'] > 1 else ""
+            teamSizeStr = "Trio" if len(teamhunters) == 3 else "Duo" if len(teamhunters) == 2 else "Solo"
+            teamFlavorLabel = QLabel(teamSizeStr)
+            if len(teamRandomStr) > 0:
+                teamFlavorLabel.setText(teamFlavorLabel.text() + " / " + teamRandomStr)
             nHunters = team['numplayers']
             if not isQp:
                 nHuntersLabel = QLabel("%d hunters" % nHunters)
@@ -87,7 +91,6 @@ class TeamDetails(QScrollArea):
             huntersWidget = QWidget()
             huntersWidget.layout = QVBoxLayout()
             huntersWidget.setLayout(huntersWidget.layout)
-            huntersWidget.layout.addWidget(teamRandomLabel)
 
             selfHunterWidget = None
             title = "%s hunters" % len(teamhunters)
@@ -133,9 +136,11 @@ class TeamDetails(QScrollArea):
             else:
                 self.main.layout.addWidget(teamWidget)
 
+            huntersWidget.layout.addWidget(teamFlavorLabel)
             teamButton.layout.addWidget(nHuntersLabel,0,1,1,2)
-            teamButton.layout.addWidget(teamMmrLabel,1,1)
-            teamButton.layout.addWidget(starsLabel,1,2)
+            teamButton.layout.addWidget(teamFlavorLabel,1,1)
+            teamButton.layout.addWidget(teamMmrLabel,2,1)
+            teamButton.layout.addWidget(starsLabel,2,2)
             teamButton.layout.addWidget(QLabel(iconStr),0,3,2,1,Qt.AlignmentFlag.AlignRight)
             teamButton.layout.setColumnStretch(3,1)
             teamButton.setFixedHeight(teamButton.layout.sizeHint().height())

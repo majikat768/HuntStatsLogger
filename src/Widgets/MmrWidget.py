@@ -23,16 +23,11 @@ class MmrWidget(QWidget):
         self.layout.addStretch()
 
     def set_stars(self):
-        pm = QPixmap(star_size*self.stars,star_size)
-        pm.fill(QColor(0,0,0,0))
-        painter = QPainter(pm)
-        for i in range(self.stars):
-            painter.drawPixmap(i*star_size,0,star_size,star_size,QPixmap(star_path()).scaled(star_size,star_size))
-        del painter
-        self.starsLabel.setPixmap(pm)
+        self.starsLabel.setText(("<img src='%s'>" % star_path())*self.stars)
 
     def update(self):
         self.mmr = GetCurrentMmr()
+        self.stars = mmr_to_stars(self.mmr)
         self.mmrLabel.setText("MMR: %d" % self.mmr)
         self.bestLabel.setText("Best: %d" % GetBestMmr())
         self.set_stars()
