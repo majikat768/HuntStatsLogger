@@ -4,7 +4,6 @@ from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel, QPushB
 
 from DbHandler import execute_query, GetCurrentMmr
 from MainWindow.Hunts.TeamDetails.TeamButton import TeamButton
-from MainWindow.Hunts.TeamDetails.TeamButtons import TeamButtons
 from Widgets.Popup import Popup
 from resources import *
 
@@ -118,11 +117,9 @@ class TeamDetails(QScrollArea):
             #huntersWidget.layout.addStretch()
             if teambountyextracted:
                 iconStr += "<img src='%s' height=24 width=24>" % bountyIcon 
-                huntersWidget.layout.insertWidget(1,QLabel("Extracted with the bounty."))
             elif teamhadbounty:
                 iconStr += "<img src='%s' height=24 width=24>" % bountyIcon 
-                huntersWidget.layout.insertWidget(1,QLabel("Carried the bounty."))
-                            
+ 
             huntersWidget.setVisible(False)            
             teamWidget.layout.addWidget(huntersWidget)
             #teamWidget.layout.addStretch()
