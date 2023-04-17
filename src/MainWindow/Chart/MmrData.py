@@ -23,7 +23,7 @@ class MmrData():
             data.append({'x': i, 'y': mmr, 'qp': qp, 'ts': ts})
             i += 1
         prediction = predictNextMmr()
-        data.append({'x': GetTotalHuntCount(), 'y': prediction,
+        data.append({'x': len(data), 'y': prediction,
                     'qp': None, 'ts': GetLastHuntTimestamp()})
         self.line = pyqtgraph.PlotDataItem(data, pen="#ffffff88")
         self.qpPoints = ScatterItem(
@@ -40,7 +40,7 @@ class MmrData():
             pen="#000000", brush="#ff0000", name="Bounty Hunt", tip=("MMR: {y:.0f}").format,parent=self.parent
         )
         lastTs = GetLastHuntTimestamp()
-        spots = [{'x': GetTotalHuntCount(), 'y': prediction,
+        spots = [{'x': len(data)-1, 'y': prediction,
                   'data': lastTs}]
 
         self.nextPoint = ScatterItem(

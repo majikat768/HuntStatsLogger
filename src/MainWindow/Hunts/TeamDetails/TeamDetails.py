@@ -104,34 +104,22 @@ class TeamDetails(QScrollArea):
                 if not hadKills and hunterWidget.hadKills:
                     hadKills = True
                     kills += sum(hunterWidget.kills)
-                if hunterWidget.ownTeam:
-                    selfHunterWidget = hunterWidget
-                else:
-                    huntersWidget.layout.addWidget(hunterWidget)
-            if selfHunterWidget:
-                huntersWidget.layout.insertWidget(1,selfHunterWidget)
+                huntersWidget.layout.addWidget(hunterWidget)
 
             iconStr = ""
             if hadKills:
                 iconStr += "<img src='%s' height=24 width=24>" % killedIcon
-            #huntersWidget.layout.addStretch()
+            huntersWidget.layout.addStretch()
             if teambountyextracted:
                 iconStr += "<img src='%s' height=24 width=24>" % bountyIcon 
             elif teamhadbounty:
                 iconStr += "<img src='%s' height=24 width=24>" % bountyIcon 
  
-            huntersWidget.setVisible(False)            
             teamWidget.layout.addWidget(huntersWidget)
-            #teamWidget.layout.addStretch()
+            huntersWidget.setVisible(False)
+
+            teamWidget.layout.addStretch()
             teamWidget.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Minimum)
-            if ownTeam:
-                ownTeamWidget = teamWidget
-                #nHuntersLabel.setText("Your Team")
-                nHuntersLabel.setStyleSheet("QLabel{color:#cccc67;font-size:14px;}")
-            elif hadKills:
-                self.main.layout.insertWidget(1,teamWidget)
-            else:
-                self.main.layout.addWidget(teamWidget)
 
             huntersWidget.layout.addWidget(teamFlavorLabel)
             teamButton.layout.addWidget(nHuntersLabel,0,1,1,2)
@@ -144,7 +132,16 @@ class TeamDetails(QScrollArea):
 
             teamButton.widget = huntersWidget
 
-        self.main.layout.insertWidget(1,ownTeamWidget)
+            if ownTeam:
+                ownTeamWidget = teamWidget
+                nHuntersLabel.setStyleSheet("QLabel{color:#cccc67;font-size:14px;}")
+            elif hadKills:
+                self.main.layout.insertWidget(1,teamWidget)
+            else:
+                self.main.layout.addWidget(teamWidget)
+
+        if ownTeamWidget:
+            self.main.layout.insertWidget(1,ownTeamWidget)
         self.main.layout.addStretch()
             
     def eventFilter(self, obj, event) -> bool:
@@ -176,6 +173,11 @@ class TeamDetails(QScrollArea):
         hunterWidget.setLayout(hunterWidget.layout)
         hunterWidget.setObjectName("HunterWidget")
 
+        hunterWidget.bountyextracted = False
+        hunterWidget.hadbounty = False
+        hunterWidget.hadKills = False
+        hunterWidget.ownTeam = False
+
         name = hunter['blood_line_name']
         pid = hunter['profileid']
         n_games = execute_query(
@@ -188,7 +190,7 @@ class TeamDetails(QScrollArea):
         starsLabel = QLabel("<img src='%s'>" % (star_path())*mmr_to_stars(hunter['mmr']))
 
         n_gamesLabel = QLabel()
-        if n_games > 1:
+        if n_games > 1 and int(pid) != int(settings.value("profileid","-1")):
             n_gamesLabel.setText("seen in %d games" % n_games)
         
         hunterWidget.kills = [
@@ -215,8 +217,6 @@ class TeamDetails(QScrollArea):
         iconWidget.layout = QHBoxLayout()
         iconWidget.setLayout(iconWidget.layout)
         iconWidget.layout.addWidget(get_icon(blankIcon,border=False))
-
-        icons = []
         if hunter['killedme'] or hunter['downedme']:
             icon = get_icon(killedByIcon)
             icon.data = []
@@ -272,11 +272,6 @@ class TeamDetails(QScrollArea):
                 icon.data.append("%s activated the Wellspring." % name)
             if wins['issoulsurvivor']:
                 icon.data.append("%s was the soul survivor." % name)
-            icon.installEventFilter(self)
-            iconWidget.layout.addWidget(icon)
-
-        for icon in icons:
-            icon.data = "data"
             icon.installEventFilter(self)
             iconWidget.layout.addWidget(icon)
 
