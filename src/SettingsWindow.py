@@ -35,6 +35,11 @@ class SettingsWindow(QMainWindow):
         self.sysTrayCheck.stateChanged.connect(self.toggleSysTray)
         self.main.layout.addWidget(self.sysTrayCheck)
 
+        self.runGameCheck = QCheckBox("Run Hunt on startup")
+        self.runGameCheck.setChecked(settings.value("run_game_on_startup","false").lower() == "true")
+        self.runGameCheck.stateChanged.connect(self.toggleRunGame)
+        self.main.layout.addWidget(self.runGameCheck)
+
         self.main.layout.addItem(QSpacerItem(0,16,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed))
         self.initKdaRange()
         self.initDropdownRange()
@@ -74,6 +79,12 @@ class SettingsWindow(QMainWindow):
         else:
             w.showSysTray = False
             settings.setValue("show_sys_tray",False)
+
+    def toggleRunGame(self):
+        if self.runGameCheck.isChecked():
+            settings.setValue("run_game_on_startup",True)
+        else:
+            settings.setValue("run_game_on_startup",False)
 
     def initKdaRange(self):
         self.KdaRangeLabel = QLabel("Calculate KDA from the last...")
@@ -164,14 +175,17 @@ class SettingsWindow(QMainWindow):
             self.steamNameInput.setDisabled(False)
     
     def SelectFolderDialog(self):
-        suffix = "user/profiles/default/attributes.xml"
+        xml_suffix = "user/profiles/default/attributes.xml"
+        exe_suffix = "hunt.exe"
         hunt_dir = QFileDialog.getExistingDirectory(self,"Select folder",settings.value('hunt_dir','.'))
-        xml_path = os.path.join(hunt_dir,suffix)
+        xml_path = os.path.join(hunt_dir,xml_suffix)
+        exe_path = os.path.join(hunt_dir,exe_suffix)
         if not os.path.exists(xml_path):
             log('attributes.xml not found.')
             return
         settings.setValue('hunt_dir',hunt_dir)
         settings.setValue('xml_path',xml_path)
+        settings.setValue('exe_path',exe_path)
         self.steamFolderLabel.setText(settings.value("hunt_dir"))
         if not self.parent().logger.running:
             self.parent().StartLogger()
