@@ -1,6 +1,7 @@
 import sys
 import ctypes
 import platform
+import subprocess
 from resources import *
 
 from PyQt6.QtWidgets import QApplication
@@ -39,5 +40,9 @@ if __name__ == '__main__':
     app.setWindowIcon(QIcon(resource_path('assets/icons/hsl.ico')))
     if settings.value("xml_path", "") == "":
         window.mainframe.settingsWindow.show()
+
+    if (settings.value("run_game_on_startup", "false").lower() == "true"
+    and "HuntGame.exe" not in subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq HuntGame.exe']).decode()):
+        os.startfile(settings.value("exe_path", ""))
 
     app.exec()
