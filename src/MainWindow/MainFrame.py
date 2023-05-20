@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTabWidget
 from PyQt6.QtCore import QThread, QPoint
 from PyQt6.QtGui import QIcon
+import subprocess
 
 from MainWindow.Header import Header
 from MapWindow.MapWindow import MapWindow
@@ -43,13 +44,12 @@ class MainFrame(QWidget):
 
         if (settings.value("xml_path", "") != ""):
             self.StartLogger()
+        if (settings.value("hunt_dir","") != ""):
+            if (settings.value("run_game_on_startup", "false").lower() == "true"
+                and "HuntGame.exe" not in subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq HuntGame.exe']).decode()):
+                    launch_hunt()
+                    #os.startfile(os.path.join(settings.value("hunt_dir"),"hunt.exe"))
 
-        '''
-        if settings.value("sync_files","False").lower() == "true":
-            if settings.value("AccessToken","") == "" or settings.value("RefreshToken","") == "" or settings.value("IdToken","") == "":
-                self.server.init_user()
-            self.server.login_user()
-        '''
         self.update()
 
     def initButtons(self):

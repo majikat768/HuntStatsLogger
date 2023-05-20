@@ -1,4 +1,5 @@
 import os
+import subprocess
 import math
 import sys
 import time
@@ -11,6 +12,8 @@ from PyQt6.QtWidgets import QLabel, QSizePolicy, QWidgetItem, QSpacerItem, QAppl
 app_data_path = os.path.join(QStandardPaths.writableLocation(
     QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
 icon_size = 24
+
+game_id = "594650"
 
 debug = False
 is_exe = getattr(sys,'frozen',False) and hasattr(sys, '_MEIPASS')
@@ -146,3 +149,11 @@ def GoToHuntPage(timestamp,main):
     tab.HuntSelect.setCurrentIndex(index)
     main.tabs.setCurrentWidget(tab)
     tab.updateDetails(ts=timestamp)
+
+
+def launch_hunt():
+    if (settings.value("hunt_dir","") != ""):
+        log("starting hunt.exe")
+        steam_dir ="/".join(settings.value("hunt_dir").split("/")[:-3])
+        steam_exe = os.path.join(steam_dir,"steam.exe").replace("\\","/")
+        subprocess.run([steam_exe,"steam://rungameid/"+game_id])

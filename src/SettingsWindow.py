@@ -176,16 +176,13 @@ class SettingsWindow(QMainWindow):
     
     def SelectFolderDialog(self):
         xml_suffix = "user/profiles/default/attributes.xml"
-        exe_suffix = "hunt.exe"
         hunt_dir = QFileDialog.getExistingDirectory(self,"Select folder",settings.value('hunt_dir','.'))
         xml_path = os.path.join(hunt_dir,xml_suffix)
-        exe_path = os.path.join(hunt_dir,exe_suffix)
         if not os.path.exists(xml_path):
             log('attributes.xml not found.')
             return
         settings.setValue('hunt_dir',hunt_dir)
         settings.setValue('xml_path',xml_path)
-        settings.setValue('exe_path',exe_path)
         self.steamFolderLabel.setText(settings.value("hunt_dir"))
         if not self.parent().logger.running:
             self.parent().StartLogger()
