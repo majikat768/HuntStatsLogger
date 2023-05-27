@@ -156,4 +156,4 @@ def launch_hunt():
         log("starting hunt.exe")
         steam_dir ="/".join(settings.value("hunt_dir").split("/")[:-3])
         steam_exe = os.path.join(steam_dir,"steam.exe").replace("\\","/")
-        subprocess.run([steam_exe,"steam://rungameid/"+game_id])
+        subprocess.Popen([steam_exe,"steam://rungameid/"+game_id])

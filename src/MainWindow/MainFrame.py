@@ -38,9 +38,6 @@ class MainFrame(QWidget):
 
 
         self.setStatus("ready.")
-        if settings.value("xml_path", "") == "":
-            pass
-            # steamworks_init()
 
         if (settings.value("xml_path", "") != ""):
             self.StartLogger()
@@ -49,7 +46,6 @@ class MainFrame(QWidget):
                 and "HuntGame.exe" not in subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq HuntGame.exe']).decode()):
                     launch_hunt()
                     #os.startfile(os.path.join(settings.value("hunt_dir"),"hunt.exe"))
-
         self.update()
 
     def initButtons(self):
