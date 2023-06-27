@@ -60,10 +60,14 @@ class MainFrame(QWidget):
         updateButton = QPushButton("Refresh Data")
         updateButton.clicked.connect(self.update)
 
+        startHuntButton = QPushButton("Launch Hunt")
+        startHuntButton.clicked.connect(launch_hunt)
+
         self.buttons = QWidget()
         self.buttons.layout = QHBoxLayout()
         self.buttons.setLayout(self.buttons.layout)
 
+        self.buttons.layout.addWidget(startHuntButton)
         self.buttons.layout.addWidget(mapsButton)
         self.buttons.layout.addWidget(settingsButton)
         self.buttons.layout.addWidget(updateButton)

@@ -152,7 +152,7 @@ def GoToHuntPage(timestamp,main):
 
 
 def launch_hunt():
-    if (settings.value("hunt_dir","") != ""):
+    if (settings.value("hunt_dir","") != "" and "HuntGame.exe" not in subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq HuntGame.exe']).decode()):
         log("starting hunt.exe")
         steam_dir ="/".join(settings.value("hunt_dir").split("/")[:-3])
         steam_exe = os.path.join(steam_dir,"steam.exe").replace("\\","/")
