@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget,QGroupBox, QLabel, QVBoxLayout, QScrollArea, QSizePolicy, QApplication
 from PyQt6.QtCore import Qt
-from DbHandler import GetHuntTimestamps, GetHunterFromGame
+from DbHandler import GetMatchTimestamps, GetHunterFromGame
 from resources import clearLayout
 
 class Timeline(QScrollArea):
@@ -20,7 +20,7 @@ class Timeline(QScrollArea):
 
     def update(self,ts):
         clearLayout(self.main.layout)
-        self.timestamps = GetHuntTimestamps(ts)
+        self.timestamps = GetMatchTimestamps(ts)
         width = -1
         titleLabel = QLabel("Timeline")
         subtitleLabel = QLabel()

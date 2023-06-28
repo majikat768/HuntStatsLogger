@@ -14,7 +14,7 @@ class KillsWidget(QGroupBox):
 
     def update(self,isQp,ts,mmrChange):
         if debug:
-            print("teamdetails.update")
+            print("killswidget.update")
         kills = getKillData(ts)
         clearLayout(self.layout)
         team_kills = kills['team_kills']
