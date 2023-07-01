@@ -291,7 +291,6 @@ QTableWidget:item {
 TeamButton {
 	font-size:12px;
 	background: #45000000;
-	border: 1px solid #66a9b7c6;
 	border-radius: 4px;
 	padding:16px 4px;
 	margin:0px;

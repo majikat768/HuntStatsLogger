@@ -31,6 +31,7 @@ class Logger(QObject):
         self.mainframe = parent
         if not tables_exist():
             create_tables()
+        update_views()
         self.running = False
         super().__init__()
 

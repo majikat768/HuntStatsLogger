@@ -21,5 +21,9 @@ class HunterWidget(QWidget):
 
     def update(self):
         self.name.setText(settings.value("steam_name"))
-        self.level.setText("level %s" % settings.value("HunterLevel","-1"))
-        self.huntsCount.setText("Hunts: %d" % GetTotalHuntCount())
+        self.level.setText("Bloodline %s" % settings.value("HunterLevel","-1"))
+        count = str(GetTotalHuntCount())
+        lim = settings.value("hunt_limit",False)
+        if lim:
+            count += " (%s)" % lim
+        self.huntsCount.setText("Hunts: %s" % count)

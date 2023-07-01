@@ -61,20 +61,8 @@ class Hunts(QScrollArea):
             int(0.2*self.window().width())
         ])
 
-        self.deleteHuntButton = QPushButton("Delete This Hunt")
-        self.deleteHuntButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.deleteHuntButton.clicked.connect(self.delete)
-        #self.main.layout.addWidget(self.deleteHuntButton)
         self.setWidget(self.main)
         #self.main.setCollapsible(0,False)
-
-    def delete(self):
-        currentIndex = self.HuntSelect.currentIndex()
-        if currentIndex < 0:
-            return
-        currentTs = self.HuntSelect.currentData()
-        game_id = GetGameId(currentTs)
-        delete_hunt(game_id)
 
     def calculateMmrChange(self):
         '''
@@ -185,8 +173,6 @@ class Hunts(QScrollArea):
             print('hunts.update')
         self.updateHuntSelection()
         self.updateDetails()
-        currentTs = self.HuntSelect.currentData()
-        self.timeline.update(currentTs)
 
     def initHuntSelection(self):
         if debug:
@@ -202,11 +188,7 @@ class Hunts(QScrollArea):
         if debug:
             print('hunts.updateHuntSelection')
         self.HuntSelect.clear()
-        timeRange = int(settings.value("dropdown_range", str(7*24*60*60)))
-        earliest = 0
-        if timeRange > -1:
-            earliest = time.time() - timeRange
-        hunts = GetHunts(earliest)
+        hunts = GetHunts()
         for hunt in hunts:
             ts = hunt['timestamp']
             dt = unix_to_datetime(ts)
