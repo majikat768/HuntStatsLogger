@@ -13,6 +13,7 @@ from MainWindow.Hunters.Hunters import Hunters
 from MainWindow.Chart.Chart import Chart
 from MainWindow.TopHunts.TopHunts import TopHunts
 from MainWindow.MyTeams.MyTeams import MyTeams
+from DbHandler import update_views
 
 
 class MainFrame(QWidget):
@@ -46,7 +47,7 @@ class MainFrame(QWidget):
                 and "HuntGame.exe" not in subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq HuntGame.exe']).decode()):
                     launch_hunt()
                     #os.startfile(os.path.join(settings.value("hunt_dir"),"hunt.exe"))
-        self.update()
+        self.mainUpdate()
 
     def initButtons(self):
         if debug:
@@ -95,9 +96,10 @@ class MainFrame(QWidget):
 
         self.layout.addWidget(self.tabs)
 
-    def update(self):
+    def mainUpdate(self):
         if debug:
             print('mainframe.update')
+        update_views()
         self.header.update()
         self.huntsTab.update()
         self.huntersTab.update()
@@ -112,7 +114,7 @@ class MainFrame(QWidget):
         thread.started.connect(self.logger.run)
         self.logger.finished.connect(thread.quit)
         self.logger.finished.connect(thread.deleteLater)
-        self.logger.progress.connect(self.update)
+        self.logger.progress.connect(self.mainUpdate)
 
         thread.start()
 

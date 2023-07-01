@@ -173,8 +173,6 @@ class Hunts(QScrollArea):
             print('hunts.update')
         self.updateHuntSelection()
         self.updateDetails()
-        currentTs = self.HuntSelect.currentData()
-        self.timeline.update(currentTs)
 
     def initHuntSelection(self):
         if debug:

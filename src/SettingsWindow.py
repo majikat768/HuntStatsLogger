@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow,QWidget,QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QPushButton,QLabel, QFileDialog, QSizePolicy, QLineEdit, QComboBox, QCheckBox, QSpacerItem, QApplication, QDialog
+from PyQt6.QtWidgets import QMainWindow,QWidget,QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QPushButton,QLabel, QFileDialog, QSizePolicy, QLineEdit, QComboBox, QCheckBox, QSpacerItem, QApplication, QDialog, QDialogButtonBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QIntValidator
 from DbHandler import execute_query, GetTotalHuntCount, update_views
@@ -41,7 +41,6 @@ class SettingsWindow(QMainWindow):
         self.main.layout.addWidget(self.runGameCheck)
 
         self.main.layout.addItem(QSpacerItem(0,16,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed))
-        self.initKdaRange()
         self.initHuntLimit()
         self.main.layout.addItem(QSpacerItem(0,16,QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed))
 
@@ -86,34 +85,29 @@ class SettingsWindow(QMainWindow):
         else:
             settings.setValue("run_game_on_startup",False)
 
-    def initKdaRange(self):
-        self.KdaRangeLabel = QLabel("Calculate KDA from the last...")
-        self.KdaRangeDropBox = QComboBox()
-        self.KdaRangeDropBox.addItem("24 hours",86400)
-        self.KdaRangeDropBox.addItem("7 days",604800)
-        self.KdaRangeDropBox.addItem("30 days",2592000)
-        self.KdaRangeDropBox.addItem("1 year",31540000)
-        self.KdaRangeDropBox.addItem("All time",-1)
-        self.KdaRangeDropBox.activated.connect(self.setKdaRange)
-        self.KdaRangeDropBox.activated.connect(self.parent().update)
-        if settings.value("kda_range","") == "":
-            settings.setValue("kda_range","-1")
-        self.KdaRangeDropBox.setCurrentIndex(self.KdaRangeDropBox.findData(settings.value("kda_range","-1")))
-        #self.main.layout.addWidget(self.KdaRangeLabel)
-        #self.main.layout.addWidget(self.KdaRangeDropBox)
-    
     def initHuntLimit(self):
         if not settings.value("hunt_limit",False):
             settings.setValue("hunt_limit","25")
+        self.huntLimitWidget = QWidget()
+        self.huntLimitWidget.layout = QGridLayout()
+        self.huntLimitWidget.setLayout(self.huntLimitWidget.layout)
 
-        self.huntLimitLabel = QLabel("Read only last %s hunts" % settings.value("hunt_limit","25"))
+        self.huntLimitLabel = QLabel("Show only last <b>%s</b> hunts" % (settings.value("hunt_limit","25")))
 
         self.huntLimitInput = QLineEdit(settings.value("hunt_limit","25"))
         self.huntLimitInput.setValidator(QIntValidator())
-        self.huntLimitInput.textChanged.connect(self.setHuntLimit)
 
-        self.main.layout.addWidget(self.huntLimitLabel)
-        self.main.layout.addWidget(self.huntLimitInput)
+        self.maxLimitButton = QPushButton("set max")
+        self.maxLimitButton.clicked.connect(lambda : self.huntLimitInput.setText(str(GetTotalHuntCount())))
+        self.huntLimitSubmit = QPushButton("OK")
+        self.huntLimitSubmit.clicked.connect(self.confirmHighHuntLimit)
+
+        self.huntLimitWidget.layout.addWidget(self.huntLimitLabel,0,0,1,4)
+        self.huntLimitWidget.layout.addWidget(self.maxLimitButton,0,3,1,1)
+        self.huntLimitWidget.layout.addWidget(self.huntLimitInput,1,0,1,3)
+        self.huntLimitWidget.layout.addWidget(self.huntLimitSubmit,1,3,1,1)
+
+        self.main.layout.addWidget(self.huntLimitWidget)
 
     def initSteamOptions(self):
         self.steamFolderLabel = QLabel(settings.value("hunt_dir","<i>ex: C:/Steam/steamapps/common/Hunt Showdown</i>"))
@@ -141,15 +135,50 @@ class SettingsWindow(QMainWindow):
         self.steamName.layout.addWidget(self.steamNameButton)
         self.main.layout.addWidget(self.steamName)
 
-    
-    def setKdaRange(self):
-        settings.setValue("kda_range",self.KdaRangeDropBox.currentData())
+    def confirmHighHuntLimit(self):
+        n = int(self.huntLimitInput.text())
+        if n < 200:
+            self.setHuntLimit()
+            return
+        confirmation = QDialog(self)
+        confirmation.layout = QVBoxLayout()
+        confirmation.setLayout(confirmation.layout)
+        confirmation.setFixedWidth(self.width())
+
+        confirmation.setWindowTitle("Are you sure?")
+
+        confirmation.textLabel = QLabel("Setting the number of hunts to show higher than a few hundred will introduce noticeable lagtime in loading.")
+        confirmation.textLabel.setWordWrap(True)
+
+        buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        confirmation.buttonBox = QDialogButtonBox(buttons)
+        confirmation.buttonBox.accepted.connect(lambda : self.okHighHuntLimit(confirmation,n))
+        confirmation.buttonBox.rejected.connect(lambda : self.huntLimitInput.setText(settings.value("hunt_limit","-1")))
+        confirmation.buttonBox.rejected.connect(confirmation.close)
+
+        confirmation.layout.addWidget(confirmation.textLabel)
+        confirmation.layout.addWidget(confirmation.buttonBox)
+
+        confirmation.show()
+
+    def okHighHuntLimit(self,dialog : QDialog,n):
+        dialog.setWindowTitle("Hunt Limit Set")
+        self.huntLimitInput.setText(str(n))
+        self.setHuntLimit()
+
+        dialog.textLabel.setText("Hunt limit set to %d." % n)
+        dialog.buttonBox.setVisible(False)
+        dialog.okBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        dialog.okBox.accepted.connect(dialog.close)
+        dialog.layout.addWidget(dialog.okBox)
+
+        pass
+        #self.huntLimitInput.setText(count)
 
     def setHuntLimit(self):
         settings.setValue("hunt_limit",int(self.huntLimitInput.text()))
-        self.huntLimitLabel.setText("Read only last %s hunts" % settings.value("hunt_limit","0"))
-        update_views()
-        self.parent().update()
+        self.huntLimitLabel.setText("Show only last <b>%s</b> hunts" % settings.value("hunt_limit","0"))
+        self.parent().mainUpdate()
 
     '''
     potential bug here:
@@ -170,7 +199,7 @@ class SettingsWindow(QMainWindow):
                     settings.setValue("profileid",pid)
                 for i in range(10):
                     QApplication.processEvents()
-                self.parent().update()
+                self.parent().mainUpdate()
             self.steamNameInput.setDisabled(True)
         else:
             self.steamNameInput.setDisabled(False)

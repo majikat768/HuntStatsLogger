@@ -77,19 +77,19 @@ def insert_row(conn, table, row):
 def update_views():
     if debug:
         print('dbhandler.update_views')
-    tables = ('games','hunters','entries','teams','accolades')
-    views = {table : table + '_view' for table in tables}
     limit = settings.value("hunt_limit","25")
     condition = " limit %s" % limit
+    execute_query("drop view if exists 'games_view'")
+    execute_query("create view 'games_view' as select * from 'games' order by timestamp desc %s" % condition)
+
+    tables = ('hunters','entries','teams','accolades','timestamps')
+    views = {table : table + '_view' for table in tables}
     for table in tables:
-        query = "drop view if exists %s" % (views[table])
+        execute_query("drop view if exists %s" % (views[table]))
+        query = "create view %s as\
+              select t1.* from %s as t1 join 'games_view' on\
+                  'games_view'.game_id = t1.game_id" % (views[table],table)
         execute_query(query)
-        query = "create view %s as select * from %s order by timestamp desc %s" % (views[table],table,condition)
-        execute_query(query)
-    query = "drop view if exists timestamps_view"
-    execute_query(query)
-    query = "create view timestamps_view as select * from 'timestamps' join 'games' on 'games'.game_id = 'timestamps'.game_id order by 'games'.timestamp desc %s" % (condition)
-    execute_query(query)
     
 
 def tables_exist():
@@ -210,7 +210,6 @@ def GetHunts(IsQuickPlay = 'all'):
 
     vals = execute_query("select * from 'games_view' %s order by timestamp desc" % condition)
     cols = execute_query("pragma table_info('games_view')")
-    print(len(vals),cols)
     try:
         return [ { cols[i][1] : hunt[i] for i in range(len(cols)) } for hunt in vals]
     except Exception as e:

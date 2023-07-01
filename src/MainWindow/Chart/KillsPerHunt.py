@@ -8,7 +8,6 @@ from PyQt6.QtGui import QColor, QBrush,QPen
 class KillsPerHunt():
     def __init__(self):
         self.width = 5
-        self.update()
         self.bountyLegendItem = pyqtgraph.ScatterPlotItem([],symbol='s',size=16,brush=QBrush(QColor("#c8ff0000")))
         self.qpLegendItem = pyqtgraph.ScatterPlotItem([],symbol='s',size=16,brush=QBrush(QColor("#c800ffff")))
 

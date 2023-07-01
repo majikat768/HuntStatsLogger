@@ -11,7 +11,6 @@ class WinLoss():
         ]
         self.pen = None#QPen(QColor("#000000"))
         self.ymax = 10
-        self.update()
 
     def update(self):
         self.data = self.GetData()

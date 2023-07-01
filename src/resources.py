@@ -15,7 +15,7 @@ icon_size = 24
 
 game_id = "594650"
 
-debug = True
+debug = False
 is_exe = getattr(sys,'frozen',False) and hasattr(sys, '_MEIPASS')
 
 if not os.path.exists(app_data_path):

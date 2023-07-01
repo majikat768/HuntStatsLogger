@@ -8,7 +8,8 @@ icon_size = 16
 default_stylesheet = "TeamButton {\
                        font-size:12px;\
                        background: #45000000;\
-                       border: 1px solid #a9b7c6;\
+                       /*border: 1px solid #a9b7c6;*/\
+                       border:0px;\
                        border-radius: 4px;\
                         margin:4px;\
                     }\
