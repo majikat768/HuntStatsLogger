@@ -32,7 +32,21 @@ class Stack(QWidget):
         self.setObjectName("bodyStack")
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setSpacing(0)
+        self.setContentsMargins(0,0,0,0)
         self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+
+        self.main = QWidget()
+        self.main.setObjectName("bodyStackMain")
+        self.main.layout = QVBoxLayout()
+        self.main.setLayout(self.main.layout)
+        self.main.layout.setContentsMargins(0,0,0,0)
+        self.main.layout.setSpacing(0)
+        self.main.setContentsMargins(0,0,0,0)
+        self.main.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+
+        self.layout.addWidget(self.main)
 
         self.widgets = []
         self.currentIndex = -1
@@ -41,7 +55,7 @@ class Stack(QWidget):
         for w in self.widgets:
             w.setVisible(False)
         self.widgets.append(widget)
-        self.layout.addWidget(widget)
+        self.main.layout.addWidget(widget)
         widget.setVisible(True)
 
         self.setCurrentIndex(0)

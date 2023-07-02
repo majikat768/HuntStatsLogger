@@ -3,19 +3,19 @@
  */
 QWidget {
     background:transparent;
-    color:main_text_color;
+    color:#e8e8e8;
     margin:0;
     padding:0;
 }
 * {
     font-family:Libre Baskerville;
-    color:main_text_color;
+    color:#e8e8e8;
     margin:0;
     padding:0;
 }
 
 QMainWindow {
-    background: main_window_background !important;
+    background: #212121 !important;
 }
 QScrollArea {
     background:transparent;
@@ -47,7 +47,7 @@ QGroupBox {
 	color:#cccc67;
 	font-size:16px;
 	background-color:transparent;
-	border:1px solid widget_border_color;
+	border:1px solid #44ffffff;
 	border-radius:2px;
 	padding-top:16px;
 }
@@ -72,15 +72,15 @@ QLineEdit {
 	selection-color: #FFFFFF;
 }
 #mainButtons {
-    background: widget_background_gradient;
+    background: qlineargradient(        x1:0,y1:0,x2:1,y2:0,        stop:0.0 transparent,        stop:0.02 #20282c,        stop:0.98 #20282c,        stop:1.0 transparent);
 }
 /*
  * header
  */
 QWidget#Header {
-    background: header_background_gradient;
-    border: 2px solid header_border_color;
-    color:main_text_color;
+    background: qlineargradient(        x1:0,y1:0,x2:1,y2:0,        stop:0.0 transparent,        stop:0.02 #20282c,        stop:0.98 #20282c,        stop:1.0 transparent);
+    border: 2px solid #44ffffff;
+    color:#e8e8e8;
     border-left:0;
     border-right:0;
     padding-left:25%;
@@ -89,7 +89,7 @@ QWidget#Header {
     border-top-left-radius:4px;
 }
 QWidget#Header QLabel {
-    color:main_text_color;
+    color:#e8e8e8;
 }
 #kdaTitle, #HunterTitle {
     font-size: 24px;
@@ -101,39 +101,39 @@ QWidget#Header QLabel {
 #bodyStack, #bodyStackMain {
     margin:0;
     padding:0;
-    background: widget_background_gradient;
-    border:2px solid widget_border_gradient;
+    background: qlineargradient(        x1:0,y1:0,x2:1,y2:0,        stop:0.0 transparent,        stop:0.02 #20282c,        stop:0.98 #20282c,        stop:1.0 transparent);
+    border:2px solid qlineargradient(        x1:0,y1:0,x2:1,y2:0,        stop:0.0 transparent,        stop:0.02 #44ffffff,        stop:0.98 #44ffffff,        stop:1.0 transparent);
 }
 QTabBar#tabBar {
     margin:0;
     padding:0;
-    background: tab_gradient;
+    background: qlineargradient(        x1:0,y1:0,x2:1,y2:0,        stop:0.0 transparent,        stop:0.02 #1188ccff,        stop:0.98 #1188ccff,        stop:1.0 transparent);
 }
 QTabBar#tabBar::tab {
     margin:0;
     border:none;
-    border-top:2px solid tab_border_color;
+    border-top:2px solid #44ffffff;
     border-bottom:2px solid transparent;
     color: #b8b8b8;
-    background:tab_color;
+    background:#1188ccff;
     padding:4px;
     padding-top:6px;
 }
 QTabBar#tabBar::tab:first {
     background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop: 0.0 main_window_background,
-        stop: 0.15 tab_color 
+        stop: 0.0 #212121,
+        stop: 0.15 #1188ccff 
     );
 }
 QTabBar#tabBar::tab:last {
     background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop: 0.85 tab_color,
-        stop: 1.0 main_window_background
+        stop: 0.85 #1188ccff,
+        stop: 1.0 #212121
     );
 }
 QTabBar#tabBar::tab:selected {
-    color: main_text_color;
-    background: selected_tab_gradient;
+    color: #e8e8e8;
+    background: qlineargradient(        x1:0,y1:0,x2:1,y2:0,        stop:0.0 #1188ccff,        stop:0.1 #4f171a,        stop:0.9 #4f171a,        stop:1.0 #1188ccff);
     border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
         stop: 0.0 #11ffffff,
         stop: 0.1 #04b974,
@@ -161,7 +161,7 @@ QTabBar#tabBar::tab:!selected:hover {
  */
 
 #HuntsWidget > * {
-    background:widget_background;
+    background:#20282c;
     margin:0;
 }
 #HuntsWidget {
@@ -176,7 +176,7 @@ QSplitter > QWidget {
  * Teams
  */
 #TeamWidget {
-	border:1px solid widget_border_color;
+	border:1px solid #44ffffff;
 	margin-bottom:16px;
 	padding:0px;
 }

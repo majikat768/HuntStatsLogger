@@ -34,6 +34,7 @@ class HuntDetails(QScrollArea):
         self.main.layout.setAlignment(self.rewards, Qt.AlignmentFlag.AlignTop)
         self.main.layout.addWidget(self.monsters)
         self.main.layout.setAlignment(self.monsters, Qt.AlignmentFlag.AlignTop)
+        self.main.layout.addStretch()
 
     def update(self, qp, bounties, accolades, monsters_killed, targets,ts,mmrChange):
         if debug:

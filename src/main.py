@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QFontDatabase, QIcon
 from PyQt6.QtCore import Qt
 from resources import *
+from style.process import process_style
 
 from MainWindow.MainWindow import MainWindow
 
@@ -23,7 +24,8 @@ if __name__ == '__main__':
     
 
     app = App(sys.argv)
-    stylesheet = open(resource_path('./assets/style.qss'), 'r').read()
+    stylesheet = resource_path('./assets/style.qss')
+    stylesheet = open(process_style(stylesheet),'r').read()
     #stylesheet = open(resource_path('./assets/MaterialDark.qss'), 'r').read()
     app.setStyleSheet(stylesheet)
 

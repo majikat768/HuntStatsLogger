@@ -71,6 +71,7 @@ class MainFrame(QWidget):
         startHuntButton.clicked.connect(launch_hunt)
 
         self.buttons = QWidget()
+        self.buttons.setObjectName("mainButtons")
         self.buttons.layout = QHBoxLayout()
         self.buttons.setLayout(self.buttons.layout)
 

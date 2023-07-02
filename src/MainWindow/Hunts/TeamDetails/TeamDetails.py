@@ -65,6 +65,7 @@ class TeamDetails(QScrollArea):
             teamWidget = QGroupBox()
             teamWidget.layout = QVBoxLayout()
             teamWidget.setLayout(teamWidget.layout)
+            teamWidget.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Minimum)
             teamWidget.setObjectName("TeamWidget")
 
             teamMmr = team['mmr']
@@ -118,7 +119,6 @@ class TeamDetails(QScrollArea):
             teamWidget.layout.addWidget(huntersWidget)
             huntersWidget.setVisible(False)
 
-            teamWidget.layout.addStretch()
             teamWidget.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Minimum)
 
             huntersWidget.layout.addWidget(teamFlavorLabel)

@@ -28,7 +28,6 @@ class Hunts(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setContentsMargins(0,0,0,0)
-        self.layout.setSpacing(0)
 
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
         self.splitter.setStyleSheet("QSplitter::handle:horizontal{image:url(\"%s\");}" % resource_path('assets/icons/h_handle.png').replace("\\","/"))
