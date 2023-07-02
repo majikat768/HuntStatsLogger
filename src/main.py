@@ -20,15 +20,19 @@ if __name__ == '__main__':
     if platform.system() == "Windows" and int(platform.release()) >= 8:
         ctypes.windll.shcore.SetProcessDpiAwareness(True)
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    
 
     app = App(sys.argv)
-    stylesheet = open(resource_path('./assets/MaterialDark.qss'), 'r').read()
+    stylesheet = open(resource_path('./assets/style.qss'), 'r').read()
+    #stylesheet = open(resource_path('./assets/MaterialDark.qss'), 'r').read()
     app.setStyleSheet(stylesheet)
 
     QFontDatabase.addApplicationFont(resource_path(
         './assets/fonts/LibreBaskerville/LibreBaskerville-Regular.ttf'))
     QFontDatabase.addApplicationFont(
         resource_path('./assets/fonts/Ubuntu/Ubuntu-R.ttf'))
+    QFontDatabase.addApplicationFont(
+        resource_path('./assets/fonts/Roboto/Roboto/static/RobotoSerif-Regular.ttf'))
 
     app.setQuitOnLastWindowClosed(False)
 

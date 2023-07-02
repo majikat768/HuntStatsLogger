@@ -3,11 +3,12 @@ from PyQt6.QtCore import QThread, QPoint
 from PyQt6.QtGui import QIcon
 import subprocess
 
-from MainWindow.Header import Header
+from MainWindow.Main.Header import Header
 from MapWindow.MapWindow import MapWindow
 from SettingsWindow import SettingsWindow
 from Logger import Logger
 from resources import *
+from MainWindow.Main.Body import Body
 from MainWindow.Hunts.Hunts import Hunts
 from MainWindow.Hunters.Hunters import Hunters
 from MainWindow.Chart.Chart import Chart
@@ -21,6 +22,7 @@ class MainFrame(QWidget):
         if debug:
             print("mainframe.__init__")
         super().__init__(parent)
+        self.setObjectName("MainFrame")
         self.mousePressed = False
         self.logger = Logger(self)
 
@@ -30,7 +32,11 @@ class MainFrame(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
+        self.layout.setSpacing(0)
+        self.setContentsMargins(0,0,0,0)
+
         self.header = Header(self)
+        self.header.setContentsMargins(0,0,0,0)
         self.layout.addWidget(self.header)
         self.initBody()
 
@@ -81,20 +87,21 @@ class MainFrame(QWidget):
     def initBody(self):
         if debug:
             print("mainframe.initBody")
-        self.tabs = QTabWidget()
-        self.huntsTab = Hunts(parent=self)
-        self.huntersTab = Hunters(parent=self)
-        self.chartTab = Chart(parent=self)
-        self.topHuntsTab = TopHunts(parent=self)
-        self.teamsTab = MyTeams(parent=self)
-        self.tabs.addTab(self.huntsTab, "Hunts")
-        self.tabs.addTab(self.huntersTab, "Hunters")
-        self.tabs.addTab(self.chartTab, "Chart")
-        self.tabs.addTab(self.topHuntsTab, "Top Hunts")
-        self.tabs.addTab(self.teamsTab, "My Teams")
+        self.tabs = Body(parent=self)
+        self.tabs.setContentsMargins(0,0,0,0)
+        self.huntsTab = Hunts(parent=self.tabs)
+        self.huntersTab = Hunters(parent=self.tabs)
+        self.chartTab = Chart(parent=self.tabs)
+        self.topHuntsTab = TopHunts(parent=self.tabs)
+        self.teamsTab = MyTeams(parent=self.tabs)
+        self.tabs.addTab(self.huntsTab, "HUNTS")
+        self.tabs.addTab(self.huntersTab, "HUNTERS")
+        self.tabs.addTab(self.chartTab, "CHARTS")
+        self.tabs.addTab(self.topHuntsTab, "TOP HUNTS")
+        self.tabs.addTab(self.teamsTab, "TEAMS")
 
-
-        self.layout.addWidget(self.tabs)
+        self.layout.addWidget(self.tabs.tabBar)
+        self.layout.addWidget(self.tabs.stack)
 
     def mainUpdate(self):
         if debug:

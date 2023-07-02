@@ -4,10 +4,7 @@ from PyQt6.QtGui import QIcon
 from DbHandler import *
 from MainWindow.Hunts.Timeline import Timeline
 from MainWindow.Hunts.TeamDetails.TeamDetails import TeamDetails
-from Widgets.KillsWidget import KillsWidget
-from Widgets.BountiesWidget import BountiesWidget 
-from Widgets.RewardsWidget import RewardsWidget
-from Widgets.MonstersWidget import MonstersWidget
+from MainWindow.Hunts.HuntDetails import HuntDetails
 
 
 BountyNames = {
@@ -19,50 +16,41 @@ BountyNames = {
 }
 
 
-class Hunts(QScrollArea):
+class Hunts(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setWidgetResizable(True)
         self.initUI()
 
     def initUI(self):
         if debug:
             print('hunts.initUI')
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
+        self.setObjectName("HuntsWidget")
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.setContentsMargins(0,0,0,0)
+        self.layout.setSpacing(0)
 
-        self.left = QWidget()
-        self.left.layout = QVBoxLayout()
-        self.left.setLayout(self.left.layout)
-
-        self.body = QSplitter(Qt.Orientation.Horizontal)
-        self.body.setStyleSheet("QSplitter::handle:horizontal{image:url(\"%s\");}" % resource_path('assets/icons/h_handle.png').replace("\\","/"))
+        self.splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.splitter.setStyleSheet("QSplitter::handle:horizontal{image:url(\"%s\");}" % resource_path('assets/icons/h_handle.png').replace("\\","/"))
         self.initDetails()
-        self.initKillsData()
         self.initHuntSelection()
         self.initTimeline()
 
 
-        self.left.layout.addWidget(self.killsData)
-        self.left.layout.addWidget(self.bounties)
-        self.left.layout.addWidget(self.rewards)
-        self.left.layout.addWidget(self.monsters)
-        self.body.addWidget(self.left)
-        self.body.addWidget(self.teamDetails)
-        self.body.addWidget(self.timeline)
+        self.splitter.addWidget(self.huntDetails)
+        self.splitter.addWidget(self.teamDetails)
+        self.splitter.addWidget(self.timeline)
 
-        self.main.layout.addWidget(self.HuntSelect)
-        self.main.layout.addWidget(self.body)
+        self.layout.addWidget(self.HuntSelect)
+        self.layout.addWidget(self.splitter)
 
-        self.body.setSizes([
+        self.splitter.setSizes([
             int(0.2*self.window().width()),
             int(0.6*self.window().width()),
             int(0.2*self.window().width())
         ])
 
-        self.setWidget(self.main)
-        #self.main.setCollapsible(0,False)
+        #self.setCollapsible(0,False)
 
     def calculateMmrChange(self):
         '''
@@ -162,11 +150,8 @@ class Hunts(QScrollArea):
                 monsters_killed[monster] += entry['amount']
 
         targets = GetBounties(hunt)
-        self.rewards.update(accolades)
-        self.bounties.update(qp,bounties,targets)
-        self.monsters.update(monsters_killed)
+        self.huntDetails.update(qp,bounties,accolades,monsters_killed,targets,ts,self.calculateMmrChange())
         self.teamDetails.update(teams, hunters, hunt)
-        self.killsData.update(qp,ts,self.calculateMmrChange())
 
     def update(self):
         if debug:
@@ -207,14 +192,8 @@ class Hunts(QScrollArea):
     def initDetails(self):
         if debug:
             print("hunts.initDetails")
+        self.huntDetails = HuntDetails()
         self.teamDetails = TeamDetails()
-        self.monsters = MonstersWidget()
-        self.rewards = RewardsWidget()
-        self.bounties = BountiesWidget()
-
-    def initKillsData(self):
-        self.killsData = KillsWidget()
-        self.killsData.setObjectName("KillsWidget")
 
     def initTimeline(self):
         self.timeline = Timeline(self)

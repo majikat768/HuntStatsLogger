@@ -1,0 +1,231 @@
+/*
+ * global
+ */
+QWidget {
+    background:transparent;
+    color:#e8e8e8;
+    margin:0;
+    padding:0;
+}
+* {
+    font-family:Libre Baskerville;
+    color:#e8e8e8;
+    margin:0;
+    padding:0;
+}
+
+QMainWindow {
+    background: #101012 !important;
+}
+QScrollArea {
+    background:transparent;
+}
+QStatusBar {
+	color:#02cf7f;
+	border: 1px solid black;
+	border-top: 2px solid #cccccc;
+	font-size:14px;
+	font-family:courier new;
+}
+QPushButton{
+	font-family:Ubuntu mono;
+    border: 2px solid #444444;
+	color: #a9b7c6;
+	padding: 2px;
+	margin:2px;
+	background-color: #0e0d23;
+    border-radius:4px;
+}
+QPushButton:hover{
+    border:2px solid #44444444;
+    border-bottom: 2px solid #37efba;
+	color: #FFFFFF;
+	padding-bottom: 2px;
+	background-color: #0e0d23;
+}
+QGroupBox {
+	color:#cccc67;
+	font-size:16px;
+	background-color:transparent;
+	border:1px solid #44ffffff;
+	border-radius:2px;
+	padding-top:16px;
+}
+QLineEdit:disabled {
+	border-width: 1px; border-radius: 4px;
+	border-color: rgb(58, 58, 58);
+	border-style: inset;
+	padding: 0 8px;
+	color: #898786;
+	background:#0e0d13;
+	selection-background-color:#007b50;
+	selection-color: #FFFFFF;
+}
+QLineEdit {
+	border-width: 1px; border-radius: 4px;
+	border-color: rgb(58, 58, 58);
+	border-style: inset;
+	padding: 0 8px;
+	color: #a9d7e6;
+	background:#2e2d33;
+	selection-background-color:#007b50;
+	selection-color: #FFFFFF;
+}
+/*
+ * header
+ */
+QWidget#Header {
+    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #101012,
+        stop: 0.02 #1e282c,
+        stop: 0.98 #1e282c,
+        stop: 1.0 #101012
+    );
+    border: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #101012,
+        stop: 0.01 #3a2a2a,
+        stop: 0.99 #3a2a2a,
+        stop: 1.0 #101012
+    );
+    border-left:0;
+    border-right:0;
+    color:#e8e8e8;
+    padding-left:25%;
+    padding-right:25%;
+}
+QWidget#Header QLabel {
+    color:#a9b7c6;
+}
+#kdaTitle, #HunterTitle {
+    font-size: 24px;
+}
+
+/*
+ * main tabs
+*/
+QTabBar#tabBar {
+    margin:0;
+    padding:0;
+    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #101012,
+        stop: 0.1 #11ffffff
+        stop: 0.9 #11ffffff,
+        stop: 1.0 #101012
+    );
+}
+QTabBar#tabBar::tab {
+    margin:0;
+    border:none;
+    border-top:2px solid #44ffffff;
+    border-bottom:2px solid #00000000;
+    color: #b8b8b8;
+    background:#11ffffff;
+    padding:4px;
+    padding-top:6px;
+}
+QTabBar#tabBar::tab:first {
+    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #101012,
+        stop: 0.15 #11ffffff
+    );
+}
+QTabBar#tabBar::tab:last {
+    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.85 #11ffffff,
+        stop: 1.0 #101012
+    );
+}
+QTabBar#tabBar::tab:selected {
+    color: #e8e8e8;
+    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #11ffffff,
+        stop: 0.1 #4f171a,
+        stop: 0.9 #4f171a,
+        stop: 1.0 #11ffffff
+    );
+    border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #11ffffff,
+        stop: 0.1 #04b974,
+        stop: 0.9 #04b974,
+        stop: 1.0 #11ffffff
+    );
+}
+QTabBar#tabBar::tab:!selected:hover {
+    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #11ffffff,
+        stop: 0.1 #aa4f171a,
+        stop: 0.9 #aa4f171a,
+        stop: 1.0 #11ffffff
+    );
+    border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #11ffffff,
+        stop: 0.1 #aa04b974,
+        stop: 0.9 #aa04b974,
+        stop: 1.0 #11ffffff
+    );
+}
+
+/*
+ * Hunts
+ */
+
+#HuntsWidget > * {
+    background:#1e282c;
+	border:1px solid #44ffffff;
+    margin:0;
+}
+#HuntsWidget {
+    margin:0;
+}
+
+/*
+ * Teams
+ */
+#TeamWidget {
+	border:1px solid #44ffffff;
+	margin-bottom:16px;
+	padding:0px;
+}
+#TeamButton {
+    font-size:12px;
+    background: #45000000;
+    /*border: 1px solid #a9b7c6;*/
+    border:0px;
+    border-radius: 4px;
+    margin:4px;
+}
+#TeamButton:hover {
+    background: #45cccccc;
+    border-color: #a9d7d6;
+}
+
+
+
+#link {
+	background-color: transparent;
+	color:cyan;
+	border: 0px;
+	font-family:Ubuntu mono;
+	text-decoration: underline;
+	padding:2px 16px;
+}
+#link:hover {
+	color: #dddddd;
+	text-decoration: none;
+}
+
+#icon {
+	border:1px solid #cc44ffcc;
+	padding:2px;
+	margin:0px;
+}
+#icon_borderless {
+	border:1px solid #00000000;
+	padding:4px;
+	margin:0px;
+}
+
+#popup {
+	border:1px solid red;
+	font-size:12px;
+}

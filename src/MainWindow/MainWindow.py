@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QStatusBar, QApplication
 from PyQt6.QtCore import QPoint, Qt
 
-from MainWindow.MainFrame import MainFrame
+from MainWindow.Main.MainFrame import MainFrame
 from Widgets.SystemTrayIcon import SystemTrayIcon
 import sys
 from resources import settings, resource_path
@@ -25,6 +25,9 @@ class MainWindow(QMainWindow):
         self.setStatusBar(QStatusBar())
         self.statusBar().font().setPixelSize(16)
         self.statusBar().setSizeGripEnabled(True)
+
+        self.setContentsMargins(0,0,0,0)
+        self.layout().setSpacing(0)
 
         self.show()
 
@@ -56,8 +59,6 @@ class MainWindow(QMainWindow):
             self.sysTrayIco.hide()
             self.deleteLater()
             sys.exit()
-        #if settings.value("sync_files","false").lower() == "true":
-            #self.mainframe.server.upload_file()
         return super().closeEvent(a0)
 
     def minify(self):

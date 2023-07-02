@@ -14,6 +14,8 @@ class Header(QGroupBox):
         super().__init__(parent)
         self.layout = layout
         self.setLayout(self.layout)
+        self.setContentsMargins(0,0,0,0)
+        self.layout.setSpacing(0)
 
         self.setObjectName("Header")
 
