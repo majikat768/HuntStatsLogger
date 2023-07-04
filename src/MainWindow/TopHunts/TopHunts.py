@@ -7,27 +7,22 @@ from DbHandler import *
 sortOpts = ["your_kills","team_kills","your_deaths","assists", "duration"]
 #todo = ["xp","event_points","monster_kills","hunt_dollars"]
 
-class TopHunts(QScrollArea):
+class TopHunts(QWidget):
     def __init__(self, parent=None):
         if debug:
             print("topHunts.__init__")
         super().__init__(parent)
-        self.setWidgetResizable(True)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
 
         self.body = QWidget()
         self.body.layout = QVBoxLayout()
         self.body.setLayout(self.body.layout)
 
         self.initOptions()
-        self.main.layout.addWidget(self.body)
-        self.setWidget(self.main)
+        self.layout.addWidget(self.body)
 
-        self.main.layout.addStretch()
+        self.layout.addStretch()
 
     def initOptions(self):
         if debug:
@@ -69,7 +64,7 @@ class TopHunts(QScrollArea):
         self.checkWidget.layout.addWidget(self.bhCheck)
         self.checkWidget.layout.addWidget(self.qpCheck)
         self.opts.layout.addWidget(self.checkWidget)
-        self.main.layout.addWidget(self.opts)
+        self.layout.addWidget(self.opts)
 
     def update(self):
         if debug:

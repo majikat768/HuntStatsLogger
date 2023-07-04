@@ -12,16 +12,13 @@ from MainWindow.Chart.KillsPerHunt import KillsPerHunt
 from MainWindow.Chart.TeamKillsPerHunt import TeamKillsPerHunt
 from resources import debug
 
-class Chart(QScrollArea):
+class Chart(QWidget):
     def __init__(self, parent=None):
         if debug:
             print("chart.__init__")
         super().__init__(parent)
-        self.setWidgetResizable(True)
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
-        self.setWidget(self.main)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
         self.options = {
             "MMR":self.setMmr,
             "Team MMR":self.setTeamMmr,
@@ -53,7 +50,7 @@ class Chart(QScrollArea):
 
         self.dropdownWidget.layout.addWidget(self.dataSelect)
         self.dropdownWidget.layout.addWidget(self.updateButton)
-        self.main.layout.addWidget(self.dropdownWidget)
+        self.layout.addWidget(self.dropdownWidget)
 
     def initPlot(self):
         if debug:
@@ -67,7 +64,7 @@ class Chart(QScrollArea):
         self.legend.anchor((0,0),(0,0))
         self.plotWindow.addItem(vb,1,0)
         self.plot.getViewBox().installEventFilter(self)
-        self.main.layout.addWidget(self.plotWindow)
+        self.layout.addWidget(self.plotWindow)
 
     def initUI(self):
         if debug:
@@ -78,9 +75,9 @@ class Chart(QScrollArea):
         self.screenshotButton = QPushButton("Save as image")
         self.screenshotButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.screenshotButton.clicked.connect(self.save_chart)
-        self.main.layout.addWidget(
+        self.layout.addWidget(
             QLabel("Use scroll wheel to zoom y axis; Shift+scroll to zoom x axis."))
-        self.main.layout.addWidget(self.screenshotButton)
+        self.layout.addWidget(self.screenshotButton)
 
     def update(self):
         if debug:
