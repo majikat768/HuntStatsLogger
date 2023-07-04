@@ -212,8 +212,6 @@ def build_json_from_xml(ts):
             val = ln['Attr']['@value']
             keysplit = key.split("_")
             if "MissionBag" in line:
-                if val == "":
-                    val = "-1"
                 if "tooltip" in key and ":" in val:
                     hunter = '_'.join([keysplit[1],keysplit[2]])
                     timestamp = re.findall("\d{1,2}:\d{2}",val)[-1]
@@ -227,21 +225,7 @@ def build_json_from_xml(ts):
                         "timestamp":timestamp,
                         "event":event
                     }
-                    '''
-                    eventtimes = re.findall("\d{1,2}:\d{2}",val)[-1]
-                    event = keysplit[-1].split("tooltip")[-1]
-                    for timestamp in eventtimes:
-                        while len(timestamp.split(":")[0]) < 2:
-                            timestamp = '0' + timestamp
-                        ts_num = len(timestamps)
-                        timestamps[ts_num] = {
-                            "timestamp_num":ts_num,
-                            "hunter":hunter,
-                            "timestamp":timestamp,
-                            "event":event
-                        }
-                    '''
-                elif "MissionBagPlayer_" in key and val != "-1":
+                elif "MissionBagPlayer_" in key:
                     team_num = int(keysplit[1])
                     hunter_num = int(keysplit[2])
                     hunter_id = '_'.join(keysplit[1:3])
@@ -254,7 +238,10 @@ def build_json_from_xml(ts):
                     category = '_'.join(keysplit[3:])
                     if category == 'blood_line_name':
                         val = val.replace('\'','_')
-                    hunters[hunter_id][category] = val
+                        if len(val) == 0:
+                            val = "hunterX"
+                    if len(val) > 0:
+                        hunters[hunter_id][category] = val
                 elif "MissionBagTeam_" in key:
                     team_num = keysplit[1]
                     if team_num not in teams:

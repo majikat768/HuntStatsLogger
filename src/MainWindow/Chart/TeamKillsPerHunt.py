@@ -10,10 +10,12 @@ class TeamKillsPerHunt():
         self.width = 5
         self.legendItem = pyqtgraph.ScatterPlotItem([],symbol='s',size=16,brush=QBrush(QColor("#c8ff0000")))
 
+        self.update()
+
     def update(self):
         data = {}
         kData = GetTeamKillsByMatch()
-        totalHunts = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'false'")
+        totalHunts = execute_query("select count(*) from 'games_view' where MissionBagIsQuickPlay = 'false'")
         totalHunts = 0 if len(totalHunts) == 0 else totalHunts[0][0]
         x0 = []
         self.ticks = [[]]

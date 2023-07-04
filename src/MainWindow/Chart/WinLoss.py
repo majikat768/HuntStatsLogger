@@ -11,6 +11,7 @@ class WinLoss():
         ]
         self.pen = None#QPen(QColor("#000000"))
         self.ymax = 10
+        self.update()
 
     def update(self):
         self.data = self.GetData()
@@ -21,7 +22,6 @@ class WinLoss():
                 self.data['survivalRate']['total']
             )
         )
-
         self.bountyBars = Bars(
             x0 = [10,10],
             x1 = [20,20],

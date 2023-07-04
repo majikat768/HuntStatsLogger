@@ -206,7 +206,7 @@ class Chart(QScrollArea):
         self.plot.addItem(kills.bars)
         self.plot.getAxis("bottom").setTicks(kills.ticks)
         xmax = (len(kills.ticks[0])+1)*2*kills.width
-        ymax = kills.maxHeight+10
+        ymax = kills.line.value()+10
         self.plot.setLimits(xMin=0, xMax=xmax,yMin=0, yMax=ymax)
         self.plot.setXRange(0,xmax)
         self.plot.setYRange(0,ymax)
