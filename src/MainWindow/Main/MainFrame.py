@@ -90,15 +90,20 @@ class MainFrame(QWidget):
             print("mainframe.initBody")
         self.tabs = Body(parent=self)
         self.tabs.setContentsMargins(0,0,0,0)
+
         self.huntsTab = Hunts(parent=self.tabs)
-        self.huntersTab = Hunters(parent=self.tabs)
-        self.chartTab = Chart(parent=self.tabs)
-        self.topHuntsTab = TopHunts(parent=self.tabs)
-        self.teamsTab = MyTeams(parent=self.tabs)
         self.tabs.addTab(self.huntsTab, "HUNTS")
+
+        self.huntersTab = Hunters(parent=self.tabs)
         self.tabs.addTab(self.huntersTab, "HUNTERS")
+
+        self.chartTab = Chart(parent=self.tabs)
         self.tabs.addTab(self.chartTab, "CHARTS")
+
+        self.topHuntsTab = TopHunts(parent=self.tabs)
         self.tabs.addTab(self.topHuntsTab, "TOP HUNTS")
+
+        self.teamsTab = MyTeams(parent=self.tabs)
         self.tabs.addTab(self.teamsTab, "TEAMS")
 
         self.layout.addWidget(self.tabs.tabBar)
@@ -114,7 +119,7 @@ class MainFrame(QWidget):
         self.chartTab.update()
         self.topHuntsTab.update()
         self.teamsTab.update()
-        # self.window().adjustSize()
+        #self.window().adjustSize()
 
     def StartLogger(self):
         thread = QThread(parent=self)

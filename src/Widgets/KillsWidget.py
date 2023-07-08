@@ -68,4 +68,3 @@ class KillsWidget(QGroupBox):
         self.layout.addWidget(mmrChangeLabel)
         self.layout.setAlignment(mmrChangeLabel,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.layout.addStretch()
-        self.adjustSize()

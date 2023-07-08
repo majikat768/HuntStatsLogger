@@ -7,7 +7,7 @@ from Widgets.Modal import Modal
 class HunterSearch(QGroupBox):
     def __init__(self,parent=None):
         super().__init__(parent)
-        self.setStyleSheet("*{margin:16px;padding:8px;}QGroupBox{border:0px;}")
+        self.setStyleSheet("*{margin:16px;padding:8px;}")
         self.setTitle("Search Hunters")
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)

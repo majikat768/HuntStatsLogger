@@ -13,16 +13,19 @@ class TopHunts(QWidget):
             print("topHunts.__init__")
         super().__init__(parent)
         self.layout = QVBoxLayout()
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
         self.setLayout(self.layout)
 
-        self.body = QWidget()
-        self.body.layout = QVBoxLayout()
-        self.body.setLayout(self.body.layout)
+        self.scrollArea = QScrollArea()
+        self.scrollArea.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        self.scrollWidget = QWidget()
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setWidget(self.scrollWidget)
+        self.scrollWidget.layout = QVBoxLayout()
+        self.scrollWidget.setLayout(self.scrollWidget.layout)
 
         self.initOptions()
-        self.layout.addWidget(self.body)
-
-        self.layout.addStretch()
+        self.layout.addWidget(self.scrollArea)
 
     def initOptions(self):
         if debug:
@@ -69,7 +72,7 @@ class TopHunts(QWidget):
     def update(self):
         if debug:
             print('tophunts.update')
-        clearLayout(self.body.layout)
+        clearLayout(self.scrollWidget.layout)
         sort = self.sortingSelect.currentData()
         num = int(self.numResults.currentText())
 
@@ -107,9 +110,10 @@ class TopHunts(QWidget):
         '''
         for hunt in hunts:
             widget = self.HuntWidget(hunt)
-            self.body.layout.addWidget(widget)
-            #self.body.addTopLevelItem(item)
-            #self.body.setItemWidget(item,0,widget)
+            self.scrollWidget.layout.addWidget(widget)
+            #self.scrollWidget.addTopLevelItem(item)
+            #self.scrollWidget.setItemWidget(item,0,widget)
+        self.scrollWidget.layout.addStretch()
     
     def HuntWidget(self,data):
         ts = data['timestamp']

@@ -5,21 +5,16 @@ from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel, QPushB
 from DbHandler import execute_query, GetCurrentMmr
 from MainWindow.Hunts.TeamDetails.TeamButton import TeamButton
 from Widgets.Popup import Popup
+from Widgets.ScrollWidget import ScrollWidget
 from resources import *
 
 icon_size = 16
 
-class TeamDetails(QScrollArea):
+class TeamDetails(ScrollWidget):
     def __init__(self, parent=None):
         if debug:
             print("TeamDetails.__init__")
         super().__init__(parent)
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
-        self.setWidgetResizable(True)
-        self.setWidget(self.main)
-        self.main.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Minimum)
 
         self.titleWidget = QWidget()
         self.titleWidget.layout = QHBoxLayout()
@@ -39,6 +34,8 @@ class TeamDetails(QScrollArea):
         self.titleWidget.layout.addWidget(expandBtn)
         self.titleWidget.layout.addWidget(collapseBtn)
 
+        self.main.setObjectName("TeamDetails")
+
     def update(self, teams, hunters, hunt):
         if debug:
             print("teamdetails.update")
@@ -46,7 +43,7 @@ class TeamDetails(QScrollArea):
 
         clearLayout(self.main.layout)
 
-        self.main.layout.addWidget(self.titleWidget)
+        self.addWidget(self.titleWidget)
         ownTeamWidget = None
         self.buttons = []
 
@@ -138,7 +135,7 @@ class TeamDetails(QScrollArea):
             elif hadKills:
                 self.main.layout.insertWidget(1,teamWidget)
             else:
-                self.main.layout.addWidget(teamWidget)
+                self.addWidget(teamWidget)
 
         if ownTeamWidget:
             self.main.layout.insertWidget(1,ownTeamWidget)

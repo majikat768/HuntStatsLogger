@@ -1,10 +1,12 @@
     main_window_background = #101010
     main_text_color = #e8e8e8
 
-    header_background = #aa181f28
-    header_background2 = #aa080f18
+    header_background = widget_background
+    header_background2 = #aa1e282c
     header_border_color = #44ffffff
-    widget_background = #aa181f28
+    widget_background2 = #aa181a1f
+    widget_background = #aa182028
+    
     widget_border_color = #44ffffff
 
     combo_color = #101010

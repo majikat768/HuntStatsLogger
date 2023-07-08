@@ -24,8 +24,16 @@ if __name__ == '__main__':
     
 
     app = App(sys.argv)
-    stylesheet = resource_path('./assets/style.qss')
-    stylesheet = open(process_style(stylesheet),'r').read()
+    stylesheet_f = resource_path('./assets/style/style.qss')
+    style_vars_f = resource_path('./assets/style/variables.txt')
+    style_vars = {}
+    with open(style_vars_f,'r') as f:
+        for line in f.readlines():
+            key_value = line.strip().replace(' ','').split("=")
+            if len(key_value) > 1:
+                style_vars[key_value[0]] = key_value[1]
+
+    stylesheet = process_style(stylesheet_f,style_vars)
     #stylesheet = open(resource_path('./assets/MaterialDark.qss'), 'r').read()
     app.setStyleSheet(stylesheet)
 

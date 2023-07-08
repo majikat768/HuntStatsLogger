@@ -7,9 +7,9 @@ class MonstersWidget(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout()
+        self.setObjectName("MonstersWidget")
         self.setLayout(self.layout)
-        self.setSizePolicy(
-            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.MinimumExpanding)
         self.setTitle("Monsters")
 
     def update(self, monsters_killed):

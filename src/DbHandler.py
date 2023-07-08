@@ -218,7 +218,7 @@ def GetHunts(IsQuickPlay = 'all'):
         return []
 
 def GetHunt(ts):
-    vals = execute_query("select * from 'games_view' where timestamp is %d" % ts)
+    vals = execute_query("select * from 'games_view' where 'games_view'.timestamp is %d" % ts)
     cols = execute_query("pragma table_info('games_view')")
     try:
         vals = vals[0]

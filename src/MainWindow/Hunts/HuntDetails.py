@@ -5,36 +5,31 @@ from Widgets.BountiesWidget import BountiesWidget
 from Widgets.RewardsWidget import RewardsWidget
 from Widgets.MonstersWidget import MonstersWidget
 from Widgets.KillsWidget import KillsWidget
+from Widgets.ScrollWidget import ScrollWidget
 from MainWindow.Hunts.Timeline import Timeline
 from DbHandler import *
 
 
-class HuntDetails(QScrollArea):
+class HuntDetails(ScrollWidget):
     def __init__(self, parent=None):
         if debug:
             print("HuntDetails.__init__")
         super().__init__(parent)
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
-        self.setWidgetResizable(True)
-        self.setWidget(self.main)
-        self.setObjectName("huntDetails")
+        self.setObjectName("HuntDetails")
 
         self.kills = KillsWidget()
         self.kills.setObjectName("KillsWidget")
         self.bounties = BountiesWidget()
         self.rewards = RewardsWidget()
         self.monsters = MonstersWidget()
-        self.main.layout.addWidget(self.kills)
-        self.main.layout.setAlignment(self.kills, Qt.AlignmentFlag.AlignTop)
-        self.main.layout.addWidget(self.bounties)
-        self.main.layout.setAlignment(self.bounties, Qt.AlignmentFlag.AlignTop)
-        self.main.layout.addWidget(self.rewards)
-        self.main.layout.setAlignment(self.rewards, Qt.AlignmentFlag.AlignTop)
-        self.main.layout.addWidget(self.monsters)
-        self.main.layout.setAlignment(self.monsters, Qt.AlignmentFlag.AlignTop)
+        self.addWidget(self.kills)
+        self.addWidget(self.bounties)
+        self.addWidget(self.rewards)
+        self.addWidget(self.monsters)
+
         self.main.layout.addStretch()
+        self.main.layout.setContentsMargins(0,0,0,0)
+        self.main.setContentsMargins(0,0,0,0)
 
     def update(self, qp, bounties, accolades, monsters_killed, targets,ts,mmrChange):
         if debug:

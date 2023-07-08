@@ -5,6 +5,7 @@ from DbHandler import *
 from MainWindow.Hunts.Timeline import Timeline
 from MainWindow.Hunts.TeamDetails.TeamDetails import TeamDetails
 from MainWindow.Hunts.HuntDetails import HuntDetails
+from Widgets.ScrollWidget import ScrollWidget
 
 
 BountyNames = {
@@ -156,15 +157,15 @@ class Hunts(QWidget):
         if debug:
             print('hunts.update')
         self.updateHuntSelection()
-        self.updateDetails()
+        self.updateDetails(self.HuntSelect.currentData())
 
     def initHuntSelection(self):
         if debug:
             print('hunts.initHuntSelection')
         self.HuntSelect = QComboBox()
+        self.HuntSelect.setEditable(False)
         self.HuntSelect.setIconSize(QSize(24, 24))
         self.HuntSelect.view().setSpacing(4)
-        self.HuntSelect.setStyleSheet('QComboBox{padding:8px;}')
 
         self.HuntSelect.activated.connect(lambda : self.updateDetails())
 

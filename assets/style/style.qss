@@ -113,7 +113,7 @@ ScrollWidget > QScrollArea {
 ScrollWidget #ScrollAreaMain {
     border:none;
 }
-ScrollWidget > QPushButton {
+ScrollWidget > ScrollButton {
     border-radius:0;
     border:1px solid widget_border_color;
     margin:0;
@@ -178,62 +178,49 @@ QWidget#Header QLabel {
 QTabBar#tabBar {
     margin:0;
     padding:0;
-    background: qlineargradient(
-        x1:0,y1:0,x2:1,y2:0,
-        stop:0.0 transparent,
-        stop:0.025 tab_color,
-        stop:0.975 tab_color,
-        stop:1.0 transparent 
-    );
+    background:transparent;
 }
 QTabBar#tabBar::tab {
     margin:0;
-    border:none;
-    border:1px solid tab_border_color;
-    border-bottom:1px solid transparent;
+    border:1px solid transparent;
     color: #b8b8b8;
-    background:transparent;
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.1 tab_color,
+        stop:0.9 tab_color,
+        stop:1.0 transparent 
+    );
     padding:4px;
     padding-top:6px;
-    widget-animation-duration:250;
 }
 QTabBar#tabBar::tab:first {
-    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop: 0.0 transparent,
-        stop: 0.15 tab_color 
-    );
-    background:transparent;
 }
 QTabBar#tabBar::tab:last {
-    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop: 0.85 tab_color,
-        stop: 1.0 transparent 
-    );
-    background:transparent;
 }
 QTabBar#tabBar::tab:selected {
     color: main_text_color;
     background: qlineargradient(
         x1:0,y1:0,x2:1,y2:0,
         stop:0.0 transparent,
-        stop:0.025 selected_tab_color,
-        stop:0.975 selected_tab_color,
+        stop:0.15 selected_tab_color,
+        stop:0.85 selected_tab_color,
         stop:1.0 transparent 
     );
     border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
         stop: 0.0 #11ffffff,
-        stop: 0.1 #04b974,
-        stop: 0.9 #04b974,
+        stop: 0.15 #04b974,
+        stop: 0.85 #04b974,
         stop: 1.0 #11ffffff
     );
     margin-bottom:-1px;
 }
 QTabBar#tabBar::tab:!selected:hover {
     background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop: 0.0 #11ffffff,
+        stop: 0.0 transparent,
         stop: 0.1 #aa4f171a,
         stop: 0.9 #aa4f171a,
-        stop: 1.0 #11ffffff
+        stop: 1.0 transparent 
     );
     border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
         stop: 0.0 #11ffffff,
@@ -264,6 +251,39 @@ QSplitter > QWidget {
     border:none;
 }
 
+#BountyEventWidget, #KilledByEventWidget,#KilledEventWidget {
+    border:1px solid widget_border_color;
+    border-radius:2px;
+}
+#BountyEventWidget {
+    background:#22000088;
+    background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop:0.0 #66000000,
+        stop:0.1 #22000088,
+        stop:0.9 #22000088,
+        stop:1.0 #66000000
+    );
+}
+#KilledByEventWidget {
+    background:#22008800;
+    background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop:0.0 #22008800,
+        stop:0.8 #22008800,
+        stop:1.0 #66000000
+    );
+    padding-left:32px;
+}
+#KilledEventWidget {
+    background:#22880000;
+    background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop:0.0 #66000000,
+        stop:0.2 #22880000,
+        stop:1.0 #22880000
+    );
+}
+#KilledByEventWidget *, #KilledEventWidget *, #BountyEventWidget * {
+    min-width:100%;
+}
 /*
  * Teams
  */

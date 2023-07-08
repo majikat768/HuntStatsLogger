@@ -16,7 +16,6 @@ class MainFrame(QWidget):
 
         self.SelectMap = QComboBox()
         self.SelectMap.view().setSpacing(4)
-        self.SelectMap.setStyleSheet("QComboBox{padding:8px;}")
 
         self.SelectMap.activated.connect(self.update)
 
