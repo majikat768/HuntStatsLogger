@@ -126,7 +126,7 @@ class WinLoss():
         return wins
 
     def GetSurvival(self):
-        survived = execute_query("select count(*) from 'games' where MissionBagIsHunterDead = 'false' and MissionBagIsQuickPlay = 'false'")
+        survived = execute_query("select count(*) from 'games' where MissionBagIsHunterDead = 'false' and MissionBagWasDeathlessUsed ='false' and MissionBagIsQuickPlay = 'false'")
         survived = 0 if len(survived) == 0 else survived[0][0]
         total = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'false'")
         total = 0 if len(total) == 0 else total[0][0]
