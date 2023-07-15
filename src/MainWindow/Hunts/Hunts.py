@@ -177,7 +177,7 @@ class Hunts(QWidget):
         for hunt in hunts:
             ts = hunt['timestamp']
             dt = unix_to_datetime(ts)
-            dead = hunt['MissionBagIsHunterDead'] == 'true'
+            dead = (hunt['MissionBagIsHunterDead'] == 'true' or hunt['MissionBagWasDeathlessUsed'] == 'true')
             gameType = "Quick Play" if hunt['MissionBagIsQuickPlay'].lower(
             ) == 'true' else "Bounty Hunt"
             nTeams = hunt['MissionBagNumTeams']

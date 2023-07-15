@@ -1,6 +1,6 @@
 from DbHandler import execute_query, GetKillsByMatch
 import pyqtgraph
-from resources import max
+from resources import max, settings
 from MainWindow.Chart.Bars import Bars
 from PyQt6.QtGui import QColor, QBrush,QPen
 
@@ -10,6 +10,8 @@ class KillsPerHunt():
         self.width = 5
         self.bountyLegendItem = pyqtgraph.ScatterPlotItem([],symbol='s',size=16,brush=QBrush(QColor("#c8ff0000")))
         self.qpLegendItem = pyqtgraph.ScatterPlotItem([],symbol='s',size=16,brush=QBrush(QColor("#c800ffff")))
+
+        self.update()
 
     def update(self):
         data = {}
@@ -27,9 +29,9 @@ class KillsPerHunt():
         x0 = []
         self.ticks = [[]]
 
-        totalBounty = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'false'")
+        totalBounty = execute_query("select count(*) from 'games_view' where MissionBagIsQuickPlay = 'false'")
         totalBounty = 0 if len(totalBounty) == 0 else totalBounty[0][0]
-        totalQp = execute_query("select count(*) from 'games' where MissionBagIsQuickPlay = 'true'")
+        totalQp = execute_query("select count(*) from 'games_view' where MissionBagIsQuickPlay = 'true'")
         totalQp = 0 if len(totalQp) == 0 else totalQp[0][0]
 
         for i in range(len(data.keys())):
@@ -50,16 +52,18 @@ class KillsPerHunt():
         self.bars.hoverable = False
         self.bountyline = pyqtgraph.InfiniteLine(
             pos=totalBounty, angle=0, pen=pyqtgraph.mkPen("#ff000088", width=2))
-        self.bountyline.label = pyqtgraph.InfLineLabel(self.bountyline, text="%d total Bounty Hunts" % (
-            totalBounty), movable=False, position=0.7,anchors=[(0,0),(0,0)])
+        self.bountyline.label = pyqtgraph.InfLineLabel(self.bountyline, text="%d Bounty Hunts" % (
+            totalBounty), movable=False, position=0.7,anchors=[(0,1),(0,0)])
         self.qpline = pyqtgraph.InfiniteLine(
             pos=totalQp, angle=0, pen=pyqtgraph.mkPen("#00ffff88", width=2))
-        self.qpline.label = pyqtgraph.InfLineLabel(self.qpline, text="%d total Quick Plays" % (
-            totalQp), movable=False, position=0.7,anchors=[(0,0),(0,0)])
+        self.qpline.label = pyqtgraph.InfLineLabel(self.qpline, text="%d Quick Plays" % (
+            totalQp), movable=False, position=0.7,anchors=[(0,1),(0,0)])
 
-        self.bars.setZValue(2)
-        self.qpline.setZValue(1)
-        self.bountyline.setZValue(1)
+        self.bars.setZValue(1)
+        self.qpline.setZValue(2)
+        self.bountyline.setZValue(2)
+        self.qpline.label.setZValue(2)
+        self.bountyline.label.setZValue(2)
 
 
 '''
