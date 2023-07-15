@@ -484,13 +484,15 @@ def getAssists(ts):
 
 
 # GetTopHunts functions:
-def getHuntsSortByKillCount(ts = -1, num = -1, isQp='all'):
+def getQpCondition(isQp):
     if isQp == 'false':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'false'" 
+        return "and 'games_view'.MissionBagIsQuickPlay is 'false'" 
     elif isQp == 'true':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'true'" 
+        return "and 'games_view'.MissionBagIsQuickPlay is 'true'" 
     else:
-        condition = ""
+        return ""
+def getHuntsSortByKillCount(ts = -1, num = -1, isQp='all'):
+    condition = getQpCondition(isQp)
 
     cols = execute_query("pragma table_info('games_view')")
     cols = [c[1] for c in cols]
@@ -502,12 +504,7 @@ def getHuntsSortByKillCount(ts = -1, num = -1, isQp='all'):
     return res
 
 def getHuntsSortByDeathCount(ts=-1, num=-1, isQp='all'):
-    if isQp == 'false':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'false'" 
-    elif isQp == 'true':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'true'" 
-    else:
-        condition = ""
+    condition = getQpCondition(isQp)
 
     cols = execute_query("pragma table_info('games_view')")
     cols = [c[1] for c in cols]
@@ -519,29 +516,43 @@ def getHuntsSortByDeathCount(ts=-1, num=-1, isQp='all'):
     return res
 
 def getHuntsSortByTeamKillCount(ts = -1, num = -1, isQp='all'):
-    if isQp == 'false':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'false'" 
-    elif isQp == 'true':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'true'" 
-    else:
-        condition = ""
+    condition = getQpCondition(isQp)
 
     cols = execute_query("pragma table_info('games_view')")
     cols = [c[1] for c in cols]
     cols.append('team_kills')
-    vals = execute_query("select 'games_view'.*, sum(downedbyme+killedbyme+downedbyteammate+killedbyteammate) as kills from 'hunters_view' join 'games_view' on 'hunters_view'.timestamp = 'games_view'.timestamp where 'games_view'.timestamp > %s %s group by 'hunters_view'.timestamp order by kills desc %s" % (ts, condition, "limit %d" % num if num > 0 else ""))
+    vals = execute_query("select 'games_view'.*, sum(downedbyme+killedbyme+downedbyteammate+killedbyteammate) as kills from 'hunters_view'\
+                          join 'games_view' on 'hunters_view'.timestamp = 'games_view'.timestamp\
+                         where 'games_view'.timestamp > %s %s group by 'hunters_view'.timestamp order by kills desc %s" % (ts, condition, "limit %d" % num if num > 0 else ""))
     res = []
     for v in vals:
         res.append({cols[i] : v[i] for i in range(len(cols))})
     return res
 
+def getHuntsSortByMmrGain(num = -1, isQp='all'):
+    condition = getQpCondition(isQp)
+    cols = execute_query("pragma table_info('games_view')")
+    cols = [c[1] for c in cols]
+    cols.append('mmr_gain')
+    vals = execute_query("select g.*, lag(h.mmr) over (order by g.timestamp desc) - h.mmr as mmr_gain from 'hunters_view' as h join 'games_view' as g on h.game_id = g.game_id where h.profileid is %s %s order by mmr_gain desc" % (settings.value('profileid'), condition))
+    res = []
+    for v in vals:
+        res.append({cols[i] : v[i] for i in range(len(cols))})
+    return res
+
+def getHuntsSortByMmrLoss(num = -1, isQp='all'):
+    condition = getQpCondition(isQp)
+    cols = execute_query("pragma table_info('games_view')")
+    cols = [c[1] for c in cols]
+    cols.append('mmr_loss')
+    vals = execute_query("select g.*, lag(h.mmr) over (order by g.timestamp desc) - h.mmr as mmr_loss from 'hunters_view' as h join 'games_view' as g on h.game_id = g.game_id where h.profileid is %s %s order by mmr_loss asc" % (settings.value('profileid'), condition))
+    res = []
+    for v in vals:
+        res.append({cols[i] : v[i] for i in range(len(cols))})
+    return res[1:]
+
 def getTimestampsSortByMaxTimestamp(ts=-1,num=-1,isQp='all'):
-    if isQp == 'false':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'false'" 
-    elif isQp == 'true':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'true'" 
-    else:
-        condition = ""
+    condition = getQpCondition(isQp)
 
     cols = execute_query("pragma table_info('games_view')")
     cols = [c[1] for c in cols]
@@ -554,12 +565,7 @@ def getTimestampsSortByMaxTimestamp(ts=-1,num=-1,isQp='all'):
 
 
 def getHuntsSortByAssistCount(ts=-1, num=-1, isQp='all'):
-    if isQp == 'false':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'false'" 
-    elif isQp == 'true':
-        condition = "and 'games_view'.MissionBagIsQuickPlay is 'true'" 
-    else:
-        condition = ""
+    condition = getQpCondition(isQp)
 
     cols = execute_query("pragma table_info('games_view')")
     cols = [c[1] for c in cols]
