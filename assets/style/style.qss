@@ -179,6 +179,7 @@ QTabBar#tabBar {
     margin:0;
     padding:0;
     background:tab_background_color;
+    /*
     background: qlineargradient(
         x1:0,y1:0,x2:1,y2:0,
         stop:0.0 transparent,
@@ -186,6 +187,7 @@ QTabBar#tabBar {
         stop:0.9 tab_background_color,
         stop:1.0 transparent 
     );
+    */
 }
 QTabBar#tabBar::tab {
     margin:0;
@@ -193,10 +195,10 @@ QTabBar#tabBar::tab {
     color: #b8b8b8;
     background: qlineargradient(
         x1:0,y1:0,x2:1,y2:0,
-        stop:0.0 transparent,
-        stop:0.1 tab_color,
-        stop:0.9 tab_color,
-        stop:1.0 transparent 
+        stop:0.0 main_window_background,
+        stop:0.05 tab_color,
+        stop:0.95 tab_color,
+        stop:1.0 main_window_background
     );
     padding:4px;
     padding-top:6px;
@@ -205,25 +207,25 @@ QTabBar#tabBar::tab:selected {
     color: main_text_color;
     background: qlineargradient(
         x1:0,y1:0,x2:1,y2:0,
-        stop:0.0 transparent,
-        stop:0.15 selected_tab_color,
-        stop:0.85 selected_tab_color,
-        stop:1.0 transparent 
+        stop:0.0 main_window_background,
+        stop:0.05 selected_tab_color,
+        stop:0.95 selected_tab_color,
+        stop:1.0 main_window_background
     );
     border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
         stop: 0.0 #11ffffff,
-        stop: 0.15 #04b974,
-        stop: 0.85 #04b974,
+        stop: 0.1 #04b974,
+        stop: 0.9 #04b974,
         stop: 1.0 #11ffffff
     );
     margin-bottom:-1px;
 }
 QTabBar#tabBar::tab:!selected:hover {
     background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop: 0.0 transparent,
-        stop: 0.1 #aa4f171a,
-        stop: 0.9 #aa4f171a,
-        stop: 1.0 transparent 
+        stop: 0.0 main_window_background,
+        stop: 0.05 #aa4f171a,
+        stop: 0.95 #aa4f171a,
+        stop: 1.0 main_window_background 
     );
     border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
         stop: 0.0 #11ffffff,
