@@ -15,8 +15,8 @@ QWidget {
 }
 
 QMainWindow {
-    background: #101010;
-    background:url(./assets/smoke_tile.png);
+    background-color: #101010;
+    /*background:url(./assets/smoke_tile.png);*/
 }
 QScrollArea {
     background:transparent;
@@ -101,8 +101,8 @@ QScrollBar {
     background: qlineargradient(
         x1:0,y1:0,x2:1,y2:0,
         stop:0.0 transparent,
-        stop:0.025 #aa182028,
-        stop:0.975 #aa182028,
+        stop:0.025 #cc182028,
+        stop:0.975 #cc182028,
         stop:1.0 transparent 
     );
 }
@@ -131,8 +131,8 @@ QWidget#Header {
     background: qlineargradient(
         x1:0,y1:0,x2:1,y2:0,
         stop:0.0 transparent,
-        stop:0.025 #aa182028,
-        stop:0.975 #aa182028,
+        stop:0.025 #cc182028,
+        stop:0.975 #cc182028,
         stop:1.0 transparent 
     );
     border: 2px solid #44ffffff;
@@ -161,8 +161,8 @@ QWidget#Header QLabel {
     background: qlineargradient(
         x1:0,y1:0,x2:1,y2:0,
         stop:0.0 transparent,
-        stop:0.025 #aa182028,
-        stop:0.975 #aa182028,
+        stop:0.025 #cc182028,
+        stop:0.975 #cc182028,
         stop:1.0 transparent 
     );
     background:transparent;
@@ -178,7 +178,14 @@ QWidget#Header QLabel {
 QTabBar#tabBar {
     margin:0;
     padding:0;
-    background:transparent;
+    background:#26656c86;
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.1 #26656c86,
+        stop:0.9 #26656c86,
+        stop:1.0 transparent 
+    );
 }
 QTabBar#tabBar::tab {
     margin:0;
@@ -187,16 +194,12 @@ QTabBar#tabBar::tab {
     background: qlineargradient(
         x1:0,y1:0,x2:1,y2:0,
         stop:0.0 transparent,
-        stop:0.1 #46656c86,
-        stop:0.9 #46656c86,
+        stop:0.1 #46454c66,
+        stop:0.9 #46454c66,
         stop:1.0 transparent 
     );
     padding:4px;
     padding-top:6px;
-}
-QTabBar#tabBar::tab:first {
-}
-QTabBar#tabBar::tab:last {
 }
 QTabBar#tabBar::tab:selected {
     color: #e8e8e8;
@@ -243,7 +246,7 @@ QSplitter > QWidget {
 }
 
 #KillsWidget,#BountiesWidget,#RewardsWidget,#MonstersWidget,#Timeline,#TeamDetails {
-    background: #aa182028;
+    background: #cc182028;
     margin:4px;
 	border:1px solid #44ffffff;
 }
@@ -258,9 +261,8 @@ QSplitter > QWidget {
 #BountyEventWidget {
     background:#22000088;
     background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop:0.0 #66000000,
-        stop:0.1 #22000088,
-        stop:0.9 #22000088,
+        stop:0.0 #22000088,
+        stop:0.8 #22000088,
         stop:1.0 #66000000
     );
 }
@@ -276,9 +278,9 @@ QSplitter > QWidget {
 #KilledEventWidget {
     background:#22880000;
     background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop:0.0 #66000000,
-        stop:0.2 #22880000,
-        stop:1.0 #22880000
+        stop:0.0 #22880000,
+        stop:0.8 #22880000,
+        stop:1.0 #66000000
     );
 }
 #KilledByEventWidget *, #KilledEventWidget *, #BountyEventWidget * {
@@ -309,14 +311,14 @@ QSplitter > QWidget {
  * Hunters
  */
 Hunters QGroupBox {
-    background:#aa182028;
+    background:#cc182028;
  }
 
 /*
  * Top Hunts
  */
  TopHunts > * {
-    background: #aa182028;
+    background: #cc182028;
  }
 
 #link {

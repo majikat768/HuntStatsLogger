@@ -1,4 +1,5 @@
 import os
+import sqlite3
 import subprocess
 import math
 import sys
@@ -157,3 +158,19 @@ def launch_hunt():
         steam_dir ="/".join(settings.value("hunt_dir").split("/")[:-3])
         steam_exe = os.path.join(steam_dir,"steam.exe").replace("\\","/")
         subprocess.Popen([steam_exe,"steam://rungameid/"+game_id])
+
+def execute_query(query,opts=None):
+    conn = sqlite3.connect(database)
+    cursor = conn.cursor()
+    try:
+        if opts != None:
+            cursor.execute(query,opts)
+        else:
+            cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        log('execute_query err')
+        log('requested query: %s' % query)
+        log(e)
+        return []
+

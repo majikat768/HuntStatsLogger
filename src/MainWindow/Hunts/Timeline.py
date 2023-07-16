@@ -8,6 +8,7 @@ class Timeline(ScrollWidget):
     def __init__(self,parent=None):
         super().__init__()
         self.main.setObjectName("Timeline")
+        self.main.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.MinimumExpanding)
 
     def update(self,ts):
         clearLayout(self.main.layout)
@@ -22,6 +23,9 @@ class Timeline(ScrollWidget):
             eventWidget = QWidget()
             eventWidget.layout = QVBoxLayout()
             eventWidget.setLayout(eventWidget.layout)
+            eventWidget.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding,
+            QSizePolicy.Policy.Minimum)
 
             timestamp = e['timestamp']
             event = e['event']
@@ -31,19 +35,11 @@ class Timeline(ScrollWidget):
             tsLbl = QLabel(timestamp)
             tsLbl.setStyleSheet("QLabel{font-weight:bold;}")
             eventLbl = QLabel(GetEventText(event,hunter))
-            #eventLbl.setWordWrap(True)
+            eventLbl.setWordWrap(True)
             eventWidget.layout.addWidget(tsLbl)
             eventWidget.layout.addWidget(eventLbl)
 
-            lbl = QLabel("%s<br>%s" % (timestamp,GetEventText(event,hunter)))
-            #lbl.setWordWrap(True)
-            #eventWidget.layout.addWidget(lbl)
             SetEventType(eventWidget,event)
-            eventWidget.layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMinimumSize)
-            eventWidget.setSizePolicy(
-            QSizePolicy.Policy.MinimumExpanding,
-            QSizePolicy.Policy.Minimum)
-            eventWidget.resize(eventWidget.sizeHint())
             self.addWidget(eventWidget)
 
         if len(self.timestamps) > 0:
@@ -55,27 +51,27 @@ def GetEventText(event,hunter):
     s = None
     if "bounty" in event:
         if event == "bountypickedup":
-            s = "%s\npicked up the bounty." 
+            s = "%s picked up the bounty." 
         elif event == "bountyextracted":
-            s = "%s\nextracted with a bounty." 
+            s = "%s extracted with a bounty." 
     elif "downed" in event:
         if event == "downedbyteammate":
-            s = "Your teammate\ndowned %s." 
+            s = "Your teammate downed %s." 
         elif event == "downedbyme":
-            s = "You\ndowned %s." 
+            s = "You downed %s." 
         if event == "downedteammate":
-            s = "%s\ndowned your teammate." 
+            s = "%s downed your teammate." 
         elif event == "downedme":
-            s = "%s\ndowned you." 
+            s = "%s downed you." 
     elif "killed" in event:
         if event == "killedbyteammate":
-            s = "Your teammate\nkilled %s." 
+            s = "Your teammate killed %s." 
         elif event == "killedbyme":
-            s = "You\nkilled %s." 
+            s = "You killed %s." 
         if event == "killedteammate":
-            s = "%s\nkilled your teammate." 
+            s = "%s killed your teammate." 
         elif event == "killedme":
-            s = "%s\nkilled you." 
+            s = "%s killed you." 
     if s == None:
         return event
     return s % hunter
@@ -83,15 +79,13 @@ def GetEventText(event,hunter):
 def SetEventType(widget,event):
     if "bounty" in event:
         widget.setObjectName("BountyEventWidget")
-        #for i in range(widget.layout.count()):
-        #    widget.layout.itemAt(i).setAlignment(Qt.AlignmentFlag.AlignCenter|Qt.AlignmentFlag.AlignTop)
     elif "byme" in event or "byteammate" in event:
         widget.setObjectName("KilledByEventWidget")
     elif "me" in event or "teammate" in event:
         widget.setObjectName("KilledEventWidget")
-        for i in range(widget.layout.count()):
-            widget.layout.itemAt(i).widget().setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
-            widget.layout.itemAt(i).widget().adjustSize()
+        #for i in range(widget.layout.count()):
+            #widget.layout.itemAt(i).widget().setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
+            #widget.layout.itemAt(i).widget().adjustSize()
 
 
     else:

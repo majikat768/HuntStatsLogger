@@ -17,7 +17,8 @@ class ScrollWidget(QWidget):
         self.scrollArea = ScrollArea(self)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
-        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        #self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scrollBar = self.scrollArea.verticalScrollBar()
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
@@ -29,8 +30,8 @@ class ScrollWidget(QWidget):
         self.scrollArea.setWidget(self.main)
 
         self.layout.addWidget(self.scrollArea,0,0,3,1)
-        self.layout.addWidget(self.upArrow,0,0,1,1)
-        self.layout.addWidget(self.downArrow,2,0,1,1)
+        #self.layout.addWidget(self.upArrow,0,0,1,1)
+        #self.layout.addWidget(self.downArrow,2,0,1,1)
         self.layout.setRowStretch(1,1)
 
 
@@ -47,6 +48,7 @@ class ScrollWidget(QWidget):
         self.toggleButtons()
 
     def toggleButtons(self):
+        return
         self.upArrow.setVisible(self.scrollBar.value() > 0)
         self.downArrow.setVisible(self.scrollBar.value() < self.scrollBar.maximum())
 
@@ -82,4 +84,4 @@ class ScrollArea(QScrollArea):
 
     def wheelEvent(self, a0) -> None:
         super().wheelEvent(a0)
-        self.parent().toggleButtons()
+        #self.parent().toggleButtons()

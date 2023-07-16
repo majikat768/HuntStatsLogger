@@ -15,8 +15,8 @@ QWidget {
 }
 
 QMainWindow {
-    background: main_window_background;
-    background:resource_path("./assets/smoke_tile.png");
+    background-color: main_window_background;
+    /*background:resource_path("./assets/smoke_tile.png");*/
 }
 QScrollArea {
     background:transparent;
@@ -178,7 +178,14 @@ QWidget#Header QLabel {
 QTabBar#tabBar {
     margin:0;
     padding:0;
-    background:transparent;
+    background:tab_background_color;
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.1 tab_background_color,
+        stop:0.9 tab_background_color,
+        stop:1.0 transparent 
+    );
 }
 QTabBar#tabBar::tab {
     margin:0;
@@ -193,10 +200,6 @@ QTabBar#tabBar::tab {
     );
     padding:4px;
     padding-top:6px;
-}
-QTabBar#tabBar::tab:first {
-}
-QTabBar#tabBar::tab:last {
 }
 QTabBar#tabBar::tab:selected {
     color: main_text_color;
@@ -258,9 +261,8 @@ QSplitter > QWidget {
 #BountyEventWidget {
     background:#22000088;
     background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop:0.0 #66000000,
-        stop:0.1 #22000088,
-        stop:0.9 #22000088,
+        stop:0.0 #22000088,
+        stop:0.8 #22000088,
         stop:1.0 #66000000
     );
 }
@@ -276,9 +278,9 @@ QSplitter > QWidget {
 #KilledEventWidget {
     background:#22880000;
     background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
-        stop:0.0 #66000000,
-        stop:0.2 #22880000,
-        stop:1.0 #22880000
+        stop:0.0 #22880000,
+        stop:0.8 #22880000,
+        stop:1.0 #66000000
     );
 }
 #KilledByEventWidget *, #KilledEventWidget *, #BountyEventWidget * {
