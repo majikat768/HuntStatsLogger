@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   fill="#aaaaaa"
+   width="443"
+   height="443"
+   viewBox="-6.8 -0.85 13.29 13.29"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="chevron-upsvg.svg"
+   inkscape:export-filename="chevron-down.svg"
+   inkscape:export-xdpi="12.29"
+   inkscape:export-ydpi="12.29"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="2.261851"
+     inkscape:cx="221.72106"
+     inkscape:cy="221.5"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="1912"
+     inkscape:window-y="474"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg12" />
+  <path
+     d="m -6.8225694,2.9723562 a 1,1 0 0 1 1.707,-0.707 l 4.94999983,4.95 4.94999997,-4.95 a 1,1 0 0 1 1.414,1.414 l -5.65699997,5.657 a 1,1 0 0 1 -1.414,0 l -5.65699983,-5.657 a 1,1 0 0 1 -0.293,-0.707 z"
+     id="path10" />
+</svg>

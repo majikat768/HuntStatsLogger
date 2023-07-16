@@ -12,15 +12,13 @@ import pyqtgraph
 
 colors = ["#ff0000cc","#00ffffcc","#ffff00cc"]
 
-class MyTeams(QScrollArea):
+class MyTeams(QWidget):
     def __init__(self, parent):
         if debug:
             print("myTeams.__init__")
         super().__init__(parent)
-        self.setWidgetResizable(True)
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
 
         self.buttons = QWidget()
         self.buttons.layout = QHBoxLayout()
@@ -39,7 +37,6 @@ class MyTeams(QScrollArea):
         self.buttons.layout.addWidget(self.addTeamButton)
         self.buttons.layout.addWidget(self.updateButton)
 
-        self.setWidget(self.main)
         if len(settings.value("my_teams","")) > 0:
             my_teams = eval(settings.value("my_teams","[]"))
 
@@ -71,7 +68,7 @@ class MyTeams(QScrollArea):
                 w = self.TeamWidget(count[t])
                 if w == None:
                     continue
-                self.main.layout.addWidget(w)
+                self.layout.addWidget(w)
             i += 1
             if i > 10:
                 break
@@ -90,16 +87,16 @@ class MyTeams(QScrollArea):
     def update(self):
         if debug:
             print('myteams.update')
-        clearLayout(self.main.layout)
-        self.main.layout.addWidget(self.buttons)
+        clearLayout(self.layout)
+        self.layout.addWidget(self.buttons)
         teams = eval(settings.value("my_teams","[]"))
         for pids in teams:
             team = {'pid':pids,'games':GetTeamGames(pids)}
             w = self.TeamWidget(team)
             if w == None:
                 continue
-            self.main.layout.addWidget(w)
-        self.main.layout.addStretch()
+            self.layout.addWidget(w)
+        self.layout.addStretch()
         
     def save_chart(self,w):
         filename = "%s_mmr-chart.png" % w.names.lower().replace(' ','').replace(',','-')

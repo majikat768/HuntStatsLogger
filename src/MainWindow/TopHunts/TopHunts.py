@@ -7,27 +7,25 @@ from DbHandler import *
 sortOpts = ["your_kills","team_kills","your_deaths","assists", "duration","mmr_gain","mmr_loss"]
 #todo = ["xp","event_points","monster_kills","hunt_dollars"]
 
-class TopHunts(QScrollArea):
+class TopHunts(QWidget):
     def __init__(self, parent=None):
         if debug:
             print("topHunts.__init__")
         super().__init__(parent)
-        self.setWidgetResizable(True)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.layout = QVBoxLayout()
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        self.setLayout(self.layout)
 
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
-
-        self.body = QWidget()
-        self.body.layout = QVBoxLayout()
-        self.body.setLayout(self.body.layout)
+        self.scrollArea = QScrollArea()
+        self.scrollArea.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        self.scrollWidget = QWidget()
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setWidget(self.scrollWidget)
+        self.scrollWidget.layout = QVBoxLayout()
+        self.scrollWidget.setLayout(self.scrollWidget.layout)
 
         self.initOptions()
-        self.main.layout.addWidget(self.body)
-        self.setWidget(self.main)
-
-        self.main.layout.addStretch()
+        self.layout.addWidget(self.scrollArea)
 
     def initOptions(self):
         if debug:
@@ -69,12 +67,12 @@ class TopHunts(QScrollArea):
         self.checkWidget.layout.addWidget(self.bhCheck)
         self.checkWidget.layout.addWidget(self.qpCheck)
         self.opts.layout.addWidget(self.checkWidget)
-        self.main.layout.addWidget(self.opts)
+        self.layout.addWidget(self.opts)
 
     def update(self):
         if debug:
             print('tophunts.update')
-        clearLayout(self.body.layout)
+        clearLayout(self.scrollWidget.layout)
         sort = self.sortingSelect.currentData()
         num = int(self.numResults.currentText())
 
@@ -116,9 +114,10 @@ class TopHunts(QScrollArea):
         '''
         for hunt in hunts:
             widget = self.HuntWidget(hunt)
-            self.body.layout.addWidget(widget)
-            #self.body.addTopLevelItem(item)
-            #self.body.setItemWidget(item,0,widget)
+            self.scrollWidget.layout.addWidget(widget)
+            #self.scrollWidget.addTopLevelItem(item)
+            #self.scrollWidget.setItemWidget(item,0,widget)
+        self.scrollWidget.layout.addStretch()
     
     def HuntWidget(self,data):
         ts = data['timestamp']

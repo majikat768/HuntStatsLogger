@@ -4,10 +4,10 @@ from resources import clearLayout
 class BountiesWidget(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName("BountiesWidget")
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.setSizePolicy(
-            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Expanding)
         self.setTitle("Bounties")
 
     def update(self, qp, bounties, targets):
@@ -46,3 +46,4 @@ class BountiesWidget(QGroupBox):
                     self.layout.addWidget(label)
                     #widget.layout.addWidget(label)
                 self.layout.addWidget(QLabel())
+        self.layout.addStretch()

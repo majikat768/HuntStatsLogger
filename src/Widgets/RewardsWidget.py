@@ -8,9 +8,9 @@ class RewardsWidget(QGroupBox):
         super().__init__(parent)
         self.layout = QGridLayout()
         self.setLayout(self.layout)
-        self.setSizePolicy(
-            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Expanding)
         self.setTitle("Rewards")
+        self.setObjectName("RewardsWidget")
 
         iconNames = ["hunt_dollars","blood_bonds","xp","event_points"]
         self.icons = {name : get_icon(resource_path("assets/icons/rewards/%s.png"%name),x=icon_size,y=icon_size) for name in iconNames}
@@ -43,6 +43,7 @@ class RewardsWidget(QGroupBox):
                 self.icons[k].setVisible(True)
 
         self.layout.setColumnStretch(self.layout.columnCount(),1)
+        self.layout.setRowStretch(self.layout.rowCount(),1)
 
 def getLabel(txt):
     if "_" in txt:

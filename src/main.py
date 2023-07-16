@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QFontDatabase, QIcon
 from PyQt6.QtCore import Qt
 from resources import *
+from style.process import process_style
 
 from MainWindow.MainWindow import MainWindow
 
@@ -20,15 +21,28 @@ if __name__ == '__main__':
     if platform.system() == "Windows" and int(platform.release()) >= 8:
         ctypes.windll.shcore.SetProcessDpiAwareness(True)
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    
 
     app = App(sys.argv)
-    stylesheet = open(resource_path('./assets/MaterialDark.qss'), 'r').read()
+    stylesheet_f = resource_path('./assets/style/style.qss')
+    style_vars_f = resource_path('./assets/style/variables.txt')
+    style_vars = {}
+    with open(style_vars_f,'r') as f:
+        for line in f.readlines():
+            key_value = line.strip().replace(' ','').split("=")
+            if len(key_value) > 1:
+                style_vars[key_value[0]] = key_value[1]
+
+    stylesheet = process_style(stylesheet_f,style_vars)
+    #stylesheet = open(resource_path('./assets/MaterialDark.qss'), 'r').read()
     app.setStyleSheet(stylesheet)
 
     QFontDatabase.addApplicationFont(resource_path(
         './assets/fonts/LibreBaskerville/LibreBaskerville-Regular.ttf'))
     QFontDatabase.addApplicationFont(
         resource_path('./assets/fonts/Ubuntu/Ubuntu-R.ttf'))
+    QFontDatabase.addApplicationFont(
+        resource_path('./assets/fonts/Roboto/Roboto/static/RobotoSerif-Regular.ttf'))
 
     app.setQuitOnLastWindowClosed(False)
 

@@ -1,0 +1,351 @@
+/*
+ * global
+ */
+QWidget {
+    background:transparent;
+    color:#e8e8e8;
+    margin:0;
+    padding:0;
+}
+* {
+    font-family:Libre Baskerville;
+    color:#e8e8e8;
+    margin:0;
+    padding:0;
+}
+
+QMainWindow {
+    background-color: #101010;
+    /*background:url(./assets/smoke_tile.png);*/
+}
+QScrollArea {
+    background:transparent;
+}
+QComboBox {
+    background:#101010;
+    selection-background-color:#101010;
+    padding:4px;
+    height:20px;
+    border:1px solid #44ffffff;
+}
+QComboBox::drop-down {
+    background:transparent;
+    height:28px;
+    width:24px;
+}
+QComboBox::down-arrow {
+    image: url(assets/icons/chevron-down.svg) 0 0 0 0 stretch stretch;
+    width:16px;
+    height:12px;
+}
+QComboBox QAbstractItemView {
+    background:#101010;
+    selection-background-color:#101010;
+}
+QStatusBar {
+	color:#02cf7f;
+	border: 1px solid black;
+	border-top: 2px solid #cccccc;
+	font-size:14px;
+	font-family:courier new;
+}
+QPushButton{
+	font-family:Ubuntu mono;
+    border: 2px solid #444444;
+	color: #a9b7c6;
+	padding: 2px;
+	margin:2px;
+	background-color: #0e0d23;
+    border-radius:4px;
+}
+QPushButton:hover{
+    border:2px solid #44444444;
+    border-bottom: 2px solid #37efba;
+	color: #FFFFFF;
+	padding-bottom: 2px;
+	background-color: #0e0d23;
+}
+QGroupBox {
+	color:#cccc67;
+	font-size:16px;
+	background-color:transparent;
+	border:1px solid #44ffffff;
+	border-radius:2px;
+	padding-top:16px;
+}
+QLineEdit:disabled {
+	border-width: 1px; border-radius: 4px;
+	border-color: rgb(58, 58, 58);
+	border-style: inset;
+	padding: 0 8px;
+	color: #898786;
+	background:#0e0d13;
+	selection-background-color:#007b50;
+	selection-color: #FFFFFF;
+}
+QLineEdit {
+	border-width: 1px; border-radius: 4px;
+	border-color: rgb(58, 58, 58);
+	border-style: inset;
+	padding: 0 8px;
+	color: #a9d7e6;
+	background:#2e2d33;
+	selection-background-color:#007b50;
+	selection-color: #FFFFFF;
+}
+QScrollBar {
+    position:absolute;
+    left:0;
+}
+#mainButtons {
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.025 #cc182028,
+        stop:0.975 #cc182028,
+        stop:1.0 transparent 
+    );
+}
+
+ScrollWidget > QScrollArea {
+    border:none;
+}
+ScrollWidget #ScrollAreaMain {
+    border:none;
+}
+ScrollWidget > ScrollButton {
+    border-radius:0;
+    border:1px solid #44ffffff;
+    margin:0;
+}
+#ScrollUpButton {
+    image: url(assets/icons/chevron-up.svg) 0 0 0 0 stretch stretch;
+}
+#ScrollDownButton {
+    image: url(assets/icons/chevron-down.svg) 0 0 0 0 stretch stretch;
+}
+/*
+ * header
+ */
+QWidget#Header {
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.025 #cc182028,
+        stop:0.975 #cc182028,
+        stop:1.0 transparent 
+    );
+    border: 2px solid #44ffffff;
+    border-bottom: 4px solid #44ffffff;
+    color:#e8e8e8;
+    border-left:0;
+    border-right:0;
+    padding-left:25%;
+    padding-right:25%;
+    border-top-right-radius:4px;
+    border-top-left-radius:4px;
+}
+QWidget#Header QLabel {
+    color:#e8e8e8;
+}
+#kdaTitle, #HunterTitle {
+    font-size: 24px;
+}
+
+/*
+ * main tabs
+*/
+#bodyStack, #bodyStackMain {
+    margin:0;
+    padding:0;
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.025 #cc182028,
+        stop:0.975 #cc182028,
+        stop:1.0 transparent 
+    );
+    background:transparent;
+    border: 2px solid qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.5 #44ffffff,
+        stop:0.9 #44ffffff,
+        stop:1.0 transparent 
+    );
+    border:2px solid #44ffffff;
+}
+QTabBar#tabBar {
+    margin:0;
+    padding:0;
+    background:#26656c86;
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.1 #26656c86,
+        stop:0.9 #26656c86,
+        stop:1.0 transparent 
+    );
+}
+QTabBar#tabBar::tab {
+    margin:0;
+    border:1px solid transparent;
+    color: #b8b8b8;
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.1 #46454c66,
+        stop:0.9 #46454c66,
+        stop:1.0 transparent 
+    );
+    padding:4px;
+    padding-top:6px;
+}
+QTabBar#tabBar::tab:selected {
+    color: #e8e8e8;
+    background: qlineargradient(
+        x1:0,y1:0,x2:1,y2:0,
+        stop:0.0 transparent,
+        stop:0.15 #aa4f171a,
+        stop:0.85 #aa4f171a,
+        stop:1.0 transparent 
+    );
+    border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #11ffffff,
+        stop: 0.15 #04b974,
+        stop: 0.85 #04b974,
+        stop: 1.0 #11ffffff
+    );
+    margin-bottom:-1px;
+}
+QTabBar#tabBar::tab:!selected:hover {
+    background: qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 transparent,
+        stop: 0.1 #aa4f171a,
+        stop: 0.9 #aa4f171a,
+        stop: 1.0 transparent 
+    );
+    border-bottom: 2px solid qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop: 0.0 #11ffffff,
+        stop: 0.1 #aa04b974,
+        stop: 0.9 #aa04b974,
+        stop: 1.0 #11ffffff
+    );
+}
+
+/*
+ * Hunts
+ */
+
+#HuntsWidget {
+    margin:0;
+}
+
+QSplitter > QWidget {
+    border:1px solid #44ffffff;
+}
+
+#KillsWidget,#BountiesWidget,#RewardsWidget,#MonstersWidget,#Timeline,#TeamDetails {
+    background: #cc182028;
+    margin:4px;
+	border:1px solid #44ffffff;
+}
+#HuntDetails {
+    border:none;
+}
+
+#BountyEventWidget, #KilledByEventWidget,#KilledEventWidget {
+    border:1px solid #44ffffff;
+    border-radius:2px;
+}
+#BountyEventWidget {
+    background:#22000088;
+    background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop:0.0 #22000088,
+        stop:0.8 #22000088,
+        stop:1.0 #66000000
+    );
+}
+#KilledByEventWidget {
+    background:#22008800;
+    background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop:0.0 #22008800,
+        stop:0.8 #22008800,
+        stop:1.0 #66000000
+    );
+    padding-left:32px;
+}
+#KilledEventWidget {
+    background:#22880000;
+    background:qlineargradient(x1:0, y1: 0, x2: 1, y2: 0,
+        stop:0.0 #22880000,
+        stop:0.8 #22880000,
+        stop:1.0 #66000000
+    );
+}
+#KilledByEventWidget *, #KilledEventWidget *, #BountyEventWidget * {
+    min-width:100%;
+}
+/*
+ * Teams
+ */
+#TeamWidget {
+	border:1px solid #44ffffff;
+	margin-bottom:16px;
+	padding:0px;
+}
+#TeamButton {
+    font-size:12px;
+    background: #45000000;
+    /*border: 1px solid #a9b7c6;*/
+    border:0px;
+    border-radius: 4px;
+    margin:4px;
+}
+#TeamButton:hover {
+    background: #45cccccc;
+    border-color: #a9d7d6;
+}
+
+/*
+ * Hunters
+ */
+Hunters QGroupBox {
+    background:#cc182028;
+ }
+
+/*
+ * Top Hunts
+ */
+ TopHunts > * {
+    background: #cc182028;
+ }
+
+#link {
+	background-color: transparent;
+	color:cyan;
+	border: 0px;
+	font-family:Ubuntu mono;
+	text-decoration: underline;
+	padding:2px 16px;
+}
+#link:hover {
+	color: #dddddd;
+	text-decoration: none;
+}
+
+#icon {
+	border:1px solid #cc44ffcc;
+	padding:2px;
+	margin:0px;
+}
+#icon_borderless {
+	border:1px solid #00000000;
+	padding:4px;
+	margin:0px;
+}
+
+#popup {
+	border:1px solid red;
+	font-size:12px;
+}

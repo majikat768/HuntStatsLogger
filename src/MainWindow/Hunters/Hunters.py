@@ -8,29 +8,24 @@ from MainWindow.Hunters.HunterSearch import HunterSearch
 from Widgets.Modal import Modal
 
 
-class Hunters(QScrollArea):
+class Hunters(QWidget):
     def __init__(self, parent):
         if debug:
             print("hunters.__init__")
         super().__init__(parent)
-        self.setWidgetResizable(True)
-        self.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.main = QWidget()
-        self.main.layout = QVBoxLayout()
-        self.main.setLayout(self.main.layout)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
 
         self.topKills = TopKills()
-        self.main.layout.addWidget(self.topKills)
+        self.layout.addWidget(self.topKills)
         self.freqHunters = FrequentHunters()
-        self.main.layout.addWidget(self.freqHunters)
+        self.layout.addWidget(self.freqHunters)
         self.search = HunterSearch()
-        self.main.layout.addWidget(self.search)
+        self.layout.addWidget(self.search)
         #self.initHunterSearch()
 
-        #self.main.layout.setRowStretch(self.main.layout.rowCount()+1, 1)
-        self.setWidget(self.main)
-        self.main.setSizePolicy(
+        #self.layout.setRowStretch(self.layout.rowCount()+1, 1)
+        self.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
 
     def initFreqHunters(self):
@@ -53,7 +48,7 @@ class Hunters(QScrollArea):
 
         self.FreqHuntersBox.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
-        self.main.layout.addWidget(self.FreqHuntersBox)
+        self.layout.addWidget(self.FreqHuntersBox)
 
     def initHunterSearch(self):
         if debug:
@@ -72,7 +67,7 @@ class Hunters(QScrollArea):
         self.SearchBar.returnPressed.connect(self.SubmitSearch)
         self.SearchButton.clicked.connect(self.SubmitSearch)
 
-        self.main.layout.addWidget(self.SearchBox)
+        self.layout.addWidget(self.SearchBox)
 
     def update(self):
         if debug:
