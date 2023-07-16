@@ -39,7 +39,6 @@ class Hunts(QScrollArea):
         self.body = QSplitter(Qt.Orientation.Horizontal)
         self.body.setStyleSheet("QSplitter::handle:horizontal{image:url(\"%s\");}" % resource_path('assets/icons/h_handle.png').replace("\\","/"))
         self.initDetails()
-        self.initKillsData()
         self.initHuntSelection()
         self.initTimeline()
 
@@ -211,8 +210,6 @@ class Hunts(QScrollArea):
         self.monsters = MonstersWidget()
         self.rewards = RewardsWidget()
         self.bounties = BountiesWidget()
-
-    def initKillsData(self):
         self.killsData = KillsWidget()
         self.killsData.setObjectName("KillsWidget")
 

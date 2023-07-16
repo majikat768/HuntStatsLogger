@@ -9,27 +9,23 @@ from MainWindow.Hunts.Timeline import Timeline
 from DbHandler import *
 
 
-class HuntDetails(QGroupBox):
-    def __init__(self, title=None):
+class HuntDetails(QWidget):
+    def __init__(self, parent=None):
         if debug:
             print("HuntDetails.__init__")
-        super().__init__(title)
+        super().__init__(parent)
         self.setObjectName("huntDetails")
-        self.layout = QHBoxLayout()
-        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
         self.bounties = BountiesWidget()
         self.rewards = RewardsWidget()
         self.monsters = MonstersWidget()
+        self.kills = KillsWidget()
+        self.layout.addWidget(self.kills)
         self.layout.addWidget(self.bounties)
-        self.layout.setAlignment(self.bounties, Qt.AlignmentFlag.AlignTop)
-        self.layout.addStretch()
         self.layout.addWidget(self.rewards)
-        self.layout.setAlignment(self.rewards, Qt.AlignmentFlag.AlignTop)
-        self.layout.addStretch()
         self.layout.addWidget(self.monsters)
-        self.layout.setAlignment(self.monsters, Qt.AlignmentFlag.AlignTop)
 
 
     def update(self, qp, bounties, accolades, monsters_killed, targets,ts,mmrChange):

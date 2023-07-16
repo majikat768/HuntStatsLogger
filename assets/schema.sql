@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS teams (
     primary key (
         game_id,
         team_num
-)
+    )
 );
 CREATE TABLE IF NOT EXISTS hunters (
     timestamp integer,

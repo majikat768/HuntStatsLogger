@@ -1,4 +1,5 @@
 import os
+import json
 import subprocess
 import math
 import sys
@@ -157,3 +158,6 @@ def launch_hunt():
         steam_dir ="/".join(settings.value("hunt_dir").split("/")[:-3])
         steam_exe = os.path.join(steam_dir,"steam.exe").replace("\\","/")
         subprocess.Popen([steam_exe,"steam://rungameid/"+game_id])
+
+with open(resource_path('./assets/json/maps.json'),'r') as f:
+    maps = json.loads(f.read())

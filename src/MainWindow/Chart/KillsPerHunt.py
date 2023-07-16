@@ -34,16 +34,16 @@ class KillsPerHunt():
         totalQp = execute_query("select count(*) from 'games_view' where MissionBagIsQuickPlay = 'true'")
         totalQp = 0 if len(totalQp) == 0 else totalQp[0][0]
 
-        for i in range(len(data.keys())):
-            x0.append(self.width+(i)*3*self.width)
-            x0.append(2*self.width+(i)*3*self.width)
-        x1 = [i + self.width for i in x0]
         height = []
         self.maxHeight = 0
         for i in range(len(data.keys())):
-            height.append(data[i]['bounty'])
-            height.append(data[i]['qp'])
-            self.maxHeight = max(self.maxHeight,max(data[i]['bounty'],data[i]['qp']))
+            if i in data:
+                x0.append(self.width+(i)*3*self.width)
+                x0.append(2*self.width+(i)*3*self.width)
+                height.append(data[i]['bounty'])
+                height.append(data[i]['qp'])
+                self.maxHeight = max(self.maxHeight,max(data[i]['bounty'],data[i]['qp']))
+        x1 = [i + self.width for i in x0]
         brushes = [QColor("#c8ff0000"),QColor("#c800ffff")]*len(data.keys())
         self.bars = Bars(x0=x0,x1=x1,height=height,brushes=brushes)
 
