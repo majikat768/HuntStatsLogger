@@ -1,6 +1,7 @@
 import sqlite3
 import ctypes
 from resources import *
+from numpy import concatenate
 
 
 def json_to_db(obj):
@@ -387,6 +388,20 @@ def GetHunterByName(name):
         return GetHunterByProfileId(res[0][0])
     return []
 
+def GetHuntersByPartialName(name):
+    res = execute_query("select profileid from 'hunters' where blood_line_name like ? collate nocase", f"%{name}%")
+    ids = []
+    output = []
+
+    for hunterID in res:
+        if hunterID not in ids:
+            ids.append(hunterID)
+    for hunterID in ids:
+        foundHunter = GetHunterByProfileId(hunterID[0])
+        output = concatenate((output, foundHunter), axis = 0)
+    return output
+
+
 def GetNameByProfileId(pid):
     vals = execute_query("select blood_line_name from 'hunters_view' where profileid is ? limit 1" , pid)
     if len(vals) > 0:
@@ -401,7 +416,7 @@ def GetHunterByProfileId(pid):
         for v in vals:
             res.append({cols[i][1] : v[i] for i in range(len(cols))})
     except Exception as e:
-        log('dbhandler.gethunterbyname')
+        log('dbhandler.GetHunterByProfileId')
         log(e)
     return res
 

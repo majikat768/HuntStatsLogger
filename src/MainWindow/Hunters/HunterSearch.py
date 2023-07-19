@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QScrollArea, QLineEdit, QPushButton
 from PyQt6.QtCore import Qt
 from resources import settings, star_path, mmr_to_stars
-from DbHandler import GetTopNHunters, GetHunterKills, GetHunterByName, execute_query, getAllUsernames
+from DbHandler import GetTopNHunters, GetHunterKills, GetHuntersByPartialName, execute_query, getAllUsernames
 from Widgets.Modal import Modal
 from Widgets.Label import Label
 
@@ -26,7 +26,7 @@ class HunterSearch(QGroupBox):
         name = self.searchBar.text()
         if len(name) <= 0:
             return
-        res = GetHunterByName(name)
+        res = GetHuntersByPartialName(name)
         self.ShowResults(res, name)
 
     def ShowResults(self, data, name):
@@ -35,32 +35,32 @@ class HunterSearch(QGroupBox):
             resultsWindow.addWidget(
                 Label("You've never encountered %s in a Hunt." % name))
         else:
-            pid = data[0]['profileid']
-            resultsWindow.addWidget(
-                Label("You've seen %s in %d hunts." % (name, len(data))))
+            for hunter in data:
+                resultsWindow.addWidget(
+                    QLabel("You've seen %s in %d hunts." % (hunter[0]['blood_line_name'], len(hunter))))
+                pid = hunter[0]['profileid']
+                allnames = getAllUsernames(pid)
+                kills = GetHunterKills(pid)
+                sameTeamCount = self.SameTeamCount(hunter)
 
-            allnames = getAllUsernames(pid)
-            kills = GetHunterKills(pid)
-            killedby = 0
-            killed = 0
-            for k in kills:
-                killedby += k['killedby']
-                killed += k['killed']
-            sameTeamCount = self.SameTeamCount(data)
-
-            if len(allnames) > 1:
-                resultsWindow.addWidget(
-                    Label("They've also gone by:\n%s" % ",".join(allnames)))
-            if sameTeamCount > 0:
-                resultsWindow.addWidget(
-                    Label("You've been on their team %d times." % sameTeamCount))
-            if killedby > 0:
-                resultsWindow.addWidget(
-                    Label("They've killed you %d times." % killedby))
-            if killed > 0:
-                resultsWindow.addWidget(
-                    Label("You've killed them %d times." % killed))
-
+                killedby = 0
+                killed = 0
+                for k in kills:
+                    killedby += (k['killedby'] or 0)
+                    killed += (k['killed'] or 0)
+                    
+                if len(allnames) > 1:
+                    resultsWindow.addWidget(
+                        QLabel("They've also gone by:\n%s" % ",".join(allnames)))
+                if sameTeamCount > 0:
+                    resultsWindow.addWidget(
+                        QLabel("You've been on their team %d times." % sameTeamCount))
+                if killedby > 0:
+                    resultsWindow.addWidget(
+                        QLabel("They've killed you %d times." % killedby))
+                if killed > 0:
+                    resultsWindow.addWidget(
+                        QLabel("You've killed them %d times." % killed))
         resultsWindow.show()
 
     def SameTeamCount(self, data):
