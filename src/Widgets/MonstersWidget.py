@@ -12,6 +12,11 @@ class MonstersWidget(QGroupBox):
         self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.MinimumExpanding)
         self.setTitle("Monsters")
 
+    def sanitizeMonsterNames(self, monster):
+        match monster:
+            case 'waterdevil': return 'Water Devil'
+            case _: return monster.capitalize()      
+
     def update(self, monsters_killed):
         clearLayout(self.layout)
         n = sum(monsters_killed.values())
@@ -26,7 +31,7 @@ class MonstersWidget(QGroupBox):
         for monster,kills in reversed(sorted(monsters_killed.items(),key=lambda item : item[1])):
             if kills > 0:
                 if i < 3:
-                    label = QLabel("%d %s" % (kills,monster))
+                    label = QLabel("%d %s" % (kills, self.sanitizeMonsterNames(monster)))
                     label.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
                     self.layout.addWidget(label)
                     #i += 1
