@@ -66,11 +66,12 @@ def mmr_to_stars(mmr):
 
 def unix_to_datetime(timestamp):
     try:
+        timestamp = int(timestamp)
         return datetime.fromtimestamp(timestamp).strftime('%H:%M %m/%d/%y')
     except Exception as e:
         log('unix_to_datetime error')
         log(e)
-        return -1
+        return timestamp
 
 
 def GetBounties(game):
@@ -148,7 +149,7 @@ def GoToHuntPage(timestamp,main):
     tab = main.huntsTab
     index = tab.HuntSelect.findData(timestamp)
     tab.HuntSelect.setCurrentIndex(index)
-    main.tabs.setCurrentWidget(tab)
+    main.tabs.setTab(0)
     tab.updateDetails(ts=timestamp)
 
 

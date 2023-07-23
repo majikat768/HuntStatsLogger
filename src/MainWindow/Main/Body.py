@@ -22,6 +22,8 @@ class Body(QWidget):
     def setTab(self,index):
         if self.stack.currentIndex != index:
             self.stack.setCurrentIndex(index)
+        if self.tabBar.currentIndex != index:
+            self.tabBar.setCurrentIndex(index)
 
     def addTab(self,widget, title = None):
         self.tabBar.addTab(title)

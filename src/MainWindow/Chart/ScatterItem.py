@@ -76,6 +76,7 @@ class ScatterItem(pyqtgraph.ScatterPlotItem):
         pt = pts[0]
         mainframe = self.parent.window().mainframe
         GoToHuntPage(pt.data(),mainframe)
-        self.popup.hide()
-        self.popup = None
-        self.stop = False
+        if self.popup:
+            self.popup.hide()
+            self.popup = None
+            self.stop = False
