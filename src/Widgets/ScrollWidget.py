@@ -5,7 +5,7 @@ line_height = 24
 class ScrollWidget(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.layout = QGridLayout()
+        self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
         self.layout.setContentsMargins(0,0,0,0)
@@ -14,7 +14,8 @@ class ScrollWidget(QWidget):
 
         self.upArrow = ScrollButton(direction='up',parent=self)
         self.downArrow = ScrollButton(direction='down',parent=self)
-        self.scrollArea = ScrollArea(self)
+
+        self.scrollArea = QScrollArea(self)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Expanding)
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -29,10 +30,9 @@ class ScrollWidget(QWidget):
         self.main.setLayout(self.main.layout)
         self.scrollArea.setWidget(self.main)
 
-        self.layout.addWidget(self.scrollArea,0,0,3,1)
+        self.layout.addWidget(self.scrollArea)
         #self.layout.addWidget(self.upArrow,0,0,1,1)
         #self.layout.addWidget(self.downArrow,2,0,1,1)
-        self.layout.setRowStretch(1,1)
 
 
     def addWidget(self,widget):
@@ -77,11 +77,3 @@ class ScrollButton(QPushButton):
         elif(event.type() == QEvent.Type.MouseButtonRelease):
             self.scrolling = False
         return super().eventFilter(obj, event)
-
-class ScrollArea(QScrollArea):
-    def __init__(self, parent: QWidget) -> None:
-        super().__init__(parent)
-
-    def wheelEvent(self, a0) -> None:
-        super().wheelEvent(a0)
-        #self.parent().toggleButtons()

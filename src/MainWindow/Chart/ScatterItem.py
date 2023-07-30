@@ -2,6 +2,7 @@ import pyqtgraph
 from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout, QApplication
 from PyQt6.QtGui import QCursor
 from Widgets.Popup import Popup
+from Widgets.Label import Label
 from resources import unix_to_datetime, GoToHuntPage
 
 class ScatterItem(pyqtgraph.ScatterPlotItem):
@@ -46,9 +47,9 @@ class ScatterItem(pyqtgraph.ScatterPlotItem):
                 # not perfect, because technically one's MMR could be < 1000, or KDA could be > 1000....
                 # but probably won't be.
                 if pt.pos().y() > 1000:
-                    info.layout.addWidget(QLabel("%s\n%d" % (unix_to_datetime(pt.data()),pt.pos().y())))
+                    info.layout.addWidget(Label("%s\n%d" % (unix_to_datetime(pt.data()),pt.pos().y())))
                 else:
-                    info.layout.addWidget(QLabel("%s\n%.3f" % (unix_to_datetime(pt.data()),pt.pos().y())))
+                    info.layout.addWidget(Label("%s\n%.3f" % (unix_to_datetime(pt.data()),pt.pos().y())))
 
                 w = self.getViewWidget().window()
                 self.isHovered = True

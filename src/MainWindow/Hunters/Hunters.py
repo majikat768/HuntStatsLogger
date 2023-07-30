@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QGroupBox, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QScrollArea, QLineEdit, QPushButton, QMainWindow, QDialog
+from PyQt6.QtWidgets import QWidget, QGroupBox, QGridLayout, QHBoxLayout, QVBoxLayout, QScrollArea, QLineEdit, QPushButton, QMainWindow, QDialog
 from PyQt6.QtCore import Qt
 from resources import *
 from DbHandler import *
@@ -6,6 +6,7 @@ from MainWindow.Hunters.TopKills import TopKills
 from MainWindow.Hunters.FrequentHunters import FrequentHunters
 from MainWindow.Hunters.HunterSearch import HunterSearch
 from Widgets.Modal import Modal
+from Widgets.Label import Label
 
 
 class Hunters(QWidget):
@@ -89,11 +90,11 @@ class Hunters(QWidget):
         results.setLayout(results.layout)
         if len(data) <= 0:
             results.layout.addWidget(
-                QLabel("You've never encountered %s in a Hunt." % name))
+                Label("You've never encountered %s in a Hunt." % name))
         else:
             pid = data[0]['profileid']
             results.layout.addWidget(
-                QLabel("You've seen %s in %d hunts." % (name, len(data))))
+                Label("You've seen %s in %d hunts." % (name, len(data))))
 
             allnamesarray = execute_query(
                 "select blood_line_name from 'hunters' where profileid is %d group by blood_line_name" % pid)
@@ -110,16 +111,16 @@ class Hunters(QWidget):
 
             if len(allnames) > 1:
                 results.layout.addWidget(
-                    QLabel("They've also gone by:\n%s" % ",".join(allnames)))
+                    Label("They've also gone by:\n%s" % ",".join(allnames)))
             if sameTeamCount > 0:
                 results.layout.addWidget(
-                    QLabel("You've been on their team %d times." % sameTeamCount))
+                    Label("You've been on their team %d times." % sameTeamCount))
             if killedby > 0:
                 results.layout.addWidget(
-                    QLabel("They've killed you %d times." % killedby))
+                    Label("They've killed you %d times." % killedby))
             if killed > 0:
                 results.layout.addWidget(
-                    QLabel("You've killed them %d times." % killed))
+                    Label("You've killed them %d times." % killed))
 
         results.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -163,21 +164,21 @@ class Hunters(QWidget):
             killedme = hunter['killedme']
             killedbyme = hunter['killedbyme']
             sameTeamCount = self.SameTeamCount(data)
-            stars = QLabel("%s<br>%s" % ("<img src='%s'>" %
+            stars = Label("%s<br>%s" % ("<img src='%s'>" %
                            (star_path()) * mmr_to_stars(mmr), mmr))
-            hWidget.layout.addWidget(QLabel('%s' % name), 0, 0)
+            hWidget.layout.addWidget(Label('%s' % name), 0, 0)
             hWidget.layout.addWidget(stars, 1, 0)
-            hWidget.layout.addWidget(QLabel("Seen in %d hunts." % freq), 0, 1)
+            hWidget.layout.addWidget(Label("Seen in %d hunts." % freq), 0, 1)
             if sameTeamCount > 0:
                 hWidget.layout.addWidget(
-                    QLabel("You've been on their team %d times." % sameTeamCount), 1, 1)
+                    Label("You've been on their team %d times." % sameTeamCount), 1, 1)
             killText = []
             if killedme > 0:
                 killText.append("Has killed you %d times." % killedme)
             if killedbyme > 0:
                 killText.append("You've killed them %d times." % killedbyme)
             if len(killText) > 0:
-                hWidget.layout.addWidget(QLabel("<br>".join(killText)), 2, 1)
+                hWidget.layout.addWidget(Label("<br>".join(killText)), 2, 1)
 
             hWidget.layout.setRowStretch(hWidget.layout.rowCount(), 1)
             self.FreqHuntersWidget.layout.addWidget(hWidget)

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QGridLayout, QVBoxLayout, QLabel, QWidget, QSizePolicy, QPushButton
+from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QGridLayout, QVBoxLayout, QWidget, QSizePolicy, QPushButton
 from PyQt6.QtCore import Qt
 
 from resources import settings

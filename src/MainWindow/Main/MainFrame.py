@@ -119,7 +119,6 @@ class MainFrame(QWidget):
         self.chartTab.update()
         self.topHuntsTab.update()
         self.teamsTab.update()
-        #self.window().adjustSize()
 
     def StartLogger(self):
         thread = QThread(parent=self)

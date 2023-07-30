@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QGroupBox, QLabel, QScrollArea, QSpacerItem, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QGroupBox, QScrollArea, QSpacerItem, QSizePolicy
 from PyQt6.QtCore import Qt
 from resources import settings, star_path, mmr_to_stars, debug
 from DbHandler import GetTopNHunters, GetHunterByName, SameTeamCount, getAllUsernames
+from Widgets.Label import Label
 
 class FrequentHunters(QGroupBox):
     def __init__(self, parent=None):
@@ -45,15 +46,15 @@ class FrequentHunters(QGroupBox):
             sameTeamCount = SameTeamCount(name)
             pid = hunter['profileid']
             allnames = getAllUsernames(pid)
-            stars = QLabel("%s<br>%s" % ("<img src='%s'>" %
+            stars = Label("%s<br>%s" % ("<img src='%s'>" %
                            (star_path()) * mmr_to_stars(mmr), mmr))
-            hWidget.layout.addWidget(QLabel('%s' % name), 0, 0)
+            hWidget.layout.addWidget(Label('%s' % name), 0, 0)
             hWidget.layout.addWidget(stars, 1, 0)
-            hWidget.layout.addWidget(QLabel("Seen in %d hunts." % freq), 0, 1)
+            hWidget.layout.addWidget(Label("Seen in %d hunts." % freq), 0, 1)
             row = 1
             if sameTeamCount > 0:
                 hWidget.layout.addWidget(
-                    QLabel("You've been on their team %d times." % sameTeamCount), row, 1)
+                    Label("You've been on their team %d times." % sameTeamCount), row, 1)
                 row += 1
             killText = []
             if killedme > 0:
@@ -61,10 +62,10 @@ class FrequentHunters(QGroupBox):
             if killedbyme > 0:
                 killText.append("You've killed them %d times." % killedbyme)
             if len(killText) > 0:
-                hWidget.layout.addWidget(QLabel("<br>".join(killText)), row, 1)
+                hWidget.layout.addWidget(Label("<br>".join(killText)), row, 1)
                 row += 1
             if len(allnames) > 1:
-                hWidget.layout.addWidget(QLabel("Other names:\n%s" % ("\n".join([n for n in allnames if n != name]))),row,1)
+                hWidget.layout.addWidget(Label("Other names:\n%s" % ("\n".join([n for n in allnames if n != name]))),row,1)
                 row += 1
 
             hWidget.layout.setRowStretch(hWidget.layout.rowCount(), 1)

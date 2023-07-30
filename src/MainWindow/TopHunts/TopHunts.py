@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QPushButton, QComboBox, QCheckBox
+from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QScrollArea, QPushButton, QComboBox, QCheckBox
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
 from resources import *
@@ -33,8 +33,8 @@ class TopHunts(QWidget):
         self.opts = QWidget()
         self.opts.layout = QGridLayout()
         self.opts.setLayout(self.opts.layout)
-        self.opts.layout.addWidget(QLabel("Sort By"),0,0)
-        self.opts.layout.addWidget(QLabel("Results"),0,1)
+        self.opts.layout.addWidget(Label("Sort By"),0,0)
+        self.opts.layout.addWidget(Label("Results"),0,1)
 
         self.sortingSelect = QComboBox()
 
@@ -149,7 +149,7 @@ class TopHunts(QWidget):
         your_kills = killData['your_kills']
         your_deaths = killData['your_deaths']
         assists = killData['assists']
-        yourKills = QLabel(
+        yourKills = Label(
             "Your kills: %d<br>%s" % (
                 sum(your_kills.values()),
                 '<br>'.join(["%sx %s" % (
@@ -158,7 +158,7 @@ class TopHunts(QWidget):
                 ) for stars in your_kills.keys() if your_kills[stars] > 0])
             )
         )
-        yourDeaths = QLabel(
+        yourDeaths = Label(
             "Your deaths: %d<br>%s" % (
                 sum(your_deaths.values()),
                 '<br>'.join(["%sx %s" % (
@@ -167,12 +167,12 @@ class TopHunts(QWidget):
                 ) for stars in your_deaths.keys() if your_deaths[stars] > 0])
             )
         )
-        w.main.layout.addWidget(QLabel("Quickplay" if isQp else "Bounty Hunt"),0,0,Qt.AlignmentFlag.AlignTop)
-        w.main.layout.addWidget(QLabel("%d %s" % (numTeams, "teams" if not isQp else "hunters")),1,0,Qt.AlignmentFlag.AlignTop)
+        w.main.layout.addWidget(Label("Quickplay" if isQp else "Bounty Hunt"),0,0,Qt.AlignmentFlag.AlignTop)
+        w.main.layout.addWidget(Label("%d %s" % (numTeams, "teams" if not isQp else "hunters")),1,0,Qt.AlignmentFlag.AlignTop)
         if not isQp:
-            w.main.layout.addWidget(QLabel(", ".join(bounties)),2,0,Qt.AlignmentFlag.AlignTop)
+            w.main.layout.addWidget(Label(", ".join(bounties)),2,0,Qt.AlignmentFlag.AlignTop)
         if not isQp:
-            teamKills = QLabel(
+            teamKills = Label(
                 "Team kills: %d<br>%s" % (
                     sum(team_kills.values()),
                     '<br>'.join(["%sx %s" % (
@@ -183,13 +183,13 @@ class TopHunts(QWidget):
             )
             w.main.layout.addWidget(teamKills,0,1,Qt.AlignmentFlag.AlignTop)
         else:
-            w.main.layout.addWidget(QLabel(),0,1,Qt.AlignmentFlag.AlignTop)
+            w.main.layout.addWidget(Label(),0,1,Qt.AlignmentFlag.AlignTop)
         w.main.layout.addWidget(yourKills,0,2,Qt.AlignmentFlag.AlignTop)
         w.main.layout.addWidget(yourDeaths,0,3, Qt.AlignmentFlag.AlignTop)
-        w.main.layout.addWidget(QLabel("%d assists." % assists),0,4,Qt.AlignmentFlag.AlignTop)
+        w.main.layout.addWidget(Label("%d assists." % assists),0,4,Qt.AlignmentFlag.AlignTop)
         
         sort = self.sortingSelect.currentData()
-        w.layout.addWidget(QLabel("%s: %s" % (getLabel(sort),str(data[sort]))))
+        w.layout.addWidget(Label("%s: %s" % (getLabel(sort),str(data[sort]))))
         w.layout.addWidget(w.main)
         w.layout.addWidget(MatchButton)
 

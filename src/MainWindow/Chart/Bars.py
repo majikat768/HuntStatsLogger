@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsItem, QGraphicsRectItem, QGraphicsOpacityEffect, QGraphicsObject
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGraphicsItem, QGraphicsRectItem, QGraphicsOpacityEffect, QGraphicsObject
 from PyQt6.QtCore import QRectF, QAbstractAnimation, QPropertyAnimation, QObject
 from PyQt6.QtGui import QCursor, QColor, QBrush
 import pyqtgraph
+from Widgets.Label import Label
 from Widgets.Popup import Popup
 
 # x0 [], x1 [], height [], brushes []
@@ -54,7 +55,7 @@ class Bars(pyqtgraph.BarGraphItem):
                     info = QWidget()
                     info.layout = QVBoxLayout()
                     info.setLayout(info.layout)
-                    info.layout.addWidget(QLabel(txt))
+                    info.layout.addWidget(Label(txt))
                     self.popup = Popup(info,QCursor.pos().x()+16,QCursor.pos().y()-32)
                     self.popup.show()
                     self.popup.current = b

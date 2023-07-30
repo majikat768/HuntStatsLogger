@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow,QWidget,QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QPushButton,QLabel, QFileDialog, QSizePolicy, QLineEdit, QComboBox, QCheckBox, QSpacerItem, QApplication, QDialog, QDialogButtonBox
+from PyQt6.QtWidgets import QMainWindow,QWidget,QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QPushButton, QFileDialog, QSizePolicy, QLineEdit, QComboBox, QCheckBox, QSpacerItem, QApplication, QDialog, QDialogButtonBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QIntValidator
 from DbHandler import execute_query, GetTotalHuntCount, update_views
@@ -92,7 +92,7 @@ class SettingsWindow(QMainWindow):
         self.huntLimitWidget.layout = QGridLayout()
         self.huntLimitWidget.setLayout(self.huntLimitWidget.layout)
 
-        self.huntLimitLabel = QLabel("Show only last <b>%s</b> hunts" % (settings.value("hunt_limit","25")))
+        self.huntLimitLabel = Label("Show only last <b>%s</b> hunts" % (settings.value("hunt_limit","25")))
 
         self.huntLimitInput = QLineEdit(settings.value("hunt_limit","25"))
         self.huntLimitInput.setValidator(QIntValidator())
@@ -110,7 +110,7 @@ class SettingsWindow(QMainWindow):
         self.main.layout.addWidget(self.huntLimitWidget)
 
     def initSteamOptions(self):
-        self.steamFolderLabel = QLabel(settings.value("hunt_dir","<i>ex: C:/Steam/steamapps/common/Hunt Showdown</i>"))
+        self.steamFolderLabel = Label(settings.value("hunt_dir","<i>ex: C:/Steam/steamapps/common/Hunt Showdown</i>"))
         self.steamFolderButton = QPushButton("Select Hunt Installation Directory")
         self.steamFolderButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.steamFolderButton.clicked.connect(self.SelectFolderDialog)
@@ -147,7 +147,7 @@ class SettingsWindow(QMainWindow):
 
         confirmation.setWindowTitle("Are you sure?")
 
-        confirmation.textLabel = QLabel("Setting the number of hunts to show higher than a few hundred will introduce noticeable lagtime in loading.")
+        confirmation.textLabel = Label("Setting the number of hunts to show higher than a few hundred will introduce noticeable lagtime in loading.")
         confirmation.textLabel.setWordWrap(True)
 
         buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QScrollArea, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QScrollArea, QLineEdit, QPushButton
 from PyQt6.QtCore import Qt
 from resources import settings, star_path, mmr_to_stars
 from DbHandler import GetTopNHunters, GetHunterKills, GetHunterByName, execute_query, getAllUsernames
 from Widgets.Modal import Modal
+from Widgets.Label import Label
 
 class HunterSearch(QGroupBox):
     def __init__(self,parent=None):
@@ -32,11 +33,11 @@ class HunterSearch(QGroupBox):
         resultsWindow = Modal(parent=self)
         if len(data) <= 0:
             resultsWindow.addWidget(
-                QLabel("You've never encountered %s in a Hunt." % name))
+                Label("You've never encountered %s in a Hunt." % name))
         else:
             pid = data[0]['profileid']
             resultsWindow.addWidget(
-                QLabel("You've seen %s in %d hunts." % (name, len(data))))
+                Label("You've seen %s in %d hunts." % (name, len(data))))
 
             allnames = getAllUsernames(pid)
             kills = GetHunterKills(pid)
@@ -49,16 +50,16 @@ class HunterSearch(QGroupBox):
 
             if len(allnames) > 1:
                 resultsWindow.addWidget(
-                    QLabel("They've also gone by:\n%s" % ",".join(allnames)))
+                    Label("They've also gone by:\n%s" % ",".join(allnames)))
             if sameTeamCount > 0:
                 resultsWindow.addWidget(
-                    QLabel("You've been on their team %d times." % sameTeamCount))
+                    Label("You've been on their team %d times." % sameTeamCount))
             if killedby > 0:
                 resultsWindow.addWidget(
-                    QLabel("They've killed you %d times." % killedby))
+                    Label("They've killed you %d times." % killedby))
             if killed > 0:
                 resultsWindow.addWidget(
-                    QLabel("You've killed them %d times." % killed))
+                    Label("You've killed them %d times." % killed))
 
         resultsWindow.show()
 

@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from PyQt6.QtGui import QPixmap, QColor, QPainter
 from DbHandler import GetCurrentMmr, GetBestMmr
 from resources import mmr_to_stars, star_path
+from Widgets.Label import Label
 
 star_size = 16
 
@@ -10,9 +11,9 @@ class MmrWidget(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.mmrLabel = QLabel()
-        self.bestLabel = QLabel()
-        self.starsLabel = QLabel()
+        self.mmrLabel = Label()
+        self.bestLabel = Label()
+        self.starsLabel = Label()
 
         self.mmr = GetCurrentMmr()
         self.stars = mmr_to_stars(self.mmr)

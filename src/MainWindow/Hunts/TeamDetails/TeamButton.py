@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel,QSizePolicy, QPushButton
+from PyQt6.QtWidgets import QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,QSizePolicy, QPushButton
 from PyQt6 import QtGui
 from PyQt6.QtCore import QEvent, Qt, QSize
 from resources import clearLayout, get_icon, star_path, mmr_to_stars, chevronDownIcon, chevronRightIcon 
+from Widgets.Label import Label
 
 icon_size = 16
 
@@ -39,7 +40,7 @@ class TeamButton(QPushButton):
         self.setMouseTracking(True)
         self.setCursor(QtGui.QCursor(Qt.CursorShape.PointingHandCursor))
         #self.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.chevronWidget = QLabel("<img src='%s' height=16 width=16>" % chevronRightIcon)
+        self.chevronWidget = Label("<img src='%s' height=16 width=16>" % chevronRightIcon)
         self.chevronWidget.setStyleSheet("QLabel{padding-right:16px;}")
         self.layout.addWidget(self.chevronWidget,0,0,1,1)
 

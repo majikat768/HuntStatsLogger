@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QSizePolicy, QGroupBox
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QSizePolicy, QGroupBox
 from resources import clearLayout
+from Widgets.Label import Label
 
 class BountiesWidget(QGroupBox):
     def __init__(self, parent=None):
@@ -17,8 +18,8 @@ class BountiesWidget(QGroupBox):
             widget = QWidget()
             widget.layout = QVBoxLayout()
             widget.setLayout(widget.layout)
-            widget.layout.addWidget(QLabel("Quick Play"))
-            widget.layout.addWidget(QLabel("closed %d rifts." % bounties['rifts_closed']))
+            widget.layout.addWidget(Label("Quick Play"))
+            widget.layout.addWidget(Label("closed %d rifts." % bounties['rifts_closed']))
             self.layout.addWidget(widget)
         else:
             for name in targets:
@@ -28,22 +29,22 @@ class BountiesWidget(QGroupBox):
                 widget.setLayout(widget.layout)
 
                 boss = bounties[name.lower()]
-                bossLabel = QLabel("%s" % name.capitalize())
+                bossLabel = Label("%s" % name.capitalize())
                 bossLabel.setObjectName("BountyHeading")
                 if sum(boss.values()) > 0:
-                    text.append("Found %d clues." % boss['clues'])
+                    text.append("\tFound %d clues." % boss['clues'])
                     if boss['killed']:
-                        text.append("Killed.")
+                        text.append("\tKilled.")
                     if boss['banished']:
-                        text.append("Banished.")
+                        text.append("\tBanished.")
                 else:
                     text.append('')
 
                 self.layout.addWidget(bossLabel)
                 for line in text:
-                    label = QLabel(line)
+                    label = Label(line)
                     label.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
                     self.layout.addWidget(label)
                     #widget.layout.addWidget(label)
-                self.layout.addWidget(QLabel())
+                self.layout.addWidget(Label())
         self.layout.addStretch()

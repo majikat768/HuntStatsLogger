@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QSizePolicy
 from DbHandler import execute_query
 from resources import settings
 from time import time
+from Widgets.Label import Label
 
 gameTypes = ["All Hunts","Bounty Hunt","Quick Play"]
 
@@ -12,9 +13,9 @@ class KdaWidget(QWidget):
         self.setLayout(self.layout)
 
         self.kda = 0.0
-        self.kdaLabel = QLabel()
+        self.kdaLabel = Label()
         self.kdaLabel.setObjectName("kdaTitle")
-        self.values = QLabel()
+        self.values = Label()
         self.button = QPushButton(gameTypes[0])
         self.button.setObjectName("link")
         self.button.clicked.connect(self.toggle)

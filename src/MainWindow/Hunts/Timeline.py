@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QWidget,QGroupBox, QLabel, QVBoxLayout, QScrollArea, QSizePolicy, QApplication,QWidgetItem,QLayoutItem
+from PyQt6.QtWidgets import QWidget,QGroupBox, QVBoxLayout, QScrollArea, QSizePolicy, QApplication,QWidgetItem,QLayoutItem
 from PyQt6.QtCore import Qt
 from DbHandler import GetMatchTimestamps, GetHunterFromGame
 from Widgets.ScrollWidget import ScrollWidget 
 from resources import clearLayout
+from Widgets.Label import Label
 
 class Timeline(ScrollWidget):
     def __init__(self,parent=None):
@@ -13,12 +14,12 @@ class Timeline(ScrollWidget):
     def update(self,ts):
         clearLayout(self.main.layout)
         self.timestamps = GetMatchTimestamps(ts)
-        titleLabel = QLabel("Timeline")
-        subtitleLabel = QLabel()
+        titleLabel = Label("Timeline")
+        subtitleLabel = Label()
         titleLabel.setStyleSheet("QLabel{font-size:16px;color:#cccc67;}")
         self.addWidget(titleLabel)
         self.addWidget(subtitleLabel)
-        self.addWidget(QLabel())
+        self.addWidget(Label())
         for e in self.timestamps:
             eventWidget = QWidget()
             eventWidget.layout = QVBoxLayout()
@@ -32,9 +33,9 @@ class Timeline(ScrollWidget):
             team_num = e['hunter'].split("_")[0]
             hunter_num = e['hunter'].split("_")[1] 
             hunter = GetHunterFromGame(hunter_num,team_num,e['game_id'])
-            tsLbl = QLabel(timestamp)
+            tsLbl = Label(timestamp)
             tsLbl.setStyleSheet("QLabel{font-weight:bold;}")
-            eventLbl = QLabel(GetEventText(event,hunter))
+            eventLbl = Label(GetEventText(event,hunter))
             eventLbl.setWordWrap(True)
             eventWidget.layout.addWidget(tsLbl)
             eventWidget.layout.addWidget(eventLbl)

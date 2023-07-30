@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout,QHBoxLayout,QGridLayout,QPushButton, QComboBox, QLabel, QGraphicsView, QGraphicsScene,QGraphicsItem,QGraphicsRectItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout,QHBoxLayout,QGridLayout,QPushButton, QComboBox, QGraphicsView, QGraphicsScene,QGraphicsItem,QGraphicsRectItem
 from resources import *
 from MapWindow.MapView import MapView
 

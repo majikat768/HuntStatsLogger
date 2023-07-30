@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy, QPushButton, QGroupBox
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QPushButton, QGroupBox
 from PyQt6.QtCore import QEvent
 from resources import clearLayout
 from Widgets.Popup import Popup
+from Widgets.Label import Label
 
 class MonstersWidget(QGroupBox):
     def __init__(self, parent=None):
@@ -23,7 +24,7 @@ class MonstersWidget(QGroupBox):
         values = ["%d %s" % (monsters_killed[m], m)
                   for m in monsters_killed if monsters_killed[m] > 0]
 
-        title = QLabel("Monster kills: %d" % n)
+        title = Label("Monster kills: %d" % n)
         title.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.layout.addWidget(title)
         overflow = None
@@ -31,7 +32,7 @@ class MonstersWidget(QGroupBox):
         for monster,kills in reversed(sorted(monsters_killed.items(),key=lambda item : item[1])):
             if kills > 0:
                 if i < 3:
-                    label = QLabel("%d %s" % (kills, self.sanitizeMonsterNames(monster)))
+                    label = Label("%d %s" % (kills, self.sanitizeMonsterNames(monster)))
                     label.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
                     self.layout.addWidget(label)
                     #i += 1
@@ -56,7 +57,7 @@ class MonstersWidget(QGroupBox):
                 x = event.globalPosition().x()
                 y = event.globalPosition().y()
                 for d in obj.data:
-                    info.layout.addWidget(QLabel("%d %s" % (obj.data[d],d)))
+                    info.layout.addWidget(Label("%d %s" % (obj.data[d],d)))
                 self.popup = Popup(info, x, y)
                 # self.popup.keepAlive(True)
                 self.popup.show()

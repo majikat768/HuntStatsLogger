@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QEvent, Qt
-from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QLabel, QPushButton,
+from PyQt6.QtWidgets import (QGridLayout, QGroupBox, QHBoxLayout, QPushButton,
                              QSizePolicy, QScrollArea,QVBoxLayout, QWidget)
 
 from DbHandler import execute_query, GetCurrentMmr
@@ -19,7 +19,7 @@ class TeamDetails(ScrollWidget):
         self.titleWidget = QWidget()
         self.titleWidget.layout = QHBoxLayout()
         self.titleWidget.setLayout(self.titleWidget.layout)
-        titleLabel = QLabel("Teams")
+        titleLabel = Label("Teams")
         titleLabel.setStyleSheet("QLabel{font-size:16px;color:#cccc67;}")
         self.titleWidget.layout.addWidget(titleLabel)
 
@@ -66,20 +66,20 @@ class TeamDetails(ScrollWidget):
             teamWidget.setObjectName("TeamWidget")
 
             teamMmr = team['mmr']
-            teamMmrLabel = QLabel("Match MMR: %d" % teamMmr)
+            teamMmrLabel = Label("Match MMR: %d" % teamMmr)
             stars = "<img src='%s'>" % (star_path())*mmr_to_stars(teamMmr)
-            starsLabel = QLabel("%s" % stars)
+            starsLabel = Label("%s" % stars)
             teamRandom = (team['isinvite'].lower() == "false" and team['numplayers'] > 1)
             teamRandomStr = "Randoms" if teamRandom else "Invite" if team['numplayers'] > 1 else ""
             teamSizeStr = "Trio" if len(teamhunters) == 3 else "Duo" if len(teamhunters) == 2 else "Solo"
-            teamFlavorLabel = QLabel(teamSizeStr)
+            teamFlavorLabel = Label(teamSizeStr)
             if len(teamRandomStr) > 0:
                 teamFlavorLabel.setText(teamFlavorLabel.text() + " / " + teamRandomStr)
             nHunters = team['numplayers']
             if not isQp:
-                nHuntersLabel = QLabel("%d hunters" % nHunters)
+                nHuntersLabel = Label("%d hunters" % nHunters)
             else:
-                nHuntersLabel = QLabel(teamhunters[0]['blood_line_name'])
+                nHuntersLabel = Label(teamhunters[0]['blood_line_name'])
             nHuntersLabel.setStyleSheet("QLabel{font-size:14px;}")
             nHuntersLabel.setText(', '.join([t['blood_line_name'] for t in teamhunters]))
 
@@ -123,7 +123,7 @@ class TeamDetails(ScrollWidget):
             teamButton.layout.addWidget(teamFlavorLabel,1,1)
             teamButton.layout.addWidget(teamMmrLabel,2,1)
             teamButton.layout.addWidget(starsLabel,2,2)
-            teamButton.layout.addWidget(QLabel(iconStr),0,3,2,1,Qt.AlignmentFlag.AlignRight)
+            teamButton.layout.addWidget(Label(iconStr),0,3,2,1,Qt.AlignmentFlag.AlignRight)
             teamButton.layout.setColumnStretch(3,1)
             teamButton.setFixedHeight(teamButton.layout.sizeHint().height())
 
@@ -150,7 +150,7 @@ class TeamDetails(ScrollWidget):
                 x = event.globalPosition().x()
                 y = event.globalPosition().y()
                 for d in obj.data:
-                    info.layout.addWidget(QLabel(d))
+                    info.layout.addWidget(Label(d))
                 self.popup = Popup(info, x, y)
                 # self.popup.keepAlive(True)
                 self.popup.show()
@@ -182,11 +182,11 @@ class TeamDetails(ScrollWidget):
         n_games = 0 if len(n_games) == 0 else n_games[0][0]
         hunterWidget.ownTeam = int(pid) == int(settings.value("profileid","-1"))
 
-        nameLabel = QLabel(hunter['blood_line_name'])
-        mmrLabel = QLabel("MMR: %d" % hunter['mmr'])
-        starsLabel = QLabel("<img src='%s'>" % (star_path())*mmr_to_stars(hunter['mmr']))
+        nameLabel = Label(hunter['blood_line_name'])
+        mmrLabel = Label("MMR: %d" % hunter['mmr'])
+        starsLabel = Label("<img src='%s'>" % (star_path())*mmr_to_stars(hunter['mmr']))
 
-        n_gamesLabel = QLabel()
+        n_gamesLabel = Label()
         if n_games > 1 and int(pid) != int(settings.value("profileid","-1")):
             n_gamesLabel.setText("seen in %d games" % n_games)
         

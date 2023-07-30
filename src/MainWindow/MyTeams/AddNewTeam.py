@@ -1,19 +1,20 @@
 from Widgets.Modal import Modal
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QLabel, QHBoxLayout, QWidget, QLineEdit, QPushButton, QDialog
+from PyQt6.QtWidgets import QHBoxLayout, QWidget, QLineEdit, QPushButton, QDialog
 from DbHandler import execute_query
+from Widgets.Label import Label
 from resources import settings
 
 class AddNewTeamWindow(Modal):
     def __init__(self, parent=None, flags=Qt.WindowType.Popup):
         super().__init__(parent, flags)
 
-        self.addWidget(QLabel("Enter 2 or 3 hunter names"))
+        self.addWidget(Label("Enter 2 or 3 hunter names"))
 
         hunter1widget = QWidget()
         hunter1widget.layout = QHBoxLayout()
         hunter1widget.setLayout(hunter1widget.layout)
-        hunter1label = QLabel("1st Hunter: ")
+        hunter1label = Label("1st Hunter: ")
         self.hunter1input = QLineEdit()
         hunter1widget.layout.addWidget(hunter1label)
         hunter1widget.layout.addWidget(self.hunter1input)
@@ -21,7 +22,7 @@ class AddNewTeamWindow(Modal):
         hunter2widget = QWidget()
         hunter2widget.layout = QHBoxLayout()
         hunter2widget.setLayout(hunter2widget.layout)
-        hunter2label = QLabel("2nd Hunter: ")
+        hunter2label = Label("2nd Hunter: ")
         self.hunter2input = QLineEdit()
         hunter2widget.layout.addWidget(hunter2label)
         hunter2widget.layout.addWidget(self.hunter2input)
@@ -29,7 +30,7 @@ class AddNewTeamWindow(Modal):
         hunter3widget = QWidget()
         hunter3widget.layout = QHBoxLayout()
         hunter3widget.setLayout(hunter3widget.layout)
-        hunter3label = QLabel("3rd Hunter: ")
+        hunter3label = Label("3rd Hunter: ")
         self.hunter3input = QLineEdit()
         hunter3widget.layout.addWidget(hunter3label)
         hunter3widget.layout.addWidget(self.hunter3input)
@@ -76,6 +77,6 @@ class AddNewTeamWindow(Modal):
 
     def ErrDialog(self, txt):
         errDialog = Modal(parent=self)
-        errDialog.addWidget(QLabel(txt))
+        errDialog.addWidget(Label(txt))
         errDialog.show()
 

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout,QGridLayout,QPushButton, QComboBox, QLabel, QGraphicsView, QGraphicsScene,QGraphicsItem,QGraphicsRectItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout,QGridLayout,QPushButton, QComboBox, QGraphicsView, QGraphicsScene,QGraphicsItem,QGraphicsRectItem
 from PyQt6.QtGui import QColor
 
 class Legend():

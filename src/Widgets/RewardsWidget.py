@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QLabel, QSizePolicy, QGroupBox
+from PyQt6.QtWidgets import QWidget, QGridLayout, QSizePolicy, QGroupBox
 from resources import resource_path, get_icon
+from Widgets.Label import Label
 
 icon_size = 24
 
@@ -23,7 +24,7 @@ class RewardsWidget(QGroupBox):
             #icon.setSizePolicy(sp)
             self.layout.addWidget(icon,i,0)
 
-        self.labels = { name : QLabel() for name in iconNames }
+        self.labels = { name : Label() for name in iconNames }
         i = 0
         for name in self.labels:
             self.labels[name].setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)

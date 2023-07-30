@@ -8,7 +8,8 @@ from datetime import datetime
 
 from PyQt6.QtCore import QSettings, QStandardPaths
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QLabel, QSizePolicy, QWidgetItem, QSpacerItem, QApplication
+from PyQt6.QtWidgets import QSizePolicy, QWidgetItem, QSpacerItem, QApplication
+from Widgets.Label import Label
 
 app_data_path = os.path.join(QStandardPaths.writableLocation(
     QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
@@ -126,7 +127,7 @@ teamTable = " "*4
 
 def get_icon(path,x=icon_size,y=icon_size,border=True):
     pm = QPixmap(path)
-    i = QLabel()
+    i = Label()
     i.setPixmap(pm.scaled(x, y))
     if border:
         i.setObjectName("icon")
@@ -162,3 +163,6 @@ def launch_hunt():
 
 with open(resource_path('./assets/json/maps.json'),'r') as f:
     maps = json.loads(f.read())
+
+tab2 = " "*2
+tab4 = " "*4

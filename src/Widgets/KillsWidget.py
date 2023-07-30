@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy, QGroupBox
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QGroupBox
 from PyQt6.QtCore import Qt
 from resources import clearLayout, star_path, debug
 from DbHandler import getKillData
+from Widgets.Label import Label
 
 class KillsWidget(QGroupBox):
     def __init__(self, parent = None):
@@ -22,19 +23,20 @@ class KillsWidget(QGroupBox):
         your_deaths = kills['your_deaths']
         assists = kills['assists']
         if not isQp:
-            teamKills = QLabel(
+            teamKills = Label()
+            teamKills.setText(
                 "Team kills: %d<br>%s" % (
                     sum(team_kills.values()),
-                    '<br>'.join(["%sx %s" % (
+                    '<br>'.join(["\t%sx %s" % (
                         team_kills[stars],
                         "<img src='%s'>" % (star_path())*stars
                     ) for stars in team_kills.keys() if team_kills[stars] > 0])
                 )
             )
             self.layout.addWidget(teamKills)
-            self.layout.addWidget(QLabel())
+            self.layout.addWidget(Label())
 
-        yourKills = QLabel(
+        yourKills = Label(
             "Your kills: %d<br>%s" % (
                 sum(your_kills.values()),
                 '<br>'.join(["%sx %s" % (
@@ -44,10 +46,10 @@ class KillsWidget(QGroupBox):
             )
         )
         self.layout.addWidget(yourKills)
-        self.layout.addWidget(QLabel())
+        self.layout.addWidget(Label())
         self.layout.setAlignment(yourKills,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-        yourDeaths = QLabel(
+        yourDeaths = Label(
             "Your deaths: %d<br>%s" % (
                 sum(your_deaths.values()),
                 '<br>'.join(["%sx %s" % (
@@ -57,14 +59,14 @@ class KillsWidget(QGroupBox):
             )
         )
         self.layout.addWidget(yourDeaths)
-        self.layout.addWidget(QLabel())
+        self.layout.addWidget(Label())
         self.layout.setAlignment(yourDeaths,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-        yourAssists = QLabel("%d assists." % assists)
+        yourAssists = Label("%d assists." % assists)
         self.layout.addWidget(yourAssists)
         self.layout.setAlignment(yourAssists,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-        mmrChangeLabel = QLabel(mmrChange)
+        mmrChangeLabel = Label(mmrChange)
         self.layout.addWidget(mmrChangeLabel)
         self.layout.setAlignment(mmrChangeLabel,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.layout.addStretch()

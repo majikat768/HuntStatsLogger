@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox
 from resources import settings, debug
+from Widgets.Label import Label
 from DbHandler import GetTopKilled, GetTopKiller, GetHunterByName, execute_query
 
 class TopKills(QWidget):
@@ -33,14 +34,14 @@ class TopKills(QWidget):
             return
         name = topKilled['name']
         kills = topKilled['kills']
-        self.killedBox.layout.addWidget(QLabel('%s' % name))
+        self.killedBox.layout.addWidget(Label('%s' % name))
         self.killedBox.layout.addWidget(
-            QLabel('Have killed them %d times.' % kills))
+            Label('Have killed them %d times.' % kills))
         data = GetHunterByName(name)
         sameTeamCount = self.SameTeamCount(data)
         if sameTeamCount > -1:
             self.killedBox.layout.addWidget(
-                QLabel("You've been on their team %d times." % sameTeamCount))
+                Label("You've been on their team %d times." % sameTeamCount))
         self.killedBox.adjustSize()
 
     def updateTopKiller(self):
@@ -53,14 +54,14 @@ class TopKills(QWidget):
             return
         name = topKiller['name']
         kills = topKiller['kills']
-        self.killerBox.layout.addWidget(QLabel('%s' % name))
+        self.killerBox.layout.addWidget(Label('%s' % name))
         self.killerBox.layout.addWidget(
-            QLabel('Has killed you %d times.' % kills))
+            Label('Has killed you %d times.' % kills))
         data = GetHunterByName(name)
         sameTeamCount = self.SameTeamCount(data)
         if sameTeamCount > -1:
             self.killerBox.layout.addWidget(
-                QLabel("You've been on their team %d times." % sameTeamCount))
+                Label("You've been on their team %d times." % sameTeamCount))
         self.killerBox.adjustSize()
 
     def SameTeamCount(self, data):

@@ -63,12 +63,9 @@ class Hunts(QWidget):
         currentMmr = execute_query("select mmr from 'hunters' where profileid is '%s' and timestamp is %d" % (
             settings.value("profileid"), currentTs))
         currentMmr = 0 if len(currentMmr) == 0 else currentMmr[0][0]
-        if currentIndex == 0:
-            predictedMmr = predictNextMmr(currentMmr, currentTs)
-            mmrOutput = "estimate:<br>%+d MMR" % (predictedMmr-currentMmr)
-            return mmrOutput
-        else:
-            predictedMmr = predictNextMmr(currentMmr, currentTs)
+        predictedMmr = predictNextMmr(currentMmr, currentTs)
+        mmrOutput = "MMR Δ\n\tEstimate: %+d\n" % (predictedMmr-currentMmr)
+        if currentIndex != 0:
             self.HuntSelect.setCurrentIndex(currentIndex-1)
             nextTs = self.HuntSelect.currentData()
             self.HuntSelect.setCurrentIndex(currentIndex)
@@ -76,10 +73,9 @@ class Hunts(QWidget):
             nextMmr = execute_query("select mmr from 'hunters' where profileid is '%s' and timestamp is %d" % (
                 settings.value("profileid"), nextTs))
             nextMmr = 0 if len(nextMmr) == 0 else nextMmr[0][0]
-            predictChange = predictedMmr - currentMmr
             mmrChange = nextMmr - currentMmr
-            mmrOutput = "%+d MMR" % (mmrChange)
-            return mmrOutput
+            mmrOutput += "\tActual:%+d" % (mmrChange)
+        return mmrOutput
 
     def updateDetails(self, ts=None):
         if not ts:
@@ -166,6 +162,7 @@ class Hunts(QWidget):
         self.HuntSelect.setEditable(False)
         self.HuntSelect.setIconSize(QSize(24, 24))
         self.HuntSelect.view().setSpacing(4)
+        self.HuntSelect.view().setContentsMargins(2,4,2,4)
 
         self.HuntSelect.activated.connect(lambda : self.updateDetails())
 

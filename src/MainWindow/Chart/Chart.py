@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QLabel, QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QSizePolicy, QGraphicsItemGroup, QGraphicsRectItem, QApplication, QPushButton, QFileDialog
+from PyQt6.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QSizePolicy, QGraphicsItemGroup, QGraphicsRectItem, QApplication, QPushButton, QFileDialog
 import numpy as np
 from PyQt6.QtCore import Qt, QEvent, QRectF, QStandardPaths
 from PyQt6.QtGui import QColor
@@ -10,6 +10,7 @@ from MainWindow.Chart.KdaData import KdaData
 from MainWindow.Chart.WinLoss import WinLoss
 from MainWindow.Chart.KillsPerHunt import KillsPerHunt
 from MainWindow.Chart.TeamKillsPerHunt import TeamKillsPerHunt
+from Widgets.Label import Label
 from resources import debug
 
 class Chart(QWidget):
@@ -76,7 +77,7 @@ class Chart(QWidget):
         self.screenshotButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.screenshotButton.clicked.connect(self.save_chart)
         self.layout.addWidget(
-            QLabel("Use scroll wheel to zoom y axis; Shift+scroll to zoom x axis."))
+            Label("Use scroll wheel to zoom y axis; Shift+scroll to zoom x axis."))
         self.layout.addWidget(self.screenshotButton)
 
     def update(self):

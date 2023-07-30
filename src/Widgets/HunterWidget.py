@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from PyQt6.QtCore import Qt
 from DbHandler import GetTotalHuntCount
 from resources import settings
+from Widgets.Label import Label
 
 class HunterWidget(QWidget):
     def __init__(self, parent = None):
@@ -9,10 +10,10 @@ class HunterWidget(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.name = QLabel()
+        self.name = Label()
         self.name.setObjectName("HunterTitle")
-        self.huntsCount = QLabel()
-        self.level = QLabel()
+        self.huntsCount = Label()
+        self.level = Label()
 
         self.layout.addWidget(self.name)
         self.layout.addWidget(self.huntsCount)

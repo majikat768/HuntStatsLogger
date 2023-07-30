@@ -119,8 +119,8 @@ class MyTeams(QWidget):
         w.layout = QGridLayout()
         w.setLayout(w.layout)
         w.names = ", ".join([GetNameByProfileId(pid) for pid in team['pid']])
-        w.layout.addWidget(QLabel("%s" % w.names),0,0)
-        w.layout.addWidget(QLabel("Hunted together %d times" % len(team['games'])),1,0)
+        w.layout.addWidget(Label("%s" % w.names),0,0)
+        w.layout.addWidget(Label("Hunted together %d times" % len(team['games'])),1,0)
 
         w.setObjectName("HuntWidget")
         w.plot = TeamMmrChart(team)
@@ -130,7 +130,7 @@ class MyTeams(QWidget):
         bestWidget.setLayout(bestWidget.layout)
         i = 0
         for pid in bestMmrs:
-            bestWidget.layout.addWidget(QLabel("%s's best: %d" % (GetNameByProfileId(pid),bestMmrs[pid])))
+            bestWidget.layout.addWidget(Label("%s's best: %d" % (GetNameByProfileId(pid),bestMmrs[pid])))
             i += 1
         w.layout.addWidget(bestWidget,0,1,len(bestMmrs.keys()),1)
         w.layout.addWidget(w.plot,len(bestMmrs.keys()),0,1,2)

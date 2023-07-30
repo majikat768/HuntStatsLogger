@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QGroupBox, QHBoxLayout, QVBoxLayout, QLabel,QScrollArea
+from PyQt6.QtWidgets import QWidget, QGroupBox, QHBoxLayout, QVBoxLayout,QScrollArea
 from PyQt6.QtCore import Qt
 from resources import *
 from Widgets.BountiesWidget import BountiesWidget

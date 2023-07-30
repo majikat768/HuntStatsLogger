@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QLabel, QWidget, QHBoxLayout, QGraphicsOpacityEffect
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QGraphicsOpacityEffect
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QAbstractAnimation, QPoint
 from PyQt6.QtGui import QFont, QColor
+from Widgets.Label import Label
 from resources import resource_path
 
 # adapted from
@@ -48,7 +49,7 @@ class Toast(QWidget):
         #self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
 
         # text in toast (toast foreground)
-        self.__lbl = QLabel(text)
+        self.__lbl = Label(text)
         self.__lbl.setObjectName('popupLbl')
 
         self.__lbl.setMinimumWidth(self.__lbl.fontMetrics().boundingRect(text).width() * 1)
