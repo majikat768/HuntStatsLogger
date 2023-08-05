@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt, QEvent
 
 line_height = 24
 class ScrollWidget(QWidget):
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, parent = None) -> None:
         super().__init__(parent)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)

@@ -16,10 +16,12 @@ class Label(QLabel):
             super().__init__()
 
     def setText(self, text: str) -> None:
-        newText = ""
-        for c in text:
-            if c == '\t':
-                newText += ' '*tabstop
-            else:
-                newText += c
-        return super().setText(newText)
+        if text is not None:
+            newText = ""
+            for c in text:
+                if c == '\t':
+                    newText += ' '*tabstop
+                else:
+                    newText += c
+            return super().setText(newText)
+        return super().setText(text)

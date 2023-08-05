@@ -188,7 +188,13 @@ def clean_data(obj):
         log(e)
         return obj
 
-
+def isTrial(key,val):
+    return (
+        (key == "MissionBagNumTeams" and str(val) == "0") or
+        (key == "MissionBagNumAccolades" and str(val) == "0") or
+        (key == "MissionBagNumEntries" and str(val) == "0") or
+        (key == "MissionBagNumTeams" and str(val) == "0")
+    )
 def build_json_from_xml(ts):
     if debug:
         log('building json')
@@ -208,6 +214,8 @@ def build_json_from_xml(ts):
             key = ln['Attr']['@name']
             val = ln['Attr']['@value']
             keysplit = key.split("_")
+            if isTrial(key,val):
+                return None
             if "MissionBag" in line:
                 if "tooltip" in key and ":" in val:
                     hunter = '_'.join([keysplit[1],keysplit[2]])

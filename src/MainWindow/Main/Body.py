@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QTabBar, QVBoxLayout, QStackedLayout, QHBoxLayout, QSizePolicy
 
 class Body(QWidget):
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, parent = None) -> None:
         super().__init__(parent)
         self.setObjectName("body")
         self.layout = QVBoxLayout()

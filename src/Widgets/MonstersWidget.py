@@ -14,9 +14,10 @@ class MonstersWidget(QGroupBox):
         self.setTitle("Monsters")
 
     def sanitizeMonsterNames(self, monster):
-        match monster:
-            case 'waterdevil': return 'Water Devil'
-            case _: return monster.capitalize()      
+        if monster == 'waterdevil':
+            return 'Water Devil'
+        else:
+            return monster.capitalize()      
 
     def update(self, monsters_killed):
         clearLayout(self.layout)
