@@ -69,15 +69,15 @@ class HunterSearch(QGroupBox):
             teamnums[d['game_id']] = d['team_num']
         teams = []
         for id in teamnums:
-            t = execute_query(
-                "select blood_line_name from 'hunters' where game_id is '%s' and team_num is %d" % (id, teamnums[id]))
+            pids = execute_query(
+                "select profileid from 'hunters' where game_id is '%s' and team_num is %d" % (id, teamnums[id]))
             team = []
-            for n in t:
-                team.append(n[0])
+            for pid in pids:
+                team.append(pid[0])
             teams.append(team)
         n = 0
-        me = settings.value("steam_name")
+        myId = int(settings.value("profileid"))
         for team in teams:
-            if me in team:
+            if myId in team:
                 n += 1
         return n
