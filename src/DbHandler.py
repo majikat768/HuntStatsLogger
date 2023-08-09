@@ -678,9 +678,14 @@ def getKillData(ts):
         "assists": assists
     }
 
+def SameGameCount(pid):
+    res = execute_query("select count(*) from 'hunters_view' where 'hunters_view'.profileid = ?" , pid)
+    res = 0 if len(res) == 0 else res[0][0]
+    res = 1 if res < 1 else res
+    return res
 
-def SameTeamCount(name):
-    res = execute_query("select count(*) from 'hunters_view' join 'teams_view' on 'teams_view'.ownteam = 'true' and 'hunters_view'.team_num = 'teams_view'.team_num and 'hunters_view'.timestamp = 'teams_view'.timestamp where 'hunters_view'.blood_line_name = ?" , name)
+def SameTeamCount(pid):
+    res = execute_query("select count(*) from 'hunters_view' join 'teams_view' on 'teams_view'.ownteam = 'true' and 'hunters_view'.team_num = 'teams_view'.team_num and 'hunters_view'.timestamp = 'teams_view'.timestamp where 'hunters_view'.profileid = ?" , pid)
     res = 0 if len(res) == 0 else res[0][0]
     return res
 

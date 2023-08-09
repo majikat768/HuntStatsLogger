@@ -38,13 +38,12 @@ class FrequentHunters(QGroupBox):
             hWidget.setLayout(hWidget.layout)
             hWidget.setObjectName("HunterWidget")
             name = hunter['name']
-            data = GetHunterByName(name)
             freq = hunter['frequency']
             mmr = hunter['mmr']
             killedme = hunter['killedme']
             killedbyme = hunter['killedbyme']
-            sameTeamCount = SameTeamCount(name)
             pid = hunter['profileid']
+            sameTeamCount = SameTeamCount(pid) 
             allnames = getAllUsernames(pid)
             stars = Label("%s<br>%s" % ("<img src='%s'>" %
                            (star_path()) * mmr_to_stars(mmr), mmr))
