@@ -1,7 +1,6 @@
 import sqlite3
 import ctypes
 from resources import *
-from numpy import concatenate
 
 
 def json_to_db(obj):
@@ -397,8 +396,7 @@ def GetHuntersByPartialName(name):
         if hunterID not in ids:
             ids.append(hunterID)
     for hunterID in ids:
-        foundHunter = GetHunterByProfileId(hunterID[0])
-        output = concatenate((output, foundHunter), axis = 0)
+        output.append(GetHunterByProfileId(hunterID[0]))
     return output
 
 

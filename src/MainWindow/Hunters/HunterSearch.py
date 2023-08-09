@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QScrollArea, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGroupBox, QScrollArea, QLineEdit, QPushButton, QLabel
 from PyQt6.QtCore import Qt
 from resources import settings, star_path, mmr_to_stars
 from DbHandler import GetTopNHunters, GetHunterKills, GetHuntersByPartialName, execute_query, getAllUsernames
@@ -29,19 +29,21 @@ class HunterSearch(QGroupBox):
         res = GetHuntersByPartialName(name)
         self.ShowResults(res, name)
 
-    def ShowResults(self, data, name):
+    def ShowResults(self, huntsPerPlayer, name):
         resultsWindow = Modal(parent=self)
-        if len(data) <= 0:
+        if len(huntsPerPlayer) <= 0:
             resultsWindow.addWidget(
                 Label("You've never encountered %s in a Hunt." % name))
         else:
-            for hunter in data:
+            for playerHunts in huntsPerPlayer:
+                firstHunt = playerHunts[0]
+                pid = firstHunt['profileid']
                 resultsWindow.addWidget(
-                    QLabel("You've seen %s in %d hunts." % (hunter[0]['blood_line_name'], len(hunter))))
-                pid = hunter[0]['profileid']
+                    QLabel("You've seen %s in %d hunts." % (firstHunt['blood_line_name'], len(playerHunts))))
+                
                 allnames = getAllUsernames(pid)
                 kills = GetHunterKills(pid)
-                sameTeamCount = self.SameTeamCount(hunter)
+                sameTeamCount = self.SameTeamCount(playerHunts)
 
                 killedby = 0
                 killed = 0
