@@ -157,8 +157,10 @@ def GoToHuntPage(timestamp,main):
 def launch_hunt():
     if (settings.value("hunt_dir","") != "" and "HuntGame.exe" not in subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq HuntGame.exe']).decode()):
         log("starting hunt.exe")
-        steam_dir ="/".join(settings.value("hunt_dir").split("/")[:-3])
+        # if no steam_dir is set in the settings, try to guess steam.exe location based on hunt_dir
+        steam_dir = settings.value("steam_dir","/".join(settings.value("hunt_dir").split("/")[:-3]))
         steam_exe = os.path.join(steam_dir,"steam.exe").replace("\\","/")
+        log("using " + steam_exe)
         subprocess.Popen([steam_exe,"steam://rungameid/"+game_id])
 
 with open(resource_path('./assets/json/maps.json'),'r') as f:
