@@ -110,10 +110,19 @@ class SettingsWindow(QMainWindow):
         self.main.layout.addWidget(self.huntLimitWidget)
 
     def initSteamOptions(self):
-        self.steamFolderLabel = Label(settings.value("hunt_dir","<i>ex: C:/Steam/steamapps/common/Hunt Showdown</i>"))
-        self.steamFolderButton = QPushButton("Select Hunt Installation Directory")
+        self.huntFolderLabel = Label(settings.value("hunt_dir","<i>ex: C:/Steam/steamapps/common/Hunt Showdown</i>"))
+        self.huntFolderButton = QPushButton("Select Hunt Installation Directory")
+        self.huntFolderButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        self.huntFolderButton.clicked.connect(self.SelectHuntFolderDialog)
+        self.main.layout.addWidget(self.huntFolderLabel)
+        self.main.layout.addWidget(self.huntFolderButton)
+        self.main.layout.setAlignment(self.huntFolderButton,Qt.AlignmentFlag.AlignHCenter)
+
+        self.steamFolderLabel = Label(settings.value("steam_dir","<i>ex: C:/Steam</i>"))
+        self.steamFolderButton = QPushButton("Select Steam Installation Directory")
         self.steamFolderButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.steamFolderButton.clicked.connect(self.SelectFolderDialog)
+        self.steamFolderButton.setToolTip("Needed to launch the game in case Hunt is not installed in its default location")
+        self.steamFolderButton.clicked.connect(self.SelectSteamFolderDialog)
         self.main.layout.addWidget(self.steamFolderLabel)
         self.main.layout.addWidget(self.steamFolderButton)
         self.main.layout.setAlignment(self.steamFolderButton,Qt.AlignmentFlag.AlignHCenter)
@@ -204,7 +213,7 @@ class SettingsWindow(QMainWindow):
         else:
             self.steamNameInput.setDisabled(False)
     
-    def SelectFolderDialog(self):
+    def SelectHuntFolderDialog(self):
         xml_suffix = "user/profiles/default/attributes.xml"
         hunt_dir = QFileDialog.getExistingDirectory(self,"Select folder",settings.value('hunt_dir','.'))
         xml_path = os.path.join(hunt_dir,xml_suffix)
@@ -213,11 +222,19 @@ class SettingsWindow(QMainWindow):
             return
         settings.setValue('hunt_dir',hunt_dir)
         settings.setValue('xml_path',xml_path)
-        self.steamFolderLabel.setText(settings.value("hunt_dir"))
+        self.huntFolderLabel.setText(settings.value("hunt_dir"))
+        if not self.parent().logger.running:
+            self.parent().StartLogger()
+
+    def SelectSteamFolderDialog(self):
+        steam_dir = QFileDialog.getExistingDirectory(self,"Select folder",settings.value('hunt_dir','.'))
+        settings.setValue('steam_dir',steam_dir)
+        self.steamFolderLabel.setText(settings.value("steam_dir"))
         if not self.parent().logger.running:
             self.parent().StartLogger()
 
     def show(self):
-        self.steamFolderLabel.setText(settings.value("hunt_dir"))
+        self.huntFolderLabel.setText(settings.value("hunt_dir"))
+        self.steamFolderLabel.setText(settings.value("steam_dir"))
         self.steamNameInput.setText(settings.value("steam_name"))
         super().show()
