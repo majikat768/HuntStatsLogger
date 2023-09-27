@@ -473,7 +473,7 @@ def GetTeamMembers(ts):
     if debug:
         print("dbhandler.getTeamMembers")
     vals = execute_query(
-        "select 'hunters_view'.profileid,'hunters_view'.game_id, 'hunters_view'.timestamp, 'hunters_view'.team_num from 'hunters_view' join 'teams_view' on (ownteam = 'true' and 'hunters_view'.game_id = 'teams_view'.game_id and 'hunters_view'.team_num = 'teams_view'.team_num) join 'games_view' on ('games_view'.MissionBagIsQuickPlay = 'false' and 'teams_view'.game_id = 'games_view'.game_id) where 'hunters_view'.timestamp = " , ts
+        "select 'hunters_view'.profileid,'hunters_view'.game_id, 'hunters_view'.timestamp, 'hunters_view'.team_num from 'hunters_view' join 'teams_view' on (ownteam = 'true' and 'hunters_view'.game_id = 'teams_view'.game_id and 'hunters_view'.team_num = 'teams_view'.team_num) join 'games_view' on ('games_view'.MissionBagIsQuickPlay = 'false' and 'teams_view'.game_id = 'games_view'.game_id) where 'hunters_view'.timestamp ='%s' " % ts
     )
     if len(vals) == 0:
         return {}
