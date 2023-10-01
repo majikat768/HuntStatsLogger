@@ -14,11 +14,17 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Hunt Stats Logger")
 
         # move window to last known position / size
-        if settings.value("window_position", "") != "":
-            self.move(settings.value("window_position"))
-        if settings.value("window_size", "") != "":
-            size = settings.value("window_size")
-            self.resize(size.width(),size.height())
+        # fixed by @monsterdhal
+        if settings.value("geometry") != None:
+            self.restoreGeometry(settings.value("geometry"))
+        if settings.value("windowState") != None:
+            self.restoreState(settings.value("windowState"))
+
+        #if settings.value("window_position", "") != "":
+            #self.move(settings.value("window_position"))
+        #if settings.value("window_size", "") != "":
+            #size = settings.value("window_size")
+            #self.resize(size.width(),size.height())
 
         self.mainframe = MainFrame(self)
         self.setCentralWidget(self.mainframe)
@@ -48,11 +54,15 @@ class MainWindow(QMainWindow):
             self.mainframe.settingsWindow.close()
         if self.mainframe.mapWindow:
             self.mainframe.mapWindow.close()
+
         #self.mainframe.logger.running = False
-        pos = self.mapToGlobal(QPoint(0,0))
+        #pos = self.mapToGlobal(QPoint(0,0))
+        # fixed by @monsterdhal
         if not self.isMini:
-            settings.setValue("window_position", pos)
-            settings.setValue("window_size", self.size())
+            settings.setValue("geometry",self.saveGeometry())
+            settings.setValue("windowState",self.saveState())
+            #settings.setValue("window_position", pos)
+            #settings.setValue("window_size", self.size())
         if not self.showSysTray:
             self.sysTrayIco.setParent(None)
             self.sysTrayIco.deleteLater()
