@@ -178,7 +178,7 @@ class Hunts(QWidget):
             gameType = "Quick Play" if hunt['MissionBagIsQuickPlay'].lower(
             ) == 'true' else "Bounty Hunt"
             nTeams = hunt['MissionBagNumTeams']
-            nKills = "%d kills" % sum(getKillData(ts)['team_kills'].values())
+            nKills = "%d kills" % hunt['kills']
             ln = "%s - %s - %s %s - %s" % (dt, gameType, nTeams,
                                            "teams" if gameType == "Bounty Hunt" else "hunters", nKills)
             icon = QIcon(deadIcon if dead else livedIcon)

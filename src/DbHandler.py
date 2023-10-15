@@ -220,10 +220,16 @@ def GetHunts(IsQuickPlay = 'all'):
     elif IsQuickPlay == 'false':
         condition = "where MissionBagIsQuickPlay = 'false'"
 
-    vals = execute_query("select * from 'games_view' %s order by timestamp desc" % condition)
-    cols = execute_query("pragma table_info('games_view')")
+    vals = execute_query("select\
+                            gv.timestamp, gv.MissionBagIsHunterDead, gv.MissionBagWasDeathlessUsed, gv.MissionBagIsQuickPlay, gv.MissionBagNumTeams,\
+                            sum(hv.downedbyme + hv.killedbyme + hv.downedbyteammate + hv.killedbyteammate)\
+                         from 'games_view' as gv inner join 'hunters_view' as hv on gv.timestamp = hv.timestamp\
+                         %s\
+                         group by gv.timestamp\
+                         order by gv.timestamp desc" % condition)
+    cols = [ "timestamp", "MissionBagIsHunterDead", "MissionBagWasDeathlessUsed", "MissionBagIsQuickPlay", "MissionBagNumTeams", "kills"]
     try:
-        return [ { cols[i][1] : hunt[i] for i in range(len(cols)) } for hunt in vals]
+        return [ dict(zip(cols, hunt)) for hunt in vals]
     except Exception as e:
         log('dbhandler.gethunts')
         log(e)
