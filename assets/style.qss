@@ -1,0 +1,415 @@
+/*
+dark cobalt: #283940
+sand: #ccbba6
+light brwn: #9c7661
+mist #c3cfc7
+light green: #798c5d
+blood: #51181B;
+night: #232323
+forest green: #19261B
+
+*/
+
+* {
+    /*border:1px solid #f00;*/
+    background-color:#111111;
+}
+QLabel {
+    font-size: 12pt;
+}
+TimelineWidget {
+    border:1px solid #666;
+}
+TimelineWidget QLabel {
+}
+TimelineWidget #timestamp {
+    font-size:14pt;
+    padding:4px 8px;
+    border:1px solid #666;
+}
+#BountyEvent, #KilledByEvent, #KilledEvent {
+    font-size:10pt;
+    padding:4px 8px;
+    border:1px solid #666;
+}
+#BountyEvent {
+    background-color: #22000088;
+    background-color: #191b26;
+}
+#KilledEvent {
+    background-color: #51181B;
+}
+#KilledByEvent {
+    background-color: #19261B;
+}
+QTableWidget {
+    gridline-color: #ccc;
+    color: #ccc;
+}
+QGroupBox {
+    background:#283940;
+    color: #ccc;
+    font-size:16pt;
+    font-family: "Unfair Style 2 Rough";
+    border: 1px solid transparent;
+    margin-top:1ex;
+}
+QGroupBox::title {
+    background:#283940;
+    subcontrol-origin:margin;
+    left:px;
+}
+QLineEdit {
+    color: #a9d7e6;
+}
+QLineEdit:disabled {
+    color: #898786;
+}
+QPushButton {
+    color: #ccc;
+    border: 1px solid #8b8b8b;
+    border-radius:2px;
+    padding:2px;
+    background: #283940;
+}
+QLabel {
+    color: #ccc;
+    background:none;
+}
+MainWindow {
+    background:#283940;
+}
+
+#Header > #current-view {
+    font-size:24pt;
+}
+#Header {
+    background-color:#283940;
+    color:#ccc;
+}
+Header QLabel {
+    color: #ccc;
+    font-size:32pt;
+    font-family: "Unfair Style 2 Rough";
+}
+#HeaderLogo {
+    background-color:#283940;
+}
+#HeaderLogo QLabel {
+}
+
+QComboBox {
+    padding:0 16px;
+    text-align:left;
+    margin:0;
+    background:#001118;
+    selection-background-color:#001118;
+    color: #ccc;
+    border: 0;
+    font-size:12pt;
+    font-family: Courier New;
+    font-weight:600;
+}
+QComboBox::drop-down {
+    border:0px;
+    background:transparent;
+    color:#ccc;
+}
+KDA QComboBox::down- {
+}
+QComboBox QAbstractItemView {
+    color: #ccc;
+}
+
+KDA {
+    background-color:#19261b;
+    border:2px solid #888;
+    /*border-left:2px solid #888;
+    border-right:2px solid #888;
+    border-bottom:1px solid #888;*/
+}
+KDA QLabel {
+    font-family: Arial;
+    color: #ccc;
+    font-size: 12pt;
+    padding:8px;
+}
+KDA #KdaDropdowns > QLabel, KDA #KdaDropdowns > QComboBox {
+    border:2px solid #888;
+    /*border:0px solid transparent;
+    border-left:2px solid #888;
+    border-bottom:1px solid #888;*/
+}
+#Menu MenuButton {
+    text-align:left;
+}
+#MenuExp MenuButton {
+    text-align:left;
+    /*text-align:left;*/
+}
+MenuButton {
+    font-size:12pt;
+    background:transparent;
+    border-radius:4px;
+    color:#c3cfc7;
+    padding:4px;
+    padding-left:8px;
+    margin: 4px 0;
+    border: none;
+}
+MenuButton#focus {
+    background:rgba(200,60,60,200);
+}
+MenuButton:hover {
+    background:rgba(200,200,200,100);
+}
+Menu {
+    padding: 0;
+    border-right: 1px solid #999;
+    position:absolute;
+    top:0;
+    left:0;
+    background:#060504;
+}
+HuntPicker {
+    border: 2px inset #777;
+    border-bottom: 1px inset #777;
+}
+HuntPicker > QTableWidget {
+    border:none;
+    gridline-color: none;
+    font-size:12pt;
+}
+HuntPicker #down- {
+}
+QStackedWidget {
+}
+
+Settings {
+    background-color:#181614;
+}
+
+#HuntWidget, #HuntWidget > QWidget {
+    background-color:#283940;
+    border-top:0px;
+}
+
+SettingsMain QLabel {
+    color: #ccc;
+}
+SettingsMain QPushButton {
+}
+
+HuntListItem {
+    background-color:#131113;
+}
+HuntListItem > QLabel, HuntListItem > QWidget {
+    border:1px solid #888;
+}
+HuntListItem:hover {
+    background:#232323;
+}
+
+QLabel#HuntListHeaderItem {
+    padding:4px;
+    border:1px solid #aaa;
+}
+KillsWidget#KillsTable {
+    border: 1px solid #888;
+}
+#KillsTable > QLabel {
+    padding:4px;
+}
+#KillsTable > QWidget {
+    background:#131113;
+}
+#KillsSubWidget {
+    background: #131113;
+    border-radius:0;
+}
+KillsWidget > QWidget {
+    padding:4px;
+    border-right:1px solid #888;
+    border-left:1px solid #888;
+}
+QLabel#KillsSubWidgetHeader {
+    background: #323232;
+    border: 1px solid #888;
+}
+
+TeamWidget {
+    background:transparent;
+    padding:8px;
+}
+TeamWidget QLabel {
+    background:transparent;
+}
+Tooltip > QLabel {
+    padding:4px 8px;
+    border: 1px solid #ccc;
+}
+#TeamsIcons {
+    background:transparent;
+}
+QWidget#TeamHeader {
+    background:transparent;
+}
+TeamWidget QWidget#TeamHeader::hover {
+    background:#888888;
+}
+TeamWidget #HuntersWidget {
+    background: #111111;
+    border:1px solid #888;
+}
+TeamWidget #HuntersWidget > QLabel {
+    border:0;
+    /*border-bottom:1px solid #888;*/
+    padding:8px;
+}
+TeamWidget::item {
+    background:#111;
+    padding:4px;
+}
+TeamWidget #TeamHeader QLabel {
+    font-size:16pt;
+}
+TeamWidget #TeamSubWidget QLabel {
+    font-size:12pt;
+}
+#TeamHeader Qlabel {
+    font-size:26pt;
+}
+TeamWidget > #TeamSubWidget {
+    border:1px solid #888;
+}
+
+#TeamIcon {
+    background: #333;
+    /*border:1px solid #8833ffff;*/
+}
+QLabel#mmrIcon {
+    background:transparent;
+    border:none;
+}
+#BountiesWidget > QWidget,
+#RewardsWidget > QWidget,
+#MonstersWidget > QWidget {
+    border:1px solid #888;
+}
+
+#MyTeamsWidget {
+    background:#283940;
+}
+#MyTeamWidget {
+    background: #111111;
+    border: 1px solid #ccc;
+}
+#MyTeamWidget > #TeamTitle, #MyTeamWidget > #TeamDetails {
+    border: 1px solid #ccc;
+}
+#MyTeamWidget #TeamBody {
+    background: #19261B;
+    border:0;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+#MyTeamWidget #MyTeamRankLabel {
+    font-size:32pt;
+}
+
+QStatusBar {
+    color:#02cf7f;
+    background-color:#181614;
+	border: 1px solid rgba(200,200,200,200);
+	border-top: 2px solid rgba(200,200,200,200);
+	font-size:12px;
+	font-family:courier new;
+}
+
+QScrollArea {
+    background-color:#283940;
+}
+QScrollBar {
+    background-color: rgba(20,20,20,20)
+}
+
+#Analytics QWidget {
+    border: 1px solid #ccc;
+}
+#Analytics {
+    background: #283940;
+}
+
+#AnalyticsMmrHeader > QLabel {
+    padding:4px 8px;
+    font-weight:600;
+}
+#AnalyticsMmrHeader > #avg {
+    background-color:#9c7661;
+    color: #111;
+}
+#AnalyticsMmrHeader > #gain {
+    background-color:#19261B;
+    color: #ccc;
+}
+#AnalyticsMmrHeader > #loss {
+    background-color:#51181B;
+    color: #ccc;
+}
+
+#RecordWidget {
+    background: #283940;
+}
+#RecordWidget > #RecordTitle {
+    border: 1px solid #ccc;
+    background: #111111;
+}
+#RecordWidget > #RecordBody {
+    border: 1px solid #ccc;
+    background:transparent;
+}
+#RecordWidget #RecordValue {
+    font-size:32pt;
+    font-family: "Unfair Style 2 Rough";
+}
+#MyTeamWidget #MyTeamRankLabel {
+    font-size:32pt;
+}
+
+#HuntersTable, #HuntersTable > QWidget {
+    background-color:#283940;
+}
+#HuntersTable > QWidget > QLabel {
+    font-size: 16pt;
+    font-weight:600;
+}
+#HuntersTable QTableWidget {
+    font-size:12pt;
+    gridline-color: #888;
+}
+#HuntersTable QTableWidget::item {
+    padding:88px;
+}
+QTableWidget QHeaderView::section {
+    padding:4px;
+    font-size:14pt;
+}
+MostSeen QTableWidget QHeaderView::section,
+MostSeen QTableWidget QTableCornerButton::section {
+    background:#c3cfc7;
+    color: #111;
+}
+MostKilled QTableWidget QHeaderView::section,
+MostKilled QTableWidget QTableCornerButton::section {
+    background:#19261B;
+    color: #ccc;
+}
+MostKilledBy QTableWidget QHeaderView::section,
+MostKilledBy QTableWidget QTableCornerButton::section {
+    background:#51181B;
+    color: #ccc;
+}
+
+#MAIN {
+    background-color:#00ff00
+}
