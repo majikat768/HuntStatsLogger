@@ -106,6 +106,8 @@ class Analytics(QWidget):
         self.mmrPlot.update()
         self.bountiesPlot.update()
         [avg,gain,loss] = self.setStats()
+        if avg == None or gain == None or loss == None:
+            return
         self.mmrAvg.setText("Avg MMR: %d" % avg)
         self.mmrGain.setText("Greatest MMR Gain: %d" % gain)
         self.mmrLoss.setText("Greatest MMR Loss: %d" % loss)

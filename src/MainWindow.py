@@ -12,19 +12,6 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Hunt Showdown Companion App")
 
-        self.body = Body(self)
-        self.menu = Menu(parent=self.body)
-
-        # move window to last known position / size
-        # fixed by @monsterdhal
-        if settings.value("geometry") != None:
-            self.restoreGeometry(settings.value("geometry"))
-        if settings.value("windowState") != None:
-            self.restoreState(settings.value("windowState"))
-
-        self.setContentsMargins(0,0,0,0)
-        self.setMouseTracking(True)
-
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
         self.statusBar.font().setPixelSize(16)
@@ -40,6 +27,21 @@ class MainWindow(QMainWindow):
         self.listener.progress.connect(self.main_update)
 
         thread.start()
+
+        self.body = Body(self)
+        self.menu = Menu(parent=self.body)
+
+        # move window to last known position / size
+        # fixed by @monsterdhal
+        if settings.value("geometry") != None:
+            self.restoreGeometry(settings.value("geometry"))
+        if settings.value("windowState") != None:
+            self.restoreState(settings.value("windowState"))
+
+        self.setContentsMargins(0,0,0,0)
+        self.setMouseTracking(True)
+
+
 
         self.body.setContentsMargins(self.menu.sizeHint().width(),0,0,0)
 

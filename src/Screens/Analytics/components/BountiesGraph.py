@@ -48,9 +48,10 @@ class BountiesGraph(PlotItem):
                              count(*) as total from 'games' g where g.MissionBagIsQuickPlay = 'false'")
 
         if len(extractions) == 0:
-            extractions == [(0,0)]
-        else:
-            extractions = extractions[0]
+            return
+        extractions = extractions[0]
+        if extractions == None or extractions[0] == None or extractions[1] == None:
+            return
         extractions = {
             "extractions":extractions[0],
             "total":extractions[1]
@@ -58,7 +59,13 @@ class BountiesGraph(PlotItem):
         extractions['died'] = extractions['total'] - extractions['extractions']
         if extractions == 0:
             return
-        tokens = { i : 0 for i in range(5)}
+        tokens = { 
+            "Skunked":0,
+            "Single":0,
+            "Double":0,
+            "Triple":0,
+            "Gauntlet":0,
+        }
 
         for v in vals:
             if "four_tokens" in v[0]:
@@ -84,7 +91,7 @@ class BountiesGraph(PlotItem):
             QColor("#51181B")
         ],
 
-        heights = [ tokens[i] for i in range(0,5) ]
+        heights = [ tokens[i] for i in tokens.keys() ]
         heights = heights + [extractions['extractions'], extractions['died']]
 
         self.bars = []

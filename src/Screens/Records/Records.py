@@ -47,9 +47,8 @@ class Records(QWidget):
                                       order by kills desc\
                                       limit 1")
         if len(mostKillsData) == 0:
-            mostKillsData = [(0,0)]
-        else:
-            mostKillsData = mostKillsData[0]
+            return
+        mostKillsData = mostKillsData[0]
         self.widgets.append(RecordWidget(mostKillsData[1],mostKillsData[0],"Kills"))
         
         # most deaths
@@ -106,7 +105,7 @@ class Records(QWidget):
         if len(mmrGain) == 0:
             mmrGain =[(0,0)] 
         else:
-            mmrGain = mmrGain[0]
+            mmrGain = [ x if x is not None else 0 for x in mmrGain[0] ]
         self.widgets.append(RecordWidget("%+d"%mmrGain[0],mmrGain[1],"MMR Gain"))
         #mmr loss
         mmrLoss = execute_query("select\
@@ -116,7 +115,7 @@ class Records(QWidget):
         if len(mmrLoss) == 0:
             mmrLoss =[(0,0)] 
         else:
-            mmrLoss = mmrLoss[1]
+            mmrLoss = [ x if x is not None else 0 for x in mmrLoss[0] ]
         self.widgets.append(RecordWidget("%+d"%mmrLoss[0],mmrLoss[1],"MMR Loss"))
 
 
