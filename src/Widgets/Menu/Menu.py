@@ -25,6 +25,7 @@ class Menu(QFrame):
         self.addTab("Teams")
         self.addTab("Analytics")
         self.addTab("Records")
+        self.addTab("Maps")
 
         self.layout.addStretch()
 

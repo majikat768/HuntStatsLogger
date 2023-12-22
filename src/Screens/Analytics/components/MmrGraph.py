@@ -115,12 +115,11 @@ class MmrGraph(PlotItem):
         self.addItem(ssPts)
         self.addItem(estPt)
 
-
         self.stars = []
         for s in [0,1999,2299,2599,2749,2999,4999]:
             c = s/5000*255
             sline = pyqtgraph.InfiniteLine(
-                pos=s,angle=0,pen = pyqtgraph.mkPen("#ff000088",width=1))
+                pos=s,angle=0,pen = pyqtgraph.mkPen("#ff000088",width=2))
             sline.label = pyqtgraph.InfLineLabel(sline,text="%d stars" % (
                 mmr_to_stars(s)), movable=False,position = 0.1,anchors=[(0,0),(0,0)])
             self.stars.append(sline)

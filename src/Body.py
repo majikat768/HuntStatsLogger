@@ -1,4 +1,4 @@
-from PyQt6.QtGui import QResizeEvent
+from PyQt6.QtGui import QResizeEvent, QWheelEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QStackedWidget, QScrollArea, QSizePolicy
 from PyQt6.QtCore import QEvent, QObject, Qt
 from Widgets.Header.Header import Header;
@@ -7,6 +7,7 @@ from Screens.MyTeams.MyTeams import MyTeams
 from Screens.Hunters.Hunters import Hunters
 from Screens.Analytics.Analytics import Analytics
 from Screens.Records.Records import Records
+from Screens.Maps.Maps import Maps
 
 class Body(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -28,6 +29,7 @@ class Body(QWidget):
 
         self.scrollArea = QScrollArea()
         self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.wheelEvent = self.wheelEvent
         self.main = QWidget()
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
@@ -41,13 +43,15 @@ class Body(QWidget):
         )
 
         self.stack.installEventFilter(self)
+        self.scrollArea.installEventFilter(self)
 
         self.widgets = {
             "Hunts Recap": HuntsRecap(parent=self),
             "Hunters": Hunters(parent=self),
             "Teams": MyTeams(parent=self),
             "Analytics":Analytics(parent=self),
-            "Records":Records(parent=self)
+            "Records":Records(parent=self),
+            "Maps":Maps(parent=self),
         }
 
         for w in self.widgets:
@@ -68,4 +72,10 @@ class Body(QWidget):
         return super().resizeEvent(a0)
 
     def eventFilter(self, a0: QObject, a1: QEvent) -> bool:
+        if a1.type() == QEvent.Type.Wheel:
+            a1.ignore()
+            return False 
         return super().eventFilter(a0, a1)
+
+    def wheelEvent(self, a0: QWheelEvent) -> None:
+        a0.ignore()

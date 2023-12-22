@@ -10,7 +10,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
-        self.setWindowTitle("Hunt Showdown Companion App")
+        self.setWindowTitle("Hunt Showdown Stats Logger")
 
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)

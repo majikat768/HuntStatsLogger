@@ -69,6 +69,7 @@ class SurvivalGraph(PlotItem):
             [ ( x[0], "Extracted"), (x[1], "Died") ]
         ])
         self.getAxis("left").setLabel("Hunts")
+        self.getAxis("bottom").setLabel(" ")
 
     def update(self):
         self.setSurvivalData()
