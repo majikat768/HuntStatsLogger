@@ -19,12 +19,19 @@ class HuntsRecap(QWidget):
         self.setMouseTracking(True)
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0,0,0,0)
+        self.main = QWidget()
+        self.main.layout = QVBoxLayout()
+        self.main.setLayout(self.main.layout)
+        self.main.layout.setSpacing(0)
+        self.main.layout.setContentsMargins(0,0,0,0)
         self.widget = None
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
 
         self.setObjectName("HuntsRecap")
 
         #self.hunt_list_widget = HuntList()
         self.initHuntSelect()
+        self.layout.addWidget(self.main)
         self.layout.addStretch()
         self.huntList = []
 
@@ -34,10 +41,13 @@ class HuntsRecap(QWidget):
 
     def show_hunt(self,id):
         widget = HuntWidget(id)
-        if(self.widget != None):
-            self.widget.setParent(None)
+        self.clearLayout()
         self.widget = widget
-        self.layout.insertWidget(self.layout.count()-1,widget,stretch=1)
+        self.main.layout.addWidget(self.widget)
+        idx = self.huntPicker.findData(id)
+        if idx >= 0:
+            self.huntPicker.setCurrentIndex(idx)
+        self.main.layout.addStretch()
 
     def update(self):
         self.getLatestHunt()
@@ -45,7 +55,7 @@ class HuntsRecap(QWidget):
 
     def getLatestHunt(self):
         if len(self.huntList) == 0:
-            self.huntList = get_n_hunts(50)
+            self.huntList = get_n_hunts()
             if len(self.huntList) == 0:
                 return
             self.huntPicker.clear()
@@ -81,6 +91,12 @@ class HuntsRecap(QWidget):
         self.huntPicker.insertItem(0,QIcon(pixmap.scaled(32,32)),txt)
 
         self.show_hunt(self.huntList[0]['game_id'])
+
+    def clearLayout(self):
+        for i in reversed(range(self.main.layout.count())): 
+            w = self.main.layout.itemAt(i).widget()
+            if w != None:
+                w.setParent(None)
 
     def initHuntSelect(self):
         container = QWidget()

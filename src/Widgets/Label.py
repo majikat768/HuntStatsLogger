@@ -13,7 +13,6 @@ class Label(QLabel):
         self.setMouseTracking(True)
         self.installEventFilter(self)
 
-        self.setMinimumWidth(0)
 
     def setText(self, a0: str) -> None:
         return super().setText(a0)

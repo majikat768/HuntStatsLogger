@@ -37,7 +37,7 @@ class KDA(QWidget):
             QSizePolicy.Policy.Fixed,
             QSizePolicy.Policy.Fixed,
         )
-        self.layout.addWidget(self.huntCountLabel)
+        #self.layout.addWidget(self.huntCountLabel)
         self.layout.addWidget(self.kdaLabel)
         self.layout.addWidget(self.killsLabel)
         self.layout.addWidget(self.deathsLabel)
@@ -106,6 +106,7 @@ class KDA(QWidget):
                                      from 'entries' e\
                                      where e.category is 'accolade_players_killed_assist'\
                                      and e.game_id = ?",last_hunt)[0][0]
+            assists = 0 if assists == None else assists
             self.assists += assists
             self.kda = self.calc(self.kills,self.deaths,self.assists)
             self.kdaLabel.setText("KDA: %.3f" % self.kda)

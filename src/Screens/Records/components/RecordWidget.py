@@ -1,3 +1,4 @@
+from PyQt6.QtGui import QMouseEvent, QCursor
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QLabel
 from PyQt6.QtCore import Qt
 from datetime import datetime
@@ -16,6 +17,9 @@ class RecordWidget(QWidget):
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0,0,0,0)
 
+        self.timestamp = timestamp
+
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         titleWidget = QWidget()
         titleWidget.setObjectName("RecordTitle")
@@ -33,9 +37,13 @@ class RecordWidget(QWidget):
         valLabel = QLabel(str(value))
         valLabel.setObjectName("RecordValue")
         bodyWidget.layout.addWidget(valLabel,alignment=Qt.AlignmentFlag.AlignCenter)
-        dtLabel = QLabel(datetime.fromtimestamp(timestamp).strftime("%H:%M\n%d %b %Y"))
+        dtLabel = QLabel(datetime.fromtimestamp(timestamp).strftime("%H:%M %d %b %Y"))
         dtLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         bodyWidget.layout.addWidget(dtLabel,alignment=Qt.AlignmentFlag.AlignCenter)
         bodyWidget.setContentsMargins(8,8,8,8)
 
         self.layout.addWidget(bodyWidget)
+
+    def mousePressEvent(self, a0: QMouseEvent) -> None:
+        self.parent().parent().redirect(self.timestamp)
+        return super().mousePressEvent(a0)

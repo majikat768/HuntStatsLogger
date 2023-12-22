@@ -7,7 +7,6 @@ light green: #798c5d
 blood: #51181B;
 night: #232323
 forest green: #19261B
-
 */
 
 * {
@@ -15,10 +14,15 @@ forest green: #19261B
     background-color:#111111;
 }
 QLabel {
-    font-size: 12pt;
+    font-size: 14pt;
+}
+QStackedWidget {
+    background:#283940;
 }
 TimelineWidget {
     border:1px solid #666;
+}
+TimelineWidget > QWidget {
 }
 TimelineWidget QLabel {
 }
@@ -26,9 +30,10 @@ TimelineWidget #timestamp {
     font-size:14pt;
     padding:4px 8px;
     border:1px solid #666;
+    background: #111;
 }
 #BountyEvent, #KilledByEvent, #KilledEvent {
-    font-size:10pt;
+    font-size:12pt;
     padding:4px 8px;
     border:1px solid #666;
 }
@@ -57,7 +62,7 @@ QGroupBox {
 QGroupBox::title {
     background:#283940;
     subcontrol-origin:margin;
-    left:px;
+    left:6px;
 }
 QLineEdit {
     color: #a9d7e6;
@@ -216,6 +221,12 @@ QLabel#HuntListHeaderItem {
 }
 KillsWidget#KillsTable {
     border: 1px solid #888;
+    margin-top:1.4ex;
+}
+KillsWidget::title {
+    background:#283940;
+    subcontrol-origin:margin;
+    left:6px;
 }
 #KillsTable > QLabel {
     padding:4px;
@@ -253,6 +264,7 @@ Tooltip > QLabel {
 }
 QWidget#TeamHeader {
     background:transparent;
+    border:1px solid #888;
 }
 TeamWidget QWidget#TeamHeader::hover {
     background:#888888;
@@ -297,6 +309,9 @@ QLabel#mmrIcon {
     border:1px solid #888;
 }
 
+TeamsWidget {
+    margin-top:2.0ex;
+}
 #MyTeamsWidget {
     background:#283940;
 }
@@ -352,9 +367,15 @@ QScrollBar {
     background-color:#19261B;
     color: #ccc;
 }
+#AnalyticsMmrHeader > #gain::hover {
+    background-color:#29462B;
+}
 #AnalyticsMmrHeader > #loss {
     background-color:#51181B;
     color: #ccc;
+}
+#AnalyticsMmrHeader > #loss::hover {
+    background-color:#71282B;
 }
 
 #RecordWidget {
@@ -371,6 +392,9 @@ QScrollBar {
 #RecordWidget #RecordValue {
     font-size:32pt;
     font-family: "Unfair Style 2 Rough";
+}
+#RecordWidget::hover {
+    background-color: rgba(200,200,200,100)
 }
 #MyTeamWidget #MyTeamRankLabel {
     font-size:32pt;

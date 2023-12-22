@@ -43,16 +43,15 @@ class Body(QWidget):
         self.stack.installEventFilter(self)
 
         self.widgets = {
-            "Hunts Recap": HuntsRecap(),
-            "Hunters": Hunters(),
-            "Teams": MyTeams(),
-            "Analytics":Analytics(),
-            "Records":Records()
+            "Hunts Recap": HuntsRecap(parent=self),
+            "Hunters": Hunters(parent=self),
+            "Teams": MyTeams(parent=self),
+            "Analytics":Analytics(parent=self),
+            "Records":Records(parent=self)
         }
 
         for w in self.widgets:
             self.stack.addWidget(self.widgets[w])
-        self.setMinimumWidth(self.sizeHint().width())
         self.setCurrentWidget("Hunts Recap")
 
     def update(self):
@@ -64,12 +63,9 @@ class Body(QWidget):
             self.stack.setCurrentWidget(self.widgets[button])
             self.stack.currentWidget().update()
             self.header.setWidgetName(button)
-            self.stack.setMaximumHeight(self.stack.currentWidget().sizeHint().height())
 
     def resizeEvent(self, a0: QResizeEvent) -> None:
         return super().resizeEvent(a0)
 
     def eventFilter(self, a0: QObject, a1: QEvent) -> bool:
-        if a0 == self.stack and a1.type() == QEvent.Type.Resize:
-            self.setMinimumWidth(self.stack.minimumSizeHint().width()+self.scrollArea.verticalScrollBar().width())
         return super().eventFilter(a0, a1)

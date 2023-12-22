@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSizePolicy
 from resources import stars_pixmap, mmr_to_stars
+from Screens.MyTeams.components.TeamAnalyticsWindow import TeamAnalyticsWindow
 
 
 class TeamWidget(QWidget):
@@ -85,12 +86,16 @@ class TeamWidget(QWidget):
             QSizePolicy.Policy.Fixed,
             QSizePolicy.Policy.Fixed,
         )
-        btn.setDisabled(True)
+        btn.clicked.connect(self.show_analytics)
         rankWidget.layout.addWidget(btn,alignment=Qt.AlignmentFlag.AlignCenter,stretch=1)
         detailsWidget.layout.addWidget(rankWidget,0,3,5,4,alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.layout.addWidget(huntersWidget)
         self.layout.addWidget(detailsWidget)
+
+    def show_analytics(self):
+        window = TeamAnalyticsWindow(parent=self,data=self.teamData)
+        window.show()
 
     def setRank(self,rank):
         self.rankLabel.setText(str(rank+1))

@@ -1,21 +1,26 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSizePolicy,QSpacerItem, QTableWidget,QTableWidgetItem, QHeaderView
+from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSizePolicy,QGroupBox
 from PyQt6 import QtCore
 from DbHandler import get_kills_data, get_assists_data, execute_query
 from resources import resource_path, mmr_to_stars, stars_pixmap, get_icon, settings
 from Widgets.Label import Label
 
-class KillsWidget(QWidget):
+class KillsWidget(QGroupBox):
     def __init__(self, game_id, parent: QWidget | None = None):
         super().__init__(parent)
         self.game_id = game_id
 
         self.data = {}
         self.setObjectName("KillsTable")
+        self.setTitle("Kills")
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+        )
         self.layout = QGridLayout()
         self.setLayout(self.layout)
         self.layout.setSpacing(0)
-        self.layout.setContentsMargins(1,1,1,1)
+        self.layout.setContentsMargins(0,0,0,0)
 
     # todo:
         # on star labels, add ToolTip displaying hunter name, and their mmr.
@@ -58,20 +63,22 @@ class KillsWidget(QWidget):
                     w = QWidget()
                     w.layout = QHBoxLayout()
                     w.setLayout(w.layout)
+                    w.layout.setContentsMargins(8,2,8,2)
                     starWidget = Label()
                     starWidget.setPixmap(stars_pixmap(i,h=12))
                     w.layout.addWidget(Label(str(my_kills[i])))
-                    w.layout.addWidget(starWidget)
+                    w.layout.addWidget(starWidget,alignment=QtCore.Qt.AlignmentFlag.AlignRight)
                     self.layout.addWidget(w,youRow,0)
                     youRow += 1
                 if(team_kills[i] > 0):
                     w = QWidget()
                     w.layout = QHBoxLayout()
                     w.setLayout(w.layout)
+                    w.layout.setContentsMargins(8,2,8,2)
                     w.layout.addWidget(Label(str(team_kills[i])))
                     starWidget = Label()
                     starWidget.setPixmap(stars_pixmap(i,h=12))
-                    w.layout.addWidget(starWidget)
+                    w.layout.addWidget(starWidget,alignment=QtCore.Qt.AlignmentFlag.AlignRight)
                     self.layout.addWidget(w,teamRow,1)
                     teamRow += 1
             while youRow < teamRow:
@@ -96,20 +103,22 @@ class KillsWidget(QWidget):
                     w = QWidget()
                     w.layout = QHBoxLayout()
                     w.setLayout(w.layout)
+                    w.layout.setContentsMargins(8,2,8,2)
                     w.layout.addWidget(Label(str(my_deaths[i])))
                     starWidget = Label()
                     starWidget.setPixmap(stars_pixmap(i,h=12))
-                    w.layout.addWidget(starWidget)
+                    w.layout.addWidget(starWidget,alignment=QtCore.Qt.AlignmentFlag.AlignRight)
                     self.layout.addWidget(w,youRow,0)
                     youRow += 1
                 if(team_deaths[i] > 0):
                     w = QWidget()
                     w.layout = QHBoxLayout()
                     w.setLayout(w.layout)
+                    w.layout.setContentsMargins(8,2,8,2)
                     w.layout.addWidget(Label(str(team_deaths[i])))
                     starWidget = Label()
                     starWidget.setPixmap(stars_pixmap(i,h=12))
-                    w.layout.addWidget(starWidget)
+                    w.layout.addWidget(starWidget,alignment=QtCore.Qt.AlignmentFlag.AlignRight)
                     self.layout.addWidget(w,teamRow,1)
                     teamRow += 1
             while youRow < teamRow:
@@ -123,18 +132,26 @@ class KillsWidget(QWidget):
             assistsWidget = Label("Assists: %d" % self.assists)
             assistsWidget.setObjectName("KillsSubWidgetHeader")
             self.layout.addWidget(assistsWidget,youRow,0,1,2)
-            self.layout.addWidget(self.getMmrWidget(),youRow+1,0,1,2)
+            self.layout.addWidget(self.getMmrWidget(),youRow+1,0,2,2)
+            self.layout.setRowStretch(self.layout.rowCount(),1)
+        self.setMinimumHeight(self.sizeHint().height())
 
     def getMmrWidget(self):
         w = QWidget()
         w.layout = QHBoxLayout()
         w.setLayout(w.layout)
+        w.layout.setContentsMargins(8,2,8,2)
         [mmrDiff,mmrIcon] = self.getMmrDiff()
         mmrIcon.setObjectName("mmrIcon")
         mmrDiff.setObjectName("mmrIcon")
         w.layout.addWidget(mmrDiff)
         w.layout.addWidget(mmrIcon)
         w.layout.setAlignment(mmrIcon,QtCore.Qt.AlignmentFlag.AlignRight)
+        w.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+        )
+        w.setMinimumHeight(w.sizeHint().height())
         return w
 
     def getMmrDiff(self):

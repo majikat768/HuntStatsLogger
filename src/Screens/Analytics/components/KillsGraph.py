@@ -59,8 +59,8 @@ class KillsGraph(PlotItem):
         self.getAxis("left").setLabel("Hunts")
 
         self.setYRange(0,self.ymax*1.2)
-        self.setXRange(-10,14*i)
-        self.setLimits(yMin=0,yMax=self.ymax*1.2,xMin = -10, xMax = 14*i)
+        self.setXRange(-10,15*(i-1)+10)
+        self.setLimits(yMin=0,yMax=self.ymax*1.2,xMin = -10, xMax = 15*(i-1)+10)
 
     def update(self):
         self.setKillsData()
@@ -70,7 +70,7 @@ class KillsWindow(pyqtgraph.GraphicsLayoutWidget):
         super().__init__(parent, show, size, title, **kargs)
         self.killsGraph  = KillsGraph()
         self.addItem(self.killsGraph,0,0)
-        self.setFixedHeight(200)
+        self.setFixedHeight(220)
 
     def update(self):
         self.killsGraph.update()

@@ -9,6 +9,16 @@ font.setFamily("Arial")
 font.setWeight(600)
 font.setPixelSize(16)
 
+brushes=[
+    QColor("#c3cfc7"),
+    QColor("#cccccc"),
+    QColor("#ccbba6"),
+    QColor("#9c7661"),
+    QColor("#798c5d"),
+    QColor("#283940"),
+    QColor("#51181B")
+]
+
 class BountiesGraph(PlotItem):
     def __init__(self, parent=None, name=None, labels=None, title=None, viewBox=None, axisItems=None, enableMenu=True, **kargs):
         super().__init__(parent, name, labels, title, viewBox, axisItems, enableMenu, **kargs)
@@ -26,8 +36,8 @@ class BountiesGraph(PlotItem):
                 (30,"Double"),
                 (45,"Triple"),
                 (60,"Gauntlet"),
-                (75,"Extractions"),
-                (90,"Died"),
+                #(75,"Extractions"),
+                #(90,"Died"),
             ]
         ]
             
@@ -36,7 +46,7 @@ class BountiesGraph(PlotItem):
         self.getAxis("bottom").setTicks(ticks)
         self.getAxis("bottom").setLabel(" ")
         self.getAxis("left").setLabel("Hunts")
-        self.setTitle("Hunt Results")
+        self.setTitle("Extraction Results")
 
         self.setBountiesData()
 
@@ -78,18 +88,7 @@ class BountiesGraph(PlotItem):
                 tokens["Single"] = v[1]
 
         tokens["Skunked"] = extractions['extractions'] - sum(tokens.values())
-        self.ymax = max(extractions['died'],extractions['extractions'])
-        x = [ n * 15 for n in range(0,8)]
-        widths = [10]*7
-        brushes=[
-            QColor("#c3cfc7"),
-            QColor("#cccccc"),
-            QColor("#ccbba6"),
-            QColor("#9c7661"),
-            QColor("#798c5d"),
-            QColor("#283940"),
-            QColor("#51181B")
-        ],
+        self.ymax = max(tokens.values())
 
         heights = [ tokens[i] for i in tokens.keys() ]
         heights = heights + [extractions['extractions'], extractions['died']]
@@ -111,11 +110,11 @@ class BountiesGraph(PlotItem):
         self.addItem(bar)
         self.addItem(label)
         [bar,label] = get_bar(extractions['extractions'],5)
-        self.addItem(bar)
-        self.addItem(label)
+        #self.addItem(bar)
+        #self.addItem(label)
         [bar,label] = get_bar(extractions['died'],6)
-        self.addItem(bar)
-        self.addItem(label)
+        #self.addItem(bar)
+        #self.addItem(label)
         '''
         for n in range(0,5):
             bar = pyqtgraph.BarGraphItem(
@@ -141,8 +140,8 @@ class BountiesGraph(PlotItem):
             brush = brushes[0][6]
         ))
         '''
-        self.setLimits(yMin=0,yMax = self.ymax*1.2, xMin=-10,xMax=100)
-        self.setXRange(-10,100)
+        self.setLimits(yMin=0,yMax = self.ymax*1.2, xMin=-10,xMax=70)
+        self.setXRange(-10,70)
         self.setYRange(0,self.ymax*1.2)
 
     def update(self):
@@ -158,7 +157,8 @@ def get_bar(height,n):
     bar = pyqtgraph.BarGraphItem(
         x=n*width*1.5,
         height=height,
-        width=width
+        width=width,
+        brush=brushes[n]
     )
     label = pyqtgraph.TextItem(
         str(height),
@@ -174,7 +174,7 @@ class BountiesWindow(pyqtgraph.GraphicsLayoutWidget):
         super().__init__(parent, show, size, title, **kargs)
         self.bountiesGraph  = BountiesGraph()
         self.addItem(self.bountiesGraph,0,0)
-        self.setFixedHeight(200)
+        self.setFixedHeight(220)
 
     def update(self):
         self.bountiesGraph.update()

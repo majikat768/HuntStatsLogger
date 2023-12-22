@@ -1,7 +1,7 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import QEvent, QObject, Qt
 from PyQt6.QtGui import QMouseEvent
-from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSplitter, QSizePolicy, QLabel, QGroupBox, QScrollArea, QApplication, QSplitterHandle
+from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSplitter, QSizePolicy, QLabel, QGroupBox, QScrollArea, QApplication, QSplitterHandle,QSpacerItem
 from resources import resource_path
 from Screens.HuntsRecap.components.KillsWidget import KillsWidget
 from Screens.HuntsRecap.components.MonstersWidget import MonstersWidget
@@ -18,11 +18,12 @@ class HuntWidget(QWidget):
         self.setLayout(self.layout)
         self.setContentsMargins(0,0,0,0)
 
-        self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
         self.game_id = game_id
         self.layout.setSpacing(16)
 
         self.splitter = QSplitter()
+        self.splitter.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
         self.leftPane = LeftPane(self.game_id)
         self.timelineWidget = TimelineWidget(self.game_id)
         self.teamsWidget = TeamsWidget(self.game_id)
@@ -71,10 +72,14 @@ class LeftPane(QGroupBox):
         self.rewardsWidget = RewardsWidget(self.game_id)
 
         self.layout.addWidget(self.killsWidget)
+        self.layout.addStretch()
         self.layout.addWidget(self.bountiesWidget)
         self.layout.addWidget(self.monstersWidget)
         self.layout.addWidget(self.rewardsWidget)
-        self.layout.addStretch()
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+        )
 
     def init(self):
         self.killsWidget.init()

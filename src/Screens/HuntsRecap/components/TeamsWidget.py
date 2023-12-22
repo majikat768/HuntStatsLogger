@@ -64,37 +64,42 @@ class TeamsWidget(QGroupBox):
             avgMmr = avgMmr / len(self.data['teams']) if len(self.data['teams']) > 0 else 0
             self.layout.addStretch()
             self.buttons = self.init_buttons(avgMmr)
+            self.buttons.move(self.width()-self.buttons.sizeHint().width(),0)
             #self.layout.insertWidget(0,self.buttons)
 
     def init_buttons(self,avgMmr):
-        buttons = QWidget()
+        buttons = QWidget(parent=self)
         buttons.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)      
         buttons.setStyleSheet("QWidget{background:transparent;}QPushButton{background:#111;padding:2px 8px;}")
         buttons.layout = QHBoxLayout()
         buttons.setLayout(buttons.layout)
         buttons.layout.setContentsMargins(0,0,0,0)
-        buttons.layout.addWidget(QLabel("Average Team MMR: %d" % avgMmr))
-        buttons.layout.addStretch()
+        #buttons.layout.addWidget(QLabel("Team Avg: %d" % avgMmr),0,0,1,2)
         exBtn = QPushButton("Expand All")
         exBtn.clicked.connect(lambda : self.toggleAllWidgets(True))
         colBtn = QPushButton("Collapse All")
         colBtn.clicked.connect(lambda : self.toggleAllWidgets(False))
         buttons.layout.addWidget(exBtn)
         buttons.layout.addWidget(colBtn)
+        buttons.setFixedWidth(buttons.sizeHint().width())
         return buttons
 
     def toggleAllWidgets(self,state):
         for w in self.teamsWidgets:
-            w.body.setVisible(state)
+            w.setBodyState(state)
 
     def resizeEvent(self, a0: QResizeEvent) -> None:
+        self.buttons.move(self.width()-self.buttons.sizeHint().width(),int(-self.buttons.sizeHint().height()/8))
         return super().resizeEvent(a0)
 
+expandedStyle = "QWidget#TeamHeader{background:transparent;border:none;}\
+                    QWidget#TeamHeader::hover {background:#888888;}"
+collapsedStyle = "QWidget#TeamHeader{background:#111111;border:1px solid #888;}\
+                    QWidget#TeamHeader::hover {background:#888888;}"
 class TeamWidget(QWidget):
     def __init__(self, team, carried_bounty, killed_us, killed_them, parent: QWidget | None = None):
         super().__init__(parent)
         self.team = team
-        self.collapsed = True
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)      
         self.setObjectName("TeamWidget")
         self.setSizePolicy(
@@ -112,9 +117,11 @@ class TeamWidget(QWidget):
         self.header = self.initHeader(team)
         self.layout.addWidget(self.header)
         self.body = self.initBody(team)
+        self.body.setVisible(False)
         self.layout.addWidget(self.body)
 
-        self.collapsed = False
+        self.collapsed = True
+        self.header.setStyleSheet(collapsedStyle)
         self.layout.addStretch()
         return
 
@@ -346,7 +353,7 @@ class TeamWidget(QWidget):
         header.setObjectName("TeamHeader")
         header.layout = QHBoxLayout()
         header.setLayout(header.layout)
-        header.layout.setContentsMargins(0,0,0,0)
+        header.layout.setContentsMargins(8,4,8,4)
         header.setSizePolicy(
             QSizePolicy.Policy.Expanding,
             QSizePolicy.Policy.Fixed
@@ -354,7 +361,7 @@ class TeamWidget(QWidget):
 
         header.layout.addWidget(QLabel(
             ("Trio" if len(team['hunters']) == 3 else "Duo" if len(team['hunters']) == 2 else "Solo")
-        ),stretch=2)
+        ),stretch=1)
         stars = Label()
         stars.setPixmap(stars_pixmap(mmr_to_stars(team['mmr']),h=16))
         stars.setToolTip(str(team['mmr']))
@@ -365,6 +372,7 @@ class TeamWidget(QWidget):
             ((" Invite" if team['isinvite'] == 'true' else " Randoms") if len(team['hunters']) > 1 else "")
         ),stretch=1)
         header.installEventFilter(self)
+        header.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         return header
 
     def initBody(self,team):
@@ -389,8 +397,8 @@ class TeamWidget(QWidget):
         for i in range(len(team['hunters'])):
             hunter = team['hunters'][i]
             hunterLabel = Label((hunter['blood_line_name']))
-            hunterLabel.setWordWrap(True)
-            body.layout.addWidget(hunterLabel,i,0,1,2)
+            #hunterLabel.setWordWrap(True)
+            body.layout.addWidget(hunterLabel,i,0,1,1)
             stars = Label()
             stars.setPixmap(stars_pixmap(mmr_to_stars(hunter['mmr']),h=12))
             stars.setToolTip(hunter['mmr'])
@@ -407,7 +415,7 @@ class TeamWidget(QWidget):
             if hunter['bountypickedup'] > 0:
                 tt = '%s carried the bounty.' % hunter['blood_line_name']
                 if hunter['bountyextracted'] > 0:
-                    tt += '%s extracted the bounty.' % hunter['blood_line_name']
+                    tt += '\n%s extracted the bounty.' % hunter['blood_line_name']
                 icons.append({
                     'path':resource_path("assets/icons/teams icons/bounty.png"),
                     'tooltip':tt
@@ -459,17 +467,26 @@ class TeamWidget(QWidget):
 
 
     def toggleBody(self):
-        return
         if(self.collapsed):
             self.body.setVisible(True)
             self.collapsed = False
+            self.header.setStyleSheet(expandedStyle)
             #new_size = QSize(self.header.size().width(),self.body.sizeHint().height())
         else:
             self.body.setVisible(False)
             self.collapsed = True
+            self.header.setStyleSheet(collapsedStyle)
+
             #new_size = QSize(self.header.size().width(),0)
         #self.body.anim.setEndValue(new_size)
         #self.body.anim.start()
+    def setBodyState(self,state):
+        self.body.setVisible(state)
+        self.collapsed = not state
+        if(state):
+            self.header.setStyleSheet(expandedStyle)
+        else:
+            self.header.setStyleSheet(collapsedStyle)
 
     def eventFilter(self, a0: QObject, a1: QEvent) -> bool:
         try:

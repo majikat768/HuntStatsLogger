@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel,QSizePolicy,QSpacerItem, QGroupBox
+from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QSizePolicy,QSpacerItem, QGroupBox
 from DbHandler import get_bounty_data, get_entries
 from resources import tab
+from Widgets.Label import Label
 
 class BountiesWidget(QGroupBox):
     def __init__(self, game_id, parent: QWidget | None = None):
@@ -12,6 +13,7 @@ class BountiesWidget(QGroupBox):
         self.setObjectName("BountiesWidget")
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
 
         self.layout.setContentsMargins(0,6,0,0)
         self.layout.setSpacing(4)
@@ -72,12 +74,12 @@ class BountiesWidget(QGroupBox):
                     w.layout = QVBoxLayout()
                     w.setLayout(w.layout)
                     w.layout.setSpacing(2)
-                    w.layout.addWidget(QLabel(bounty.capitalize()))
-                    w.layout.addWidget(QLabel("%sFound %d clues." % (tab(), bounties[bounty]['clues'])))
+                    w.layout.addWidget(Label(bounty.capitalize()))
+                    w.layout.addWidget(Label("%sFound %d clues." % (tab(), bounties[bounty]['clues'])))
                     if bounties[bounty]['killed']:
-                        w.layout.addWidget(QLabel("%sKilled." % tab()))
+                        w.layout.addWidget(Label("%sKilled." % tab()))
                     if bounties[bounty]['banished']:
-                        w.layout.addWidget(QLabel("%sBanished." % tab()))
+                        w.layout.addWidget(Label("%sBanished." % tab()))
                     self.main.layout.addWidget(w)
                     self.widgets[boss] = w
             else:
@@ -85,7 +87,7 @@ class BountiesWidget(QGroupBox):
                 w.layout = QVBoxLayout()
                 w.setLayout(w.layout)
                 w.layout.setSpacing(0)
-                w.layout.addWidget(QLabel("Closed %d rifts." % bounties['rifts_closed']))
+                w.layout.addWidget(Label("Closed %d rifts." % bounties['rifts_closed']))
                 self.main.layout.addWidget(w)
 
 

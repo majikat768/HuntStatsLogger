@@ -3,16 +3,19 @@ from PyQt6.QtGui import QResizeEvent
 from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSizePolicy
 from resources import settings, stars_pixmap, mmr_to_stars
 from Screens.Records.components.RecordWidget import RecordWidget
-from DbHandler import execute_query
+from DbHandler import execute_query, get_id_from_timestamp
 
 class Records(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.body = parent
 
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)      
         self.setObjectName("RecordsWidget")
 
-        self.nCols = 5
+        self.setMouseTracking(True)
+
+        self.nCols = 4
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -36,6 +39,11 @@ class Records(QWidget):
 
         self.update()
         #self.adjustLayout(self.size())
+
+    def redirect(self,timestamp):
+        self.body.menu.set_focus("Hunts Recap")
+        self.body.setCurrentWidget("Hunts Recap")
+        self.body.stack.currentWidget().show_hunt(get_id_from_timestamp(timestamp))
 
     def update(self):
         self.clearLayout()
@@ -111,7 +119,7 @@ class Records(QWidget):
         mmrLoss = execute_query("select\
                                 lag(h.mmr) over (order by g.timestamp desc) - h.mmr as mmr_loss,\
                                 g.timestamp\
-                                from 'hunters' h join 'games' g on h.game_id = g.game_id where h.profileid = ? order by mmr_loss asc limit 2", settings.value("profileid",0))
+                                from 'hunters' h join 'games' g on h.game_id = g.game_id where h.profileid = ? order by mmr_loss asc limit 1 offset 1", settings.value("profileid",0))
         if len(mmrLoss) == 0:
             mmrLoss =[(0,0)] 
         else:
@@ -170,6 +178,7 @@ class Records(QWidget):
         for i in range(len(self.widgets)):
             widget = self.widgets[i]
             self.main.layout.addWidget(widget,i//self.nCols,i%self.nCols)
+        self.main.layout.setRowStretch(self.main.layout.rowCount(),1)
 
     def clearLayout(self):
         for i in reversed(range(self.main.layout.count())): 

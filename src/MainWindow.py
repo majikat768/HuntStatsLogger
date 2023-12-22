@@ -30,6 +30,7 @@ class MainWindow(QMainWindow):
 
         self.body = Body(self)
         self.menu = Menu(parent=self.body)
+        self.body.menu = self.menu
 
         # move window to last known position / size
         # fixed by @monsterdhal

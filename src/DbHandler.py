@@ -182,7 +182,15 @@ def get_assists_data(game_id):
     amt = execute_query(query,game_id)
     return 0 if len(amt) == 0 else amt[0][0]
 
-def get_n_hunts(n):
+def get_n_hunts(n=-1):
+    if n < 0:
+        n = execute_query("select count(*) from 'games'")
+        if len(n) == 0:
+            n = 0
+        else:
+            n = n[0][0]
+    if n <= 0:
+        return []
     vals = execute_query("select\
                           g.game_id,\
                           g.MissionBagIsHunterDead as extracted,\
@@ -341,3 +349,9 @@ def GetHuntAccolades(id):
         log('dbhandler.getaccolades')
         log(e)
         return {}
+
+def get_id_from_timestamp(timestamp):
+    id = execute_query("select game_id from 'games' where timestamp = ?",timestamp)
+    if len(id) == 0:
+        return -1
+    return id[0][0]

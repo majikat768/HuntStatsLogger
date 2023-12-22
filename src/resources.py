@@ -80,11 +80,12 @@ def mmr_to_stars(mmr):
 
 def stars_pixmap(s, h=18):
     w = h*s+4*s
+    #w = h*6+24
     pm = QPixmap(w,h)
     pm.fill(Qt.GlobalColor.transparent)
     qp = QPainter(pm)
     for i in range(s):
-        qp.drawPixmap((i*h)+(i*2),0,h,h,QPixmap(resource_path("assets/icons/mmrStar.png")))
+        qp.drawPixmap((w-h)-((i*h)+(i*2)),0,h,h,QPixmap(resource_path("assets/icons/mmrStar.png")))
     return pm
 
 def get_icon(path,height=32):
