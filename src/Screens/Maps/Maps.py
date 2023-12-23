@@ -33,12 +33,18 @@ class Maps(QWidget):
         cmpLabelBtn.clicked.connect(self.mapView.toggleCompoundLabels)
         cmpBorderBtn = QPushButton("Compound Borders")
         cmpBorderBtn.clicked.connect(self.mapView.toggleCompoundBorders)
+        beetleBtn = QPushButton("Beetle Cocoons")
+        beetleBtn.clicked.connect(self.mapView.toggleBeetles)
+        rotjawBtn = QPushButton("Rotjaw Locations")
+        rotjawBtn.clicked.connect(self.mapView.toggleRotjaw)
 
         w = QWidget()
         w.layout = QHBoxLayout()
         w.setLayout(w.layout)
         w.layout.addWidget(cmpLabelBtn)
         w.layout.addWidget(cmpBorderBtn)
+        w.layout.addWidget(beetleBtn)
+        #w.layout.addWidget(rotjawBtn)
         return w
 
     def update(self):

@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import QGraphicsView,QGraphicsScene,QGraphicsPixmapItem, QSizePolicy
-from PyQt6.QtGui import QMouseEvent, QPixmap
+from PyQt6.QtGui import QMouseEvent, QPixmap, QBrush,QColor, QPen
 from PyQt6.QtCore import QEvent, QObject, Qt, QPoint 
 from PIL import Image
 from resources import resource_path
 import json, os
-from Screens.Maps.components.Marker import Label, Border
+from Screens.Maps.components.Marker import Label, Border, Marker
 
 maps = {
     "DeSalle": resource_path("assets/maps/desalle"),
@@ -13,6 +13,8 @@ maps = {
 }
 
 compounds_file = resource_path("assets/json/compound_coordinates.json")
+beetles_file = resource_path("assets/json/beetle_spawns.json")
+rotjaw_file = resource_path("assets/json/rotjaw.json")
 
 class MapsView(QGraphicsView):
     def __init__(self,parent):
@@ -42,9 +44,10 @@ class MapsView(QGraphicsView):
         self.current = map
         if self.scene:
             self.scene.clear()
-        size = int(
-            self.parent.size().width()/4 * 0.9
-        )
+        size = int(min(
+            self.parent.size().width(),
+            self.parent.size().height()
+        )/5*1.0)
         self.setFixedSize(size*4,size*4)
         if self.scene == None:
             self.initScene(size*4,size*4)
@@ -61,6 +64,8 @@ class MapsView(QGraphicsView):
 
         self.initCompoundLabels(map)
         self.initCompoundBorders(map)
+        self.initBeetleSpawns(map)
+        #self.initRotjaw(map)
         self.show()
         self.update()
     
@@ -98,9 +103,64 @@ class MapsView(QGraphicsView):
         for border in self.compound_borders:
             self.scene.addItem(border)
 
+    def initBeetleSpawns(self,map):
+        with open(beetles_file,'r') as f:
+            self.beetle_json = json.loads(f.read())
+        pbrush = QBrush(QColor("#44ff0000"))
+        rbrush = QBrush(QColor("#440000ff"))
+        ppen = QPen(QColor("#ff0000"))
+        ppen.setWidth(4)
+        rpen = QPen(QColor("#0000ff"))
+        rpen.setWidth(4)
+        #pen = QColor("#ffffff")
+        lst = self.beetle_json[map]
+        self.beetles = []
+        for type in lst:
+            for pt in lst[type]:
+                x = pt['x']/100 * self.size().width()
+                y = pt['y']/100 * self.size().height()
+                dot = Marker(x=x,y=y,brushColor=pbrush,penColor=ppen)
+                self.beetles.append(dot)
+        for beetle in self.beetles:
+            self.scene.addItem(beetle)
+            #self.scene.addItem(beetle.textBox)
+        self.update()
+
+    def initRotjaw(self,map):
+        with open(rotjaw_file,'r') as f:
+            self.rotjaw_json = json.loads(f.read())
+        pbrush = QBrush(QColor("#4444aa44"))
+        rbrush = QBrush(QColor("#440000ff"))
+        ppen = QPen(QColor("#44aa44"))
+        ppen.setWidth(4)
+        rpen = QPen(QColor("#0000ff"))
+        rpen.setWidth(4)
+        #pen = QColor("#ffffff")
+        lst = self.rotjaw_json[map]
+        self.rotjaw = []
+        for type in lst:
+            for pt in lst[type]:
+                x = pt['x']/100 * self.size().width()
+                y = pt['y']/100 * self.size().height()
+                dot = Marker(x=x,y=y,brushColor=pbrush,penColor=ppen)
+                self.rotjaw.append(dot)
+        for rotjaw in self.rotjaw:
+            self.scene.addItem(rotjaw)
+            #self.scene.addItem(beetle.textBox)
+        self.update()
+
+
     def toggleCompoundBorders(self):
         for border in self.compound_borders:
             border.toggle()
+
+    def toggleBeetles(self):
+        for beetle in self.beetles:
+            beetle.toggle()
+
+    def toggleRotjaw(self):
+        for rotjaw in self.rotjaw:
+            rotjaw.toggle()
 
     def toggleCompoundLabels(self):
         state = not self.compound_labels[0].isVisible()
