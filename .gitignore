@@ -9,3 +9,4 @@ settings.ini
 aws.json
 .VSCodeCounter
 style_processed.qss
+.vscode/

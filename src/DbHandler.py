@@ -393,6 +393,19 @@ def GetHunterByName(name):
         return GetHunterByProfileId(res[0][0])
     return []
 
+def GetHuntersByPartialName(name):
+    res = execute_query("select profileid from 'hunters' where blood_line_name like ? collate nocase", f"%{name}%")
+    ids = []
+    output = []
+
+    for hunterID in res:
+        if hunterID not in ids:
+            ids.append(hunterID)
+    for hunterID in ids:
+        output.append(GetHunterByProfileId(hunterID[0]))
+    return output
+
+
 def GetNameByProfileId(pid):
     vals = execute_query("select blood_line_name from 'hunters_view' where profileid is ? limit 1" , pid)
     if len(vals) > 0:
@@ -407,7 +420,7 @@ def GetHunterByProfileId(pid):
         for v in vals:
             res.append({cols[i][1] : v[i] for i in range(len(cols))})
     except Exception as e:
-        log('dbhandler.gethunterbyname')
+        log('dbhandler.GetHunterByProfileId')
         log(e)
     return res
 
@@ -671,9 +684,14 @@ def getKillData(ts):
         "assists": assists
     }
 
+def SameGameCount(pid):
+    res = execute_query("select count(*) from 'hunters_view' where 'hunters_view'.profileid = ?" , pid)
+    res = 0 if len(res) == 0 else res[0][0]
+    res = 1 if res < 1 else res
+    return res
 
-def SameTeamCount(name):
-    res = execute_query("select count(*) from 'hunters_view' join 'teams_view' on 'teams_view'.ownteam = 'true' and 'hunters_view'.team_num = 'teams_view'.team_num and 'hunters_view'.timestamp = 'teams_view'.timestamp where 'hunters_view'.blood_line_name = ?" , name)
+def SameTeamCount(pid):
+    res = execute_query("select count(*) from 'hunters_view' join 'teams_view' on 'teams_view'.ownteam = 'true' and 'hunters_view'.team_num = 'teams_view'.team_num and 'hunters_view'.timestamp = 'teams_view'.timestamp where 'hunters_view'.profileid = ?" , pid)
     res = 0 if len(res) == 0 else res[0][0]
     return res
 
