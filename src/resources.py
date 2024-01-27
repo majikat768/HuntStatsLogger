@@ -112,6 +112,6 @@ comboBoxStyle = ("QComboBox::down-arrow{\
 
 
 def hunter_name(name):
-    if settings.value("hide_hunter_names",False):
+    if settings.value("hide_hunter_names",'false') == 'true':
         return "hunter%d" % (hash(name)%9999)
     return name

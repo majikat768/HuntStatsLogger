@@ -38,11 +38,13 @@ class HunterSearch(QWidget):
         if len(text) == 0:
             return
         res = execute_query("select h.profileid,h.blood_line_name from 'hunters' h where h.blood_line_name like '%%%s%%' group by h.blood_line_name limit 30" % text)
-        if len(res) > 0:
-            self.updateResults([{'id':r[0],'blood_line_name':r[1]} for r in res])
+        self.updateResults([{'id':r[0],'blood_line_name':r[1]} for r in res])
 
     def updateResults(self,res):
         self.clearResults()
+        print(res)
+        if len(res) == 0:
+            self.results.layout.addWidget(Label("No Results...."))
         for r in res:
             btn = QPushButton(r['blood_line_name'])
             btn.id = r['id']
