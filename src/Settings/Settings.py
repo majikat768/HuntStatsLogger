@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout, QLineEdit, QSizePolicy, QHBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout, QLineEdit, QSizePolicy, QHBoxLayout, QSpacerItem, QCheckBox
 from PyQt6.QtCore import Qt
 from resources import *
 from Settings.Dialogs import *
@@ -21,20 +21,38 @@ class SettingsMain(QWidget):
 
     def initUI(self):
         self.initSteamOptions()
+        self.layout.addItem(QSpacerItem(16,16))
+        self.layout.addWidget(self.toggleHunterNames())
+        self.layout.addItem(QSpacerItem(16,16))
+
         self.layout.addStretch()
+
         settingsDirButton = QPushButton("Open Settings Folder")
         settingsDirButton.clicked.connect(lambda : os.startfile(app_data_path))
         settingsDirButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.layout.addWidget(settingsDirButton)
         self.layout.setAlignment(settingsDirButton,Qt.AlignmentFlag.AlignHCenter)
+
         huntDirButton = QPushButton(" Open Hunt Directory ")
         huntDirButton.clicked.connect(lambda : os.startfile(settings.value("hunt_dir",".")))
         huntDirButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.layout.addWidget(huntDirButton)
         self.layout.setAlignment(huntDirButton,Qt.AlignmentFlag.AlignHCenter)
- 
 
-    def initSteamOptions(self):
+
+    def toggleHunterNames(self):
+        widget = QWidget()
+        widget.layout = QHBoxLayout()
+        widget.setLayout(widget.layout)
+        check = QCheckBox()
+        if(settings.value("hide_hunter_names","false") == "true"):
+            check.setCheckState(Qt.CheckState.Checked)
+        check.setText("Hide Hunter Names")
+        check.stateChanged.connect(lambda : settings.setValue("hide_hunter_names",check.checkState() == Qt.CheckState.Checked))
+        return check
+
+
+    def initSteamName(self):
         self.steamName = QWidget()
         self.steamName.layout = QHBoxLayout()
         self.steamName.setLayout(self.steamName.layout)
@@ -42,7 +60,7 @@ class SettingsMain(QWidget):
         self.steamNameInput.returnPressed.connect(lambda : ChangeSteamName(self))
         self.steamNameInput.setDisabled(True)
         self.steamNameButton = QPushButton("Set Steam Name")
-        self.steamNameButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+        #self.steamNameButton.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         self.steamNameButton.clicked.connect(lambda : ChangeSteamName(self))
 
         self.steamName.layout.addWidget(self.steamNameInput)
@@ -50,14 +68,22 @@ class SettingsMain(QWidget):
         self.layout.addWidget(self.steamName)
         self.layout.setAlignment(self.steamName,Qt.AlignmentFlag.AlignHCenter)
 
+    def initSteamDir(self):
+        widget = QWidget()
+        widget.layout = QHBoxLayout()
+        widget.setLayout(widget.layout)
         self.steamDirLabel = QLabel(settings.value("steam_dir","<i>Select Steam Folder</i>"))
-        self.layout.addWidget(self.steamDirLabel)
+        widget.layout.addWidget(self.steamDirLabel)
         self.setSteamDir = QPushButton("Select Steam Folder")
         self.setSteamDir.clicked.connect(lambda : SelectSteamFolderDialog(self))
         self.setSteamDir.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.layout.addWidget(self.setSteamDir)
-        self.layout.setAlignment(self.setSteamDir,Qt.AlignmentFlag.AlignHCenter)
+        widget.layout.addWidget(self.setSteamDir)
+        self.layout.addWidget(widget)
 
+    def initHuntDir(self):
+        widget = QWidget()
+        widget.layout = QHBoxLayout()
+        widget.setLayout(widget.layout)
         self.huntDirLabel = QLabel()
         if len(settings.value("hunt_dir","")) > 0:
             if len(settings.value("steam_dir","")) > 0:
@@ -67,9 +93,19 @@ class SettingsMain(QWidget):
                 self.huntDirLabel.setText(settings.value("hunt_dir"))
         else:
             self.huntDirLabel.setText("<i>Select Hunt Folder</i>")
-        self.layout.addWidget(self.huntDirLabel)
+        widget.layout.addWidget(self.huntDirLabel)
         self.setHuntDir = QPushButton("Select Hunt Folder")
         self.setHuntDir.clicked.connect(lambda : SelectHuntFolderDialog(self))
         self.setHuntDir.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-        self.layout.addWidget(self.setHuntDir)
-        self.layout.setAlignment(self.setHuntDir,Qt.AlignmentFlag.AlignHCenter)
+        widget.layout.addWidget(self.setHuntDir)
+        self.layout.addWidget(widget)
+
+    def initSteamOptions(self):
+        self.initSteamName()
+
+        self.layout.addItem(QSpacerItem(16,16))
+        self.initSteamDir()
+        self.layout.addItem(QSpacerItem(16,16))
+
+        self.initHuntDir()
+        self.layout.addItem(QSpacerItem(16,16))

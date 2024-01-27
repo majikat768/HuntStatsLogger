@@ -66,7 +66,7 @@ class Records(QWidget):
                                       order by kills desc\
                                       limit 1")
         if len(mostDeathsData) == 0:
-            mostDeathsData = [(0,0)]
+            mostDeathsData = [0,0]
         else:
             mostDeathsData = mostDeathsData[0]
         self.widgets.append(RecordWidget(mostDeathsData[1],mostDeathsData[0],"Deaths"))
@@ -77,7 +77,7 @@ class Records(QWidget):
                                     from 'entries' e where e.category = 'accolade_players_killed_assist'\
                                     group by e.timestamp order by assists desc limit 1")
         if len(assistsData) == 0:
-            assistsData = [(0,0)]
+            assistsData = [0,0]
         else:
             assistsData = assistsData[0]
         self.widgets.append(RecordWidget(assistsData[0],assistsData[1],"Assists"))
@@ -88,7 +88,7 @@ class Records(QWidget):
                                       order by kills desc\
                                       limit 1")
         if len(mostTeamKillsData) == 0:
-            mostTeamKillsData = [(0,0)]
+            mostTeamKillsData = [0,0]
         else:
             mostTeamKillsData = mostTeamKillsData [0]
         self.widgets.append(RecordWidget(mostTeamKillsData[1],mostTeamKillsData[0],"Team Kills"))
@@ -100,7 +100,7 @@ class Records(QWidget):
                                       order by kills desc\
                                       limit 1")
         if len(mostTeamDeathsData) == 0:
-            mostTeamDeathsData = [(0,0)]
+            mostTeamDeathsData = [0,0]
         else:
             mostTeamDeathsData = mostTeamDeathsData [0]
         self.widgets.append(RecordWidget(mostTeamDeathsData[1],mostTeamDeathsData[0],"Team Deaths"))
@@ -111,7 +111,7 @@ class Records(QWidget):
                                 g.timestamp\
                                 from 'hunters' h join 'games' g on h.game_id = g.game_id where h.profileid = ? order by mmr_gain desc limit 1", settings.value("profileid",0))
         if len(mmrGain) == 0:
-            mmrGain =[(0,0)] 
+            mmrGain =[0,0] 
         else:
             mmrGain = [ x if x is not None else 0 for x in mmrGain[0] ]
         self.widgets.append(RecordWidget("%+d"%mmrGain[0],mmrGain[1],"MMR Gain"))
@@ -121,7 +121,7 @@ class Records(QWidget):
                                 g.timestamp\
                                 from 'hunters' h join 'games' g on h.game_id = g.game_id where h.profileid = ? order by mmr_loss asc limit 1 offset 1", settings.value("profileid",0))
         if len(mmrLoss) == 0:
-            mmrLoss =[(0,0)] 
+            mmrLoss =[0,0] 
         else:
             mmrLoss = [ x if x is not None else 0 for x in mmrLoss[0] ]
         self.widgets.append(RecordWidget("%+d"%mmrLoss[0],mmrLoss[1],"MMR Loss"))
@@ -132,7 +132,7 @@ class Records(QWidget):
                                          join 'games' g on t.game_id = g.game_id\
                                          group by t.game_id order by max(t.timestamp) asc LIMIT 1")
         if len(shortestHuntData) == 0:
-            shortestHuntData = [(0,0)]
+            shortestHuntData = [0,0]
         else:
             shortestHuntData = shortestHuntData[0]
         self.widgets.append(RecordWidget(shortestHuntData[1],shortestHuntData[0],"Shortest Hunt"))
@@ -142,7 +142,7 @@ class Records(QWidget):
                                          join 'games' g on t.game_id = g.game_id\
                                          group by t.game_id order by max(t.timestamp) desc LIMIT 1")
         if len(longestHuntData) == 0:
-            longestHuntData = [(0,0)]
+            longestHuntData = [0,0]
         else:
             longestHuntData = longestHuntData[0]
         self.widgets.append(RecordWidget(longestHuntData[1],longestHuntData[0],"Longest Hunt"))
@@ -152,7 +152,7 @@ class Records(QWidget):
                                     where (category like 'accolade_monsters_killed' or descriptorName like 'kill horse')\
                                     group by e.game_id order by kills desc limit 1")
         if len(mobsData) == 0:
-            mobsData = [(0,0)]
+            mobsData = [0,0]
         else:
             mobsData = mobsData[0]
         self.widgets.append(RecordWidget(mobsData[1],mobsData[0],"Mobs Killed"))
@@ -161,7 +161,7 @@ class Records(QWidget):
         moneyData = execute_query("select a.timestamp, sum(a.bounty) as bounty from 'accolades' a\
                                   group by game_id order by bounty desc limit 1")
         if len(moneyData) == 0:
-            moneyData = [(0,0)]
+            moneyData = [0,0]
         else:
             moneyData = moneyData[0]
         self.widgets.append(RecordWidget("$%d"%moneyData[1],moneyData[0],"Hunt Dollars"))
@@ -170,7 +170,7 @@ class Records(QWidget):
         xpData = execute_query("select a.timestamp, sum(a.xp) as xp from 'accolades' a\
                                   group by game_id order by xp desc limit 1")
         if len(xpData) == 0:
-            xpData = [(0,0)]
+            xpData = [0,0]
         else:
             xpData = xpData[0]
         self.widgets.append(RecordWidget(xpData[1],xpData[0],"XP"))

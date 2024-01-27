@@ -2,7 +2,7 @@ from PyQt6.QtGui import QResizeEvent
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel,QSizePolicy,QSpacerItem, QScrollArea, QGroupBox, QTableWidget,QTableWidgetItem, QAbstractItemView, QHeaderView, QPushButton
 from PyQt6 import QtCore, QtGui
 from DbHandler import get_hunt_timeline
-from resources import settings
+from resources import settings, hunter_name
 
 class TimelineWidget(QGroupBox):
     def __init__(self, game_id, parent: QWidget | None = None):
@@ -86,7 +86,7 @@ class TimelineWidget(QGroupBox):
 
 def event_text(event):
     my_name = settings.value("steam_name", "you")
-    hunter = event['blood_line_name']
+    hunter = hunter_name(event['blood_line_name'])
     e = event['event']
     txt = ""
     tag = ""

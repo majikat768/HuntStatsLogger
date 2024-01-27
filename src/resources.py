@@ -109,3 +109,9 @@ comboBoxStyle = ("QComboBox::down-arrow{\
     QComboBox{\
     border:1px inset #888\
     }" % resource_path("assets/icons/huntArrowDown.png")).replace("\\","/")
+
+
+def hunter_name(name):
+    if settings.value("hide_hunter_names",False):
+        return "hunter%d" % (hash(name)%9999)
+    return name

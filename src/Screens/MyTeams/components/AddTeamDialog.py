@@ -44,7 +44,6 @@ class AddTeamDialog(QDialog):
                 self.errorText.setVisible(True)
                 return False    # do something error handley here
             pids.append(pid)
-        print(pids)
         current_teams = eval(settings.value("my_teams","[]"))
         if pids not in current_teams:
             current_teams.append(pids)

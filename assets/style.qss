@@ -16,6 +16,15 @@ forest green: #19261B
 QLabel {
     font-size: 14pt;
 }
+QCheckBox {
+    background:transparent;
+    color: #dddddd;
+    font-size:14pt;
+}
+QCheckBox::indicator {
+    width:16px;
+    height:16px;
+}
 QStackedWidget {
     background:#283940;
 }

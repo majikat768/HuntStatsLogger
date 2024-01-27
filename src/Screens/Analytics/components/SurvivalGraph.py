@@ -29,8 +29,6 @@ class SurvivalGraph(PlotItem):
             survival = survival[0]
         survivalRate = survival[0] / max(1,survival[1])
         death = survival[1] - survival[0]
-        print(survival)
-        print(death)
         deathRate = 1.0 - survivalRate
 
         x = [15,30]

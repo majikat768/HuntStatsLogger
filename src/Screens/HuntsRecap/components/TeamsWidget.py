@@ -3,7 +3,7 @@ from PyQt6.QtGui import QMouseEvent, QResizeEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QSizePolicy, QGroupBox, QPushButton
 from PyQt6 import QtCore, QtGui
 from DbHandler import get_team_data, get_hunters_data, get_hunter_encounters, get_all_names
-from resources import tab, stars_pixmap, mmr_to_stars, get_icon, settings, resource_path
+from resources import tab, stars_pixmap, mmr_to_stars, get_icon, settings, resource_path, hunter_name
 from Widgets.Label import Label
 from Widgets.ToggleSwitch import AnimatedToggle
 
@@ -172,7 +172,7 @@ class TeamWidget(QWidget):
 
         for i in range(len(team['hunters'])):
             hunter = team['hunters'][i]
-            hunterLabel = Label((hunter['blood_line_name']))
+            hunterLabel = Label(hunter_name(hunter['blood_line_name']))
             #hunterLabel.setWordWrap(True)
             body.layout.addWidget(hunterLabel,i,0,1,1)
             stars = Label()
@@ -185,18 +185,17 @@ class TeamWidget(QWidget):
             encLabel = Label(
                 ("Seen %dx" % encounters if encounters > 1 and hunter['blood_line_name'] != settings.value("steam_name") else "")
             )
-            if(encounters > 1):
+            if(encounters > 1 and not settings.value("hide_hunter_names",False)):
                 names = get_all_names(hunter['profileid'])
                 if(len(names) > 1):
-                    print(names)
                     encLabel.setToolTip("Other Names:\n%s" % ('\n'.join(nt[0] for nt in names)))
             body.layout.addWidget(encLabel,i,5,1,1)
             #body.layout.setAlignment(encLabel,QtCore.Qt.AlignmentFlag.AlignRight)
             icons = []
             if hunter['bountypickedup'] > 0:
-                tt = '%s carried the bounty.' % hunter['blood_line_name']
+                tt = '%s carried the bounty.' % hunter_name(hunter['blood_line_name'])
                 if hunter['bountyextracted'] > 0:
-                    tt += '\n%s extracted the bounty.' % hunter['blood_line_name']
+                    tt += '\n%s extracted the bounty.' % hunter_name(hunter['blood_line_name'])
                 icons.append({
                     'path':resource_path("assets/icons/teams icons/bounty.png"),
                     'tooltip':tt
@@ -204,9 +203,9 @@ class TeamWidget(QWidget):
             if hunter['downedbyme'] > 0 or hunter['killedbyme'] > 0:
                 tt = []
                 if hunter['downedbyme'] > 0:
-                    tt.append("You downed %s %d times." % (hunter['blood_line_name'],hunter['downedbyme']))
+                    tt.append("You downed %s %d times." % (hunter_name(hunter['blood_line_name']),hunter['downedbyme']))
                 if hunter['killedbyme'] > 0:
-                    tt.append("You killed %s." % (hunter['blood_line_name']))
+                    tt.append("You killed %s." % hunter_name(hunter['blood_line_name']))
                 icons.append({
                     'path':resource_path("assets/icons/teams icons/killedbyme.png"),
                     'tooltip':'\n'.join(tt)})
@@ -214,9 +213,9 @@ class TeamWidget(QWidget):
             if hunter['downedbyteammate'] > 0 or hunter['killedbyteammate'] > 0:
                 tt = []
                 if hunter['downedbyteammate'] > 0:
-                    tt.append("Your teammate downed %s %d times." % (hunter['blood_line_name'],hunter['downedbyteammate']))
+                    tt.append("Your teammate downed %s %d times." % (hunter_name(hunter['blood_line_name']),hunter['downedbyteammate']))
                 if hunter['killedbyteammate'] > 0:
-                    tt.append("Your teammate killed %s." % (hunter['blood_line_name']))
+                    tt.append("Your teammate killed %s." % (hunter_name(hunter['blood_line_name'])))
                 icons.append({
                     'path':resource_path("assets/icons/teams icons/killedbyteammate.png"),
                     'tooltip':'\n'.join(tt)})
@@ -224,9 +223,9 @@ class TeamWidget(QWidget):
             if hunter['downedme'] > 0 or hunter['killedme'] > 0:
                 tt = []
                 if hunter['downedme'] > 0:
-                    tt.append("%s downed you %d times." % (hunter['blood_line_name'],hunter['downedme']))
+                    tt.append("%s downed you %d times." % (hunter_name(hunter['blood_line_name']),hunter['downedme']))
                 if hunter['killedme'] > 0:
-                    tt.append("%s killed you." % (hunter['blood_line_name']))
+                    tt.append("%s killed you." % hunter_name(hunter['blood_line_name']))
                 icons.append({
                     'path':resource_path("assets/icons/teams icons/killedme.png"),
                     'tooltip':'\n'.join(tt)})
@@ -234,9 +233,9 @@ class TeamWidget(QWidget):
             if hunter['downedteammate'] > 0 or hunter['killedteammate'] > 0:
                 tt = []
                 if hunter['downedteammate'] > 0:
-                    tt.append("%s downed your teammate %d times." % (hunter['blood_line_name'],hunter['downedteammate']))
+                    tt.append("%s downed your teammate %d times." % (hunter_name(hunter['blood_line_name']),hunter['downedteammate']))
                 if hunter['killedteammate'] > 0:
-                    tt.append("%s killed your teammate." % (hunter['blood_line_name']))
+                    tt.append("%s killed your teammate." % hunter_name(hunter['blood_line_name']))
                 icons.append({
                     'path':resource_path("assets/icons/teams icons/killedteammate.png"),
                     'tooltip':'\n'.join(tt)})
