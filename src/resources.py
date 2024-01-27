@@ -1,27 +1,20 @@
-import os
-import json
-import subprocess
-import math
-import sys
-import time
-from datetime import datetime
-
-from PyQt6.QtCore import QSettings, QStandardPaths
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QSizePolicy, QWidgetItem, QSpacerItem, QApplication
+import sys, os, time, subprocess 
+from PyQt6.QtCore import QSettings, QStandardPaths, Qt
+from PyQt6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout
+from PyQt6.QtGui import QPixmap, QPainter
 from Widgets.Label import Label
 
-app_data_path = os.path.join(QStandardPaths.writableLocation(
-    QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
-icon_size = 24
+debug = False
+
+tabstop = 2
 
 game_id = "594650"
 
-debug = False
-is_exe = getattr(sys,'frozen',False) and hasattr(sys, '_MEIPASS')
+app_data_path = os.path.join(QStandardPaths.writableLocation(
+    QStandardPaths.StandardLocation.AppDataLocation), 'hsl_files2')
 
 if not os.path.exists(app_data_path):
-    os.makedirs(app_data_path, exist_ok=True)
+    os.makedirs(app_data_path,exist_ok=True)
 
 json_dir = os.path.join(app_data_path, 'json')
 if not os.path.exists(json_dir):
@@ -33,24 +26,13 @@ if not os.path.exists(logs_dir):
 
 log_file = os.path.join(logs_dir,'log.txt')
 
-database = None
+database = os.path.join(app_data_path,"huntstats.db")
 
 settings = QSettings(os.path.join(
     app_data_path, 'settings.ini'), QSettings.Format.IniFormat)
 
-def set_database(str):
-    global database
-    database = str
-
-set_database(os.path.join(app_data_path, 'huntstats.db'))
-
-def log(str):
-    with open(log_file,'a', encoding='utf-8') as f:
-        line = "%d\t%s\n" % (int(time.time()),str)
-        f.write(line)
-        print(str)
-    if os.stat(log_file).st_size > 1024 * 512:
-        os.rename(log_file,os.path.join(logs_dir,"log_%d.txt" % int(time.time())))
+steam_dir = settings.value("steam_dir",None)
+hunt_dir = settings.value("hunt_dir",None)
 
 def resource_path(relative_path):
     try:
@@ -61,98 +43,15 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-def mmr_to_stars(mmr):
-    return 0 if mmr == -1 else 1 if mmr <= 2000 else 2 if mmr <= 2300 else 3 if mmr <= 2600 else 4 if mmr <= 2750 else 5 if mmr <= 3000 else 6
+MENU_ICON_SIZE = 36 
 
-
-def unix_to_datetime(timestamp):
-    try:
-        timestamp = int(timestamp)
-        return datetime.fromtimestamp(timestamp).strftime('%H:%M %m/%d/%y')
-    except Exception as e:
-        log('unix_to_datetime error')
-        log(e)
-        return timestamp
-
-
-def GetBounties(game):
-    bounties = []
-    if game['MissionBagBoss_0'].lower() == 'true':
-        bounties.append('Butcher')
-    if game['MissionBagBoss_1'].lower() == 'true':
-        bounties.append('Spider')
-    if game['MissionBagBoss_2'].lower() == 'true':
-        bounties.append('Assassin')
-    if game['MissionBagBoss_3'].lower() == 'true':
-        bounties.append('Scrapbeak')
-    return bounties
-
-
-def star_path():
-    return os.path.join(resource_path('assets/icons'), 'star.png')
-
-
-def max(a, b=None):
-    if b == None:
-        arr = list(a)
-        maximum = arr[0]
-        for i in arr:
-            maximum = max(maximum,i)
-        return maximum
-    return a if a > b else b
-
-def min(a, b=None):
-    if b == None:
-        arr = list(a)
-        minimum = arr[0]
-        for i in arr:
-            minimum = min(minimum,i)
-        return minimum
-    return a if a < b else b
-
-
-deadIcon = resource_path('assets/icons/death.png')
-livedIcon = resource_path('assets/icons/lived2.png')
-killedByIcon = resource_path('assets/icons/killedby.png')
-killedIcon = resource_path('assets/icons/killed.png')
-teammateKilledIcon = resource_path('assets/icons/teammatekilled.png')
-killedTeammateIcon = resource_path('assets/icons/killedteammate.png')
-bountyIcon = resource_path('assets/icons/bounty.png')
-blankIcon = resource_path('assets/icons/blank.png')
-chevronRightIcon = resource_path('assets/icons/chevron-right.svg')
-chevronDownIcon = resource_path('assets/icons/chevron-down.svg')
-
-teamTable = " "*4
-
-
-def get_icon(path,x=icon_size,y=icon_size,border=True):
-    pm = QPixmap(path)
-    i = Label()
-    i.setPixmap(pm.scaled(x, y))
-    if border:
-        i.setObjectName("icon")
-    else:
-        i.setObjectName("icon_borderless")
-    #i.setStyleSheet("QLabel{border:1px solid white;}")
-    i.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-    return i
-
-
-def clearLayout(layout):
-    for i in reversed(range(layout.count())):
-        item = layout.itemAt(i)
-        if isinstance(item,QWidgetItem):
-            layout.itemAt(i).widget().setParent(None)
-        elif isinstance(item,QSpacerItem):
-            layout.removeItem(item)
-
-def GoToHuntPage(timestamp,main):
-    tab = main.huntsTab
-    index = tab.HuntSelect.findData(timestamp)
-    tab.HuntSelect.setCurrentIndex(index)
-    main.tabs.setTab(0)
-    tab.updateDetails(ts=timestamp)
-
+def log(str):
+    with open(log_file,'a', encoding='utf-8') as f:
+        line = "%d\t%s\n" % (int(time.time()),str)
+        f.write(line)
+        print(str)
+    if os.stat(log_file).st_size > 1024 * 512:
+        os.rename(log_file,os.path.join(logs_dir,"log_%d.txt" % int(time.time())))
 
 def launch_hunt():
     if (settings.value("hunt_dir","") != "" and "HuntGame.exe" not in subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq HuntGame.exe']).decode()):
@@ -163,8 +62,56 @@ def launch_hunt():
         log("using " + steam_exe)
         subprocess.Popen([steam_exe,"steam://rungameid/"+game_id])
 
-with open(resource_path('./assets/json/maps.json'),'r') as f:
-    maps = json.loads(f.read())
+def mmr_to_stars(mmr):
+    if mmr == -1:
+        return 0
+    elif mmr < 2000:
+        return 1
+    elif mmr < 2300:
+        return 2
+    elif mmr < 2600:
+        return 3
+    elif mmr < 2750:
+        return 4
+    elif mmr < 3000:
+        return 5
+    else:
+        return 6
 
-tab2 = " "*2
-tab4 = " "*4
+def stars_pixmap(s, h=18):
+    w = h*s+4*s
+    #w = h*6+24
+    pm = QPixmap(w,h)
+    pm.fill(Qt.GlobalColor.transparent)
+    qp = QPainter(pm)
+    for i in range(s):
+        qp.drawPixmap((w-h)-((i*h)+(i*2)),0,h,h,QPixmap(resource_path("assets/icons/mmrStar.png")))
+    return pm
+
+def get_icon(path,height=32):
+    pm = QPixmap(resource_path(path))
+    i = Label()
+    i.setPixmap(pm.scaled(height,height))
+    i.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+    i.setFixedHeight(height)
+    return i
+
+def tab():
+    return " " * tabstop
+
+
+comboBoxStyle = ("QComboBox::down-arrow{\
+    image:url(%s);\
+    width:20px;\
+    height:20px;\
+    right:6;\
+    }\
+    QComboBox{\
+    border:1px inset #888\
+    }" % resource_path("assets/icons/huntArrowDown.png")).replace("\\","/")
+
+
+def hunter_name(name):
+    if settings.value("hide_hunter_names",False):
+        return "hunter%d" % (hash(name)%9999)
+    return name
