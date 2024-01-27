@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QPushButton, QGroupBox
 from Widgets.Label import Label
 from DbHandler import get_hunter_encounters, get_all_names, execute_query
-from resources import tab
+from resources import tab, settings
 
 class HunterWindow(QMainWindow):
     def __init__(self, pid, parent: QWidget | None = None):
@@ -24,13 +24,13 @@ class HunterWindow(QMainWindow):
         self.main.layout.addWidget(Label("Encountered %d times." % encounters))
         self.main.layout.addWidget(Label("You've killed them %d times." % self.get_kill_count(pid)))
         self.main.layout.addWidget(Label("They've killed you %d times." % self.get_killed_by_count(pid)))
+        self.main.layout.addWidget(Label("Been on their team %d times." % self.get_team_count(pid)))
         self.main.layout.addStretch()
 
         closeButton = QPushButton("Close")
         closeButton.clicked.connect(self.close)
         self.main.layout.addWidget(closeButton)
         self.setCentralWidget(self.main)
-        self.get_kill_count(pid)
 
     def get_kill_count(self,pid):
         count = execute_query(
@@ -46,6 +46,14 @@ class HunterWindow(QMainWindow):
             return 0
         return count[0][0]
 
+    def get_team_count(self,pid):
+        count = execute_query("select count(*)\
+                              from 'hunters' h\
+                              join 'hunters' h2 on h2.team_num = h.team_num and h2.timestamp = h.timestamp\
+                              where h.profileid = ? and h2.profileid = ?", settings.value("profileid",0),pid)
+        if len(count) == 0:
+            return 0
+        return count[0][0]
 
 class ListBox(QWidget):
     def __init__(self,list,title=""):

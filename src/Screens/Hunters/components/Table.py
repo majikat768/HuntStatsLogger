@@ -30,7 +30,7 @@ class Table(QTableWidget):
                 self.setItem(i,j,QTableWidgetItem(str(data[i][j])))
             self.data[i]["id"] = data[i][len(colNames)]
             self.setRowHeight(i,32)
-        self.setFixedHeight(33*len(data)+self.horizontalHeader().height())
+        self.setFixedHeight(32*len(data)+self.horizontalHeader().height())
 
     def showHunterData(self,row,col):
         win = HunterWindow(self.data[row]['id'],parent=self)
