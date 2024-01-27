@@ -28,7 +28,7 @@ class MostSeen(QWidget):
 
     def update(self):
         hunters = execute_query(
-            "select blood_line_name, max(mmr), count(profileid)\
+            "select blood_line_name, max(mmr), count(profileid),profileid\
                 from 'hunters' where profileid != '%s'\
                 group by profileid\
                 order by count(profileid) desc\

@@ -29,7 +29,7 @@ class MostKilledBy(QWidget):
     def update(self):
         hunters = execute_query(
             "select h.blood_line_name,max(h.mmr),\
-                sum(h.killedbyme+h.downedbyme) || '/' || sum(h.killedme+h.downedme)\
+                sum(h.killedbyme+h.downedbyme) || '/' || sum(h.killedme+h.downedme), h.profileid\
                 from 'hunters' h\
                 where h.killedme > 0 or h.downedme > 0\
                 group by h.profileid order by sum(h.killedme+h.downedme) desc limit 20"

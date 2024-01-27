@@ -13,7 +13,7 @@ class BountiesWidget(QGroupBox):
         self.setObjectName("BountiesWidget")
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Minimum)
 
         self.layout.setContentsMargins(0,6,0,0)
         self.layout.setSpacing(4)
@@ -91,7 +91,7 @@ class BountiesWidget(QGroupBox):
                 self.main.layout.addWidget(w)
 
 
-            self.layout.addStretch()
+            #self.layout.addStretch()
 
 def get_n_tokens(entry):
     return 1 if 'one token' in entry else 2 if 'two tokens' in entry else 3 if 'three tokens' in entry else 4 if 'four tokens' in entry else 0

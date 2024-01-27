@@ -41,6 +41,7 @@ class AddTeamDialog(QDialog):
             pid = get_pid_from_bloodlinename(name)
             if(pid < 0):
                 self.setErrorText("Could not find hunter '%s'." % name)
+                self.errorText.setVisible(True)
                 return False    # do something error handley here
             pids.append(pid)
         print(pids)

@@ -72,7 +72,7 @@ class LeftPane(QGroupBox):
         self.rewardsWidget = RewardsWidget(self.game_id)
 
         self.layout.addWidget(self.killsWidget)
-        self.layout.addStretch()
+        #self.layout.addStretch()
         self.layout.addWidget(self.bountiesWidget)
         self.layout.addWidget(self.monstersWidget)
         self.layout.addWidget(self.rewardsWidget)
@@ -80,6 +80,7 @@ class LeftPane(QGroupBox):
             QSizePolicy.Policy.Expanding,
             QSizePolicy.Policy.Expanding,
         )
+        self.layout.addStretch()
 
     def init(self):
         self.killsWidget.init()

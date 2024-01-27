@@ -29,7 +29,7 @@ class Body(QWidget):
 
         self.scrollArea = QScrollArea()
         self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.wheelEvent = self.wheelEvent
+        #self.scrollArea.wheelEvent = self.wheelEvent
         self.main = QWidget()
         self.main.layout = QVBoxLayout()
         self.main.setLayout(self.main.layout)
@@ -73,9 +73,10 @@ class Body(QWidget):
 
     def eventFilter(self, a0: QObject, a1: QEvent) -> bool:
         if a1.type() == QEvent.Type.Wheel:
-            a1.ignore()
-            return False 
+            #a1.ignore()
+            pass
         return super().eventFilter(a0, a1)
 
     def wheelEvent(self, a0: QWheelEvent) -> None:
-        a0.ignore()
+        pass
+        #a0.ignore()

@@ -182,6 +182,10 @@ def get_assists_data(game_id):
     amt = execute_query(query,game_id)
     return 0 if len(amt) == 0 else amt[0][0]
 
+def get_all_names(profileid):
+    query = "SELECT blood_line_name FROM 'hunters' where 'hunters'.profileid == ? group by blood_line_name"
+    return execute_query(query,profileid)
+
 def get_n_hunts(n=-1):
     if n < 0:
         n = execute_query("select count(*) from 'games'")
@@ -272,7 +276,7 @@ def get_my_team_data(profileids):
         query += " and h1.profileid = ?"
     if len(profileids) == 3:
         query += " and h2.profileid = ?"
-    query += " order by h0.timestamp desc"
+    query += " order by h0.timestamp asc"
 
     cols = ["game_id","timestamp","p1_name","p1_mmr","p1_bountyextract","p1_teamextract"]
     if len(profileids) > 1:

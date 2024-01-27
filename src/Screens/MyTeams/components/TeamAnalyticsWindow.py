@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QWidget
 from PyQt6.QtGui import QColor
 from Screens.Analytics.components.PlotItem import PlotItem
+from datetime import datetime
 import pyqtgraph
 
 brushes = [
@@ -32,12 +33,12 @@ class TeamAnalyticsWindow(QMainWindow):
         self.legend.anchor((0,0),(0,0))
         self.legend.setFixedHeight(100)
         window.addItem(vb,1,0)
-
         plotData = [
             [
                 {
                     'x':i,
-                    'y':data[i]['p%d_mmr' % (j+1)]
+                    'y':data[i]['p%d_mmr' % (j+1)],
+                    'data':datetime.fromtimestamp(data[i]['timestamp']).strftime("%H:%M %b %d")
                 } for i in range(len(data))
             ] for j in range(len(hunters))
         ]
@@ -49,34 +50,39 @@ class TeamAnalyticsWindow(QMainWindow):
                 [{
                     'x':pt['x'],
                     'y':pt['y'],
+                    'data':pt['data']
                 } for pt in item],
-                tip=("MMR: {y:.0f}").format,
+                tip=("MMR: {y:.0f}\n{data}").format,
                 pen="#000",
                 brush=brushes[i],
                 size=12,
                 hoverSize=14,
-                name=hunters[i]
+                name=hunters[i],
+                hoverable=True
             )
             plot.addItem(pts)
 
         teamData = [
             {
                 'x':i,
-                'y':data[i]['team_mmr']
+                'y':data[i]['team_mmr'],
+                'data':datetime.fromtimestamp(data[i]['timestamp']).strftime("%H:%M %b %d")
             } for i in range(len(data))
         ]
         plot.addItem(pyqtgraph.PlotDataItem(teamData))
         teamPts = pyqtgraph.ScatterPlotItem(
             [{
                 'x':pt['x'],
-                'y':pt['y']
+                'y':pt['y'],
+                'data':pt['data']
             } for pt in teamData],
-            tip=("Team MMR: {y:.0f}").format,
+            tip=("Team MMR: {y:.0f}\n{data}").format,
             pen="#000",
             brush=brushes[3],
             size=12,
             hoverSize=14,
-            name="Team MMR"
+            name="Team MMR",
+            hoverable=True
         )
         plot.addItem(teamPts)
 

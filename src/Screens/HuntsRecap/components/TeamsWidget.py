@@ -2,7 +2,7 @@ from PyQt6.QtCore import QEvent, QObject, QPropertyAnimation, QSize
 from PyQt6.QtGui import QMouseEvent, QResizeEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QSizePolicy, QGroupBox, QPushButton
 from PyQt6 import QtCore, QtGui
-from DbHandler import get_team_data, get_hunters_data, get_hunter_encounters
+from DbHandler import get_team_data, get_hunters_data, get_hunter_encounters, get_all_names
 from resources import tab, stars_pixmap, mmr_to_stars, get_icon, settings, resource_path
 from Widgets.Label import Label
 from Widgets.ToggleSwitch import AnimatedToggle
@@ -117,236 +117,12 @@ class TeamWidget(QWidget):
         self.header = self.initHeader(team)
         self.layout.addWidget(self.header)
         self.body = self.initBody(team)
-        self.body.setVisible(False)
         self.layout.addWidget(self.body)
+        self.body.setVisible(True)
 
-        self.collapsed = True
-        self.header.setStyleSheet(collapsedStyle)
+        self.collapsed = False 
+        self.header.setStyleSheet(expandedStyle)
         self.layout.addStretch()
-        return
-
-        self.layout.addWidget(QLabel(
-            " | ".join([hunter['blood_line_name'] for hunter in team['hunters']])
-        ),0,0,1,5)
-        if len(team['hunters']) > 1:
-            self.layout.addWidget(QLabel(
-                (" Invite" if team['isinvite'] == 'true' else " Randoms") if len(team['hunters']) > 1 else "Solo"
-            ),1,0,1,1)
-        stars = Label()
-        #stars.setToolTip(str(team['mmr']))
-        stars.setPixmap(stars_pixmap(mmr_to_stars(team['mmr']),h=16))
-        self.layout.addWidget(QLabel(str(team['mmr'])),1,1,1,1)
-        self.layout.addWidget(stars,1,2,1,1)
-        icons = []
-        for i in range(len(team['hunters'])):
-            hunter = team['hunters'][i]
-            if hunter['bountypickedup'] > 0:
-                if not carried_bounty:
-                    icons.append({
-                        'path':resource_path("assets/icons/teams icons/bounty.png"),
-                        'tooltip': "carried the bounty"
-                        })
-                    carried_bounty = True
-            if hunter['downedbyme'] > 0 or hunter['killedbyme'] > 0 or hunter['downedbyteammate'] > 0 or hunter['killedbyteammate'] > 0:
-                if not killed_them:
-                    icons.append({
-                        'path':resource_path("assets/icons/teams icons/killedbyme.png"),
-                        "tooltip":"killed by your team"
-                        })
-                    killed_them = True
-            if hunter['downedme'] > 0 or hunter['killedme'] > 0 or hunter['downedteammate'] > 0 or hunter['killedteammate'] > 0:
-                if not killed_us:
-                    icons.append({
-                        'path':resource_path("assets/icons/teams icons/killedme.png"),
-                        "tooltip": "killed your team"
-                        })
-                    killed_us = True
-        icons_widget = getIconWidget(icons)
-        self.layout.addWidget(icons_widget,1,3,1,1)
-        self.layout.setColumnStretch(4,1)
-        self.initAnimation()
-        self.installEventFilter(self)
-        return
-
-        self.header = QWidget()
-        self.header.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
-        self.header.setObjectName("TeamHeader")
-        self.header.layout = QGridLayout()
-        self.header.setLayout(self.header.layout)
-        self.header.layout.setSpacing(0)
-        self.header.layout.setContentsMargins(0,0,0,0)
-        self.header.setSizePolicy(
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Fixed
-        )
-        self.header.layout.addWidget(QLabel(
-            ("Trio" if len(team['hunters']) == 3 else "Duo" if len(team['hunters']) == 2 else "Solo")
-        ),0,0,1,1)
-        stars = Label()
-        stars.setToolTip(str(team['mmr']))
-        stars.setPixmap(stars_pixmap(mmr_to_stars(team['mmr']),h=16))
-        self.header.layout.addWidget(stars,0,1,1,1)
-        self.header.layout.addWidget(QLabel(str(team['mmr'])),0,2,1,1)
-        inviteLabel = QLabel(
-            ((" Invite" if team['isinvite'] == 'true' else " Randoms") if len(team['hunters']) > 1 else "")
-        )
-        self.header.layout.addWidget(inviteLabel,0,4,1,1)
-        self.header.layout.setAlignment(inviteLabel,QtCore.Qt.AlignmentFlag.AlignRight)
-        for i in range(self.header.layout.count()):
-            self.header.layout.itemAt(i).widget().setSizePolicy(
-                QSizePolicy.Policy.Expanding,
-                QSizePolicy.Policy.Fixed
-            )
-        self.layout.addWidget(self.header)
-
-        self.body = QWidget()
-        self.body.layout = QGridLayout()
-        self.body.setLayout(self.body.layout)
-        self.body.layout.setSpacing(4)
-        self.body.layout.setContentsMargins(2,2,2,2)
-        self.body.setSizePolicy(
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Fixed
-        )
-        self.body.setObjectName("HuntersWidget")
-
-        # first column (bloodline name) should have fixed max width.  same with team title
-        for i in range(len(team['hunters'])):
-            hunter = team['hunters'][i]
-            self.body.layout.addWidget(QLabel(hunter['blood_line_name']),i+1,0)
-            stars = QLabel()
-            stars.setPixmap(stars_pixmap(mmr_to_stars(hunter['mmr']),h=12))
-            self.body.layout.addWidget(stars,i+1,1,1,1)
-            self.body.layout.addWidget(QLabel(str(hunter['mmr'])),i+1,2,1,1)
-            self.body.layout.addWidget(QLabel(),i+1,3,1,1)
-            self.body.setVisible(False)
-            encounters = get_hunter_encounters(hunter['profileid'])
-            encounters = encounters[0][0] if len(encounters) > 0 else 0
-            encLabel = QLabel(
-                ("Seen %dx" % encounters if encounters > 1 and hunter['blood_line_name'] != settings.value("steam_name") else "")
-            )
-            self.body.layout.addWidget(encLabel,i+1,4,1,1)
-            self.body.layout.setAlignment(encLabel,QtCore.Qt.AlignmentFlag.AlignRight)
-            icons = []
-            if hunter['bountypickedup'] > 0:
-                carried_bounty = True
-                tt = '%s carried the bounty.' % hunter['blood_line_name']
-                if hunter['bountyextracted'] > 0:
-                    tt += '%s extracted the bounty.' % hunter['blood_line_name']
-                icons.append({
-                    'path':resource_path("assets/icons/teams icons/bounty.png"),
-                    'tooltip':tt
-                    })
-            if hunter['downedbyme'] > 0 or hunter['killedbyme'] > 0:
-                killed_them = True
-                tt = []
-                if hunter['downedbyme'] > 0:
-                    tt.append("You downed %s %d times." % (hunter['blood_line_name'],hunter['downedbyme']))
-                if hunter['killedbyme'] > 0:
-                    tt.append("You killed %s." % (hunter['blood_line_name']))
-                icons.append({
-                    'path':resource_path("assets/icons/teams icons/killedbyme.png"),
-                    'tooltip':'\n'.join(tt)})
-                pass
-            if hunter['downedbyteammate'] > 0 or hunter['killedbyteammate'] > 0:
-                killed_them = True
-                tt = []
-                if hunter['downedbyteammate'] > 0:
-                    tt.append("Your teammate downed %s %d times." % (hunter['blood_line_name'],hunter['downedbyteammate']))
-                if hunter['killedbyteammate'] > 0:
-                    tt.append("Your teammate killed %s." % (hunter['blood_line_name']))
-                icons.append({
-                    'path':resource_path("assets/icons/teams icons/killedbyteammate.png"),
-                    'tooltip':'\n'.join(tt)})
-                pass
-            if hunter['downedme'] > 0 or hunter['killedme'] > 0:
-                killed_us = True
-                tt = []
-                if hunter['downedme'] > 0:
-                    tt.append("%s downed you %d times." % (hunter['blood_line_name'],hunter['downedme']))
-                if hunter['killedme'] > 0:
-                    tt.append("%s killed you." % (hunter['blood_line_name']))
-                icons.append({
-                    'path':resource_path("assets/icons/teams icons/killedme.png"),
-                    'tooltip':'\n'.join(tt)})
-                pass
-            if hunter['downedteammate'] > 0 or hunter['killedteammate'] > 0:
-                tt = []
-                if hunter['downedteammate'] > 0:
-                    tt.append("%s downed your teammate %d times." % (hunter['blood_line_name'],hunter['downedteammate']))
-                if hunter['killedteammate'] > 0:
-                    tt.append("%s killed your teammate." % (hunter['blood_line_name']))
-                killed_us = True
-                icons.append({
-                    'path':resource_path("assets/icons/teams icons/killedteammate.png"),
-                    'tooltip':'\n'.join(tt)})
-                pass
-            icons_widget = QWidget()
-            icons_widget.layout = QHBoxLayout()
-            icons_widget.setLayout(icons_widget.layout)
-            icons_widget.setObjectName("TeamsIcons")
-            icons_widget.setSizePolicy(
-                QSizePolicy.Policy.Expanding,
-                QSizePolicy.Policy.Fixed,
-            )
-            icons_widget.layout.addStretch()
-            for icon in icons:
-                w = QLabel()
-                w.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-                w.setPixmap(QtGui.QPixmap(icon['path']).scaled(24,24))
-                w.setToolTip(icon['tooltip'])
-                w.setObjectName("TeamIcon")
-                icons_widget.layout.addWidget(w)
-            if len(icons) == 0:
-                w = QLabel()
-                w.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-                w.setPixmap(QtGui.QPixmap(resource_path("assets/icons/blank.png")).scaled(24,24))
-                icons_widget.layout.addWidget(w)
-            self.body.layout.addWidget(icons_widget,i+1,3,1,1)
-        for i in range(self.body.layout.count()):
-            self.body.layout.itemAt(i).widget().setSizePolicy(
-                QSizePolicy.Policy.Expanding,
-                QSizePolicy.Policy.Expanding
-            )
-        self.body.layout.setColumnStretch(0,4)
-        self.body.layout.setColumnStretch(1,3)
-        self.body.layout.setColumnStretch(2,3)
-        self.body.layout.setColumnStretch(3,3)
-        self.body.layout.setColumnStretch(4,3)
-        self.layout.addWidget(self.body)
-        icons = []
-        if carried_bounty:
-            icons.append(resource_path("assets/icons/teams icons/bounty.png"))
-            pass
-        if killed_us:
-            icons.append(resource_path("assets/icons/teams icons/killedme.png"))
-            pass
-        if killed_them:
-            icons.append(resource_path("assets/icons/teams icons/killedbyme.png"))
-            pass
-        icons_widget = QWidget()
-        icons_widget.layout = QHBoxLayout()
-        icons_widget.setLayout(icons_widget.layout)
-        icons_widget.setObjectName("TeamsIcons")
-        icons_widget.layout.addStretch()
-        icons_widget.layout.setContentsMargins(4,4,4,4)
-        for icon in set(icons):
-            w = QLabel()
-            w.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-            w.setPixmap(QtGui.QPixmap(icon).scaled(24,24))
-            w.setObjectName("TeamIcon")
-            icons_widget.layout.addWidget(w)
-        if len(icons) == 0:
-            w = QLabel()
-            w.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
-            w.setPixmap(QtGui.QPixmap(resource_path("assets/icons/blank.png")).scaled(24,24))
-            icons_widget.layout.addWidget(w)
-        self.header.layout.addWidget(icons_widget,0,3,1,1)
-        self.header.layout.setColumnStretch(0,4)
-        self.header.layout.setColumnStretch(1,3)
-        self.header.layout.setColumnStretch(2,3)
-        self.header.layout.setColumnStretch(3,3)
-        self.header.layout.setColumnStretch(4,3)
 
     def initHeader(self,team):
         header = QWidget()
@@ -406,9 +182,14 @@ class TeamWidget(QWidget):
             body.layout.addWidget(QLabel(str(hunter['mmr'])),i,3,1,1)
             encounters = get_hunter_encounters(hunter['profileid'])
             encounters = encounters[0][0] if len(encounters) > 0 else 0
-            encLabel = QLabel(
+            encLabel = Label(
                 ("Seen %dx" % encounters if encounters > 1 and hunter['blood_line_name'] != settings.value("steam_name") else "")
             )
+            if(encounters > 1):
+                names = get_all_names(hunter['profileid'])
+                if(len(names) > 1):
+                    print(names)
+                    encLabel.setToolTip("Other Names:\n%s" % ('\n'.join(nt[0] for nt in names)))
             body.layout.addWidget(encLabel,i,5,1,1)
             #body.layout.setAlignment(encLabel,QtCore.Qt.AlignmentFlag.AlignRight)
             icons = []
