@@ -1,8 +1,7 @@
 <b>as of February 2024, this app is no longer functional. 
 
 Crytek has patched Hunt Showdown such that hunter data is no longer stored locally. Ergo, this app will no longer track your hunts.
-
-So long, and thanks for all the fish. </b>
+</b>
 
 # Hunt Stats Logger
 
