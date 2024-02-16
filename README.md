@@ -2,7 +2,7 @@
 
 Crytek has patched Hunt Showdown such that hunter data is no longer stored locally. Ergo, this app will no longer track your hunts.
 
-So long, and thanks for all the fish</b>
+So long, and thanks for all the fish. </b>
 
 # Hunt Stats Logger
 
